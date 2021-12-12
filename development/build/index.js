@@ -53,7 +53,6 @@ function defineAndRunBuildTasks() {
     buildType,
     entryTask,
     isLavaMoat,
-    policyOnly,
     shouldIncludeLockdown,
     shouldLintFenceFiles,
     skipStats,
@@ -86,7 +85,6 @@ function defineAndRunBuildTasks() {
     ignoredFiles,
     isLavaMoat,
     livereload,
-    policyOnly,
     shouldLintFenceFiles,
   });
 
@@ -137,9 +135,6 @@ function defineAndRunBuildTasks() {
     ),
   );
 
-  // build just production scripts, for LavaMoat policy generation purposes
-  createTask('scripts:prod', scriptTasks.prod);
-
   // build for CI testing
   createTask(
     'test',
@@ -163,7 +158,6 @@ function parseArgv() {
     BuildType: 'build-type',
     LintFenceFiles: 'lint-fence-files',
     Lockdown: 'lockdown',
-    PolicyOnly: 'policy-only',
     SkipStats: 'skip-stats',
   };
 
@@ -171,7 +165,6 @@ function parseArgv() {
     boolean: [
       NamedArgs.LintFenceFiles,
       NamedArgs.Lockdown,
-      NamedArgs.PolicyOnly,
       NamedArgs.SkipStats,
     ],
     string: [NamedArgs.BuildType],
@@ -179,7 +172,6 @@ function parseArgv() {
       [NamedArgs.BuildType]: BuildType.main,
       [NamedArgs.LintFenceFiles]: true,
       [NamedArgs.Lockdown]: true,
-      [NamedArgs.PolicyOnly]: false,
       [NamedArgs.SkipStats]: false,
     },
   });
@@ -207,13 +199,10 @@ function parseArgv() {
     ? argv[NamedArgs.LintFenceFiles]
     : !/dev/iu.test(entryTask);
 
-  const policyOnly = argv[NamedArgs.PolicyOnly];
-
   return {
     buildType,
     entryTask,
     isLavaMoat: process.argv[0].includes('lavamoat'),
-    policyOnly,
     shouldIncludeLockdown: argv[NamedArgs.Lockdown],
     shouldLintFenceFiles,
     skipStats: argv[NamedArgs.SkipStats],
