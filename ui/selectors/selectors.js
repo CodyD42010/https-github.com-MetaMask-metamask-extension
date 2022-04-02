@@ -945,6 +945,10 @@ export function getIsTokenDetectionSupported(state) {
   ].includes(chainId);
 }
 
-export function getDetectedTokensInCurrentNetwork(state) {
-  return state.metamask.detectedTokens;
+export function getTokenDetectionNoticeDismissed(state) {
+  return state.metamask.tokenDetectionNoticeDismissed;
+}
+
+export function getTokenDetectionWarningDismissed(state) {
+  return state.metamask.tokenDetectionWarningDismissed;
 }
