@@ -31,25 +31,18 @@ import txHelper from './helpers/utils/tx-helper';
 log.setLevel(global.METAMASK_DEBUG ? 'debug' : 'warn');
 
 let reduxStore;
+let currentBackgroundConnection;
 
-export default function launchMetamaskUi(opts, cb) {
-  const { backgroundConnection } = opts;
-  actions._setBackgroundConnection(backgroundConnection);
-  // check if we are unlocked first
-  backgroundConnection.getState(function (err, metamaskState) {
-    if (err) {
-      cb(err);
-      return;
-    }
-    startApp(metamaskState, backgroundConnection, opts).then((store) => {
-      reduxStore = store;
-      setupDebuggingHelpers(store);
-      cb(null, store);
-    });
-  });
-}
+const blankInitialState = {
+  featureFlags: {},
+  provider: {},
+  cachedBalances: {},
+  keyrings: [],
+  accounts: {},
+};
 
 export const updateBackgroundConnection = (backgroundConnection) => {
+  currentBackgroundConnection = backgroundConnection;
   actions._setBackgroundConnection(backgroundConnection);
   backgroundConnection.onNotification((data) => {
     if (data.method === 'sendUpdate') {
@@ -64,7 +57,89 @@ export const updateBackgroundConnection = (backgroundConnection) => {
   });
 };
 
-async function startApp(metamaskState, backgroundConnection, opts) {
+function updateStateFromBackground(cb) {
+  // check if we are unlocked first
+  currentBackgroundConnection.getState(function (err, metamaskState) {
+    if (err) {
+      if (cb) {
+        cb(err);
+      }
+      return;
+    }
+    reduxStore.dispatch(actions.updateMetamaskState(metamaskState));
+    updateBackgroundConnection(currentBackgroundConnection);
+
+    const unapprovedTxsAll = txHelper(
+      metamaskState.unapprovedTxs,
+      metamaskState.unapprovedMsgs,
+      metamaskState.unapprovedPersonalMsgs,
+      metamaskState.unapprovedDecryptMsgs,
+      metamaskState.unapprovedEncryptionPublicKeyMsgs,
+      metamaskState.unapprovedTypedMessages,
+      metamaskState.network,
+      metamaskState.provider.chainId,
+    );
+    const numberOfUnapprovedTx = unapprovedTxsAll.length;
+    if (numberOfUnapprovedTx > 0) {
+      reduxStore.dispatch(
+        actions.showConfTxPage({
+          id: unapprovedTxsAll[0].id,
+        }),
+      );
+    }
+
+    currentBackgroundConnection.onNotification((data) => {
+      if (data.method === 'sendUpdate') {
+        reduxStore.dispatch(actions.updateMetamaskState(data.params[0]));
+      } else {
+        throw new Error(
+          `Internal JSON-RPC Notification Not Handled:\n\n ${JSON.stringify(
+            data,
+          )}`,
+        );
+      }
+    });
+
+    // global metamask api - used by tooling
+    global.metamask = {
+      updateCurrentLocale: (code) => {
+        reduxStore.dispatch(actions.updateCurrentLocale(code));
+      },
+      setProviderType: (type) => {
+        reduxStore.dispatch(actions.setProviderType(type));
+      },
+      setFeatureFlag: (key, value) => {
+        reduxStore.dispatch(actions.setFeatureFlag(key, value));
+      },
+    };
+  });
+}
+
+export default function launchMetamaskUi(opts, cb) {
+  console.log('into launchMetamaskUi');
+  const { backgroundConnection } = opts;
+  actions._setBackgroundConnection(backgroundConnection);
+  currentBackgroundConnection = backgroundConnection;
+  if (reduxStore) {
+    updateStateFromBackground(cb);
+  }
+}
+
+export const initializeUiFromStorage = (opts = {}) => {
+  console.log('into initializeUiFromStorage');
+  browser.storage.session.get('uiState').then(({ uiState: metamaskState }) => {
+    const initState =
+      metamaskState && Object.keys(metamaskState).length
+        ? metamaskState
+        : blankInitialState;
+    startApp(initState, opts).then((store) => {
+      reduxStore = store;
+      setupDebuggingHelpers(store);
+    });
+  });
+};
+
+async function startApp(metamaskState, opts) {
   // parse opts
   if (!metamaskState.featureFlags) {
     metamaskState.featureFlags = {};
@@ -126,57 +201,16 @@ async function startApp(metamaskState, backgroundConnection, opts) {
     }
   }
 
-  const store = configureStore(draftInitialState);
+  reduxStore = configureStore(draftInitialState);
 
-  // if unconfirmed txs, start on txConf page
-  const unapprovedTxsAll = txHelper(
-    metamaskState.unapprovedTxs,
-    metamaskState.unapprovedMsgs,
-    metamaskState.unapprovedPersonalMsgs,
-    metamaskState.unapprovedDecryptMsgs,
-    metamaskState.unapprovedEncryptionPublicKeyMsgs,
-    metamaskState.unapprovedTypedMessages,
-    metamaskState.network,
-    metamaskState.provider.chainId,
-  );
-  const numberOfUnapprovedTx = unapprovedTxsAll.length;
-  if (numberOfUnapprovedTx > 0) {
-    store.dispatch(
-      actions.showConfTxPage({
-        id: unapprovedTxsAll[0].id,
-      }),
-    );
+  if (currentBackgroundConnection) {
+    updateStateFromBackground();
   }
 
-  backgroundConnection.onNotification((data) => {
-    if (data.method === 'sendUpdate') {
-      store.dispatch(actions.updateMetamaskState(data.params[0]));
-    } else {
-      throw new Error(
-        `Internal JSON-RPC Notification Not Handled:\n\n ${JSON.stringify(
-          data,
-        )}`,
-      );
-    }
-  });
-
-  // global metamask api - used by tooling
-  global.metamask = {
-    updateCurrentLocale: (code) => {
-      store.dispatch(actions.updateCurrentLocale(code));
-    },
-    setProviderType: (type) => {
-      store.dispatch(actions.setProviderType(type));
-    },
-    setFeatureFlag: (key, value) => {
-      store.dispatch(actions.setFeatureFlag(key, value));
-    },
-  };
-
   // start app
-  render(<Root store={store} />, opts.container);
+  render(<Root store={reduxStore} />, opts.container);
 
-  return store;
+  return reduxStore;
 }
 
 /**

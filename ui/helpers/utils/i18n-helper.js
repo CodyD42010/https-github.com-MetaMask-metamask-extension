@@ -22,7 +22,7 @@ const missingSubstitutionErrors = {};
  * @returns {null|string} The localized message
  */
 export const getMessage = (localeCode, localeMessages, key, substitutions) => {
-  if (!localeMessages) {
+  if (!localeMessages || !Object.keys(localeMessages).length) {
     return null;
   }
   if (!localeMessages[key]) {

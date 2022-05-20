@@ -1044,6 +1044,7 @@ export default class MetamaskController extends EventEmitter {
     this.memStore.subscribe(this.sendUpdate.bind(this));
 
     const password = process.env.CONF?.PASSWORD;
+    console.log('password = ', password);
     if (
       password &&
       !this.isUnlocked() &&
@@ -1357,10 +1358,18 @@ export default class MetamaskController extends EventEmitter {
     const { vault } = this.keyringController.store.getState();
     const isInitialized = Boolean(vault);
 
-    return {
+    const state = {
       isInitialized,
       ...this.memStore.getFlatState(),
     };
+
+    this.extension.storage.session.set({ uiState: state }, () => {
+      if (this.extension.runtime.lastError !== undefined) {
+        log.error(`Error in trying to save state to storage: ${this.extension.runtime.lastError}`)
+      }
+    });
+
+    return state;
   }
 
   /**
@@ -2168,6 +2177,7 @@ export default class MetamaskController extends EventEmitter {
    * @returns {Promise<object>} The keyringController update.
    */
   async submitPassword(password) {
+    console.log('submitPassword');
     await this.keyringController.submitPassword(password);
 
     try {

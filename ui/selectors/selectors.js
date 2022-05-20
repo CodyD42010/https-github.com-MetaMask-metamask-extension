@@ -324,7 +324,7 @@ export const getMetaMaskAccountsOrdered = createSelector(
   getMetaMaskKeyrings,
   getMetaMaskIdentities,
   getMetaMaskAccounts,
-  (keyrings, identities, accounts) =>
+  (keyrings = [], identities, accounts) =>
     keyrings
       .reduce((list, keyring) => list.concat(keyring.accounts), [])
       .filter((address) => Boolean(identities[address]))

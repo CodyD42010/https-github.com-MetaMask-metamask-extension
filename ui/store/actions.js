@@ -507,6 +507,9 @@ export function showQrScanner() {
 
 export function setCurrentCurrency(currencyCode) {
   return async (dispatch) => {
+    if (!promisifiedBackground) {
+      return;
+    }
     dispatch(showLoadingIndication());
     log.debug(`background.setCurrentCurrency`);
     try {
@@ -2924,6 +2927,9 @@ export function rejectPendingApproval(id, error) {
 }
 
 export function setFirstTimeFlowType(type) {
+  if (!background) {
+    return undefined;
+  }
   return (dispatch) => {
     log.debug(`background.setFirstTimeFlowType`);
     background.setFirstTimeFlowType(type, (err) => {
@@ -3382,7 +3388,10 @@ export function finalizeEventFragment(id, options) {
  * @param {MetaMetricsPageOptions} options - options for handling the page view
  */
 export function trackMetaMetricsPage(payload, options) {
-  return promisifiedBackground.trackMetaMetricsPage(payload, options);
+  if (promisifiedBackground) {
+    return promisifiedBackground.trackMetaMetricsPage(payload, options);
+  }
+  return undefined;
 }
 
 export function updateViewedNotifications(notificationIdViewedStatusMap) {

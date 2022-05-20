@@ -11,7 +11,10 @@ import Eth from 'ethjs';
 import EthQuery from 'eth-query';
 import StreamProvider from 'web3-stream-provider';
 import log from 'loglevel';
-import launchMetaMaskUi, { updateBackgroundConnection } from '../../ui';
+import launchMetaMaskUi, {
+  initializeUiFromStorage,
+  updateBackgroundConnection,
+} from '../../ui';
 import {
   ENVIRONMENT_TYPE_FULLSCREEN,
   ENVIRONMENT_TYPE_POPUP,
@@ -20,6 +23,14 @@ import ExtensionPlatform from './platforms/extension';
 import { setupMultiplex } from './lib/stream-utils';
 import { getEnvironmentType } from './lib/util';
 import metaRPCClientFactory from './lib/metaRPCClientFactory';
+
+console.log('--------------- loaded UI.js');
+const container = document.getElementById('app-content');
+
+initializeUiFromStorage({
+  activeTab: {},
+  container,
+});
 
 start().catch(log.error);
 
@@ -58,7 +69,7 @@ async function start() {
     initializeUiWithTab(activeTab);
   }
 
-  function displayCriticalError(container, err) {
+  function displayCriticalError(err) {
     container.innerHTML =
       '<div class="critical-error">The MetaMask app failed to load: please open and close MetaMask again to restart.</div>';
     container.style.height = '80px';
@@ -78,16 +89,15 @@ async function start() {
   });
 
   function initializeUiWithTab(tab) {
-    const container = document.getElementById('app-content');
     if (isUIInitialised) {
-      updateUiStreams(container);
+      updateUiStreams();
     } else {
-      initializeUi(tab, container, connectionStream, (err, appStore) => {
+      initializeUi(tab, connectionStream, (err, appStore) => {
         if (!err) {
           isUIInitialised = true;
         }
         if (err) {
-          displayCriticalError(container, err);
+          displayCriticalError(err);
           return;
         }
         const state = appStore.getState();
@@ -104,10 +114,10 @@ async function start() {
   }
 
   // todo: check if needed
-  function updateUiStreams(container) {
+  function updateUiStreams() {
     connectToAccountManager(connectionStream, (err, backgroundConnection) => {
       if (err) {
-        displayCriticalError(container, err);
+        displayCriticalError(err);
         return;
       }
 
@@ -140,7 +150,8 @@ async function queryCurrentActiveTab(windowType) {
   });
 }
 
-function initializeUi(activeTab, container, connectionStream, cb) {
+function initializeUi(activeTab, connectionStream, cb) {
+  console.log('into initializeUi');
   connectToAccountManager(connectionStream, (err, backgroundConnection) => {
     if (err) {
       cb(err);
