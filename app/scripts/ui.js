@@ -11,7 +11,7 @@ import Eth from 'ethjs';
 import EthQuery from 'eth-query';
 import StreamProvider from 'web3-stream-provider';
 import log from 'loglevel';
-import launchMetaMaskUi from '../../ui';
+import launchMetaMaskUi, { updateBackgroundConnection } from '../../ui';
 import {
   ENVIRONMENT_TYPE_FULLSCREEN,
   ENVIRONMENT_TYPE_POPUP,
@@ -22,7 +22,18 @@ import { setupMultiplex } from './lib/stream-utils';
 import { getEnvironmentType } from './lib/util';
 import metaRPCClientFactory from './lib/metaRPCClientFactory';
 
+const container = document.getElementById('app-content');
 start().catch(log.error);
+
+/*
+ * As long as UI is open it will keep sending messages to service worker
+ * In service worker as this message is received
+ * if service worker is inactive it is reactivated and script re-loaded
+ * Time has been kept to 1000ms but can be reduced for even faster re-activation of service worker
+ */
+setInterval(() => {
+  browser.runtime.sendMessage({ name: 'UI_OPEN' });
+}, 1000);
 
 async function start() {
   // create platform global
@@ -31,27 +42,49 @@ async function start() {
   // identify window type (popup, notification)
   const windowType = getEnvironmentType();
 
+  let isUIInitialised = false;
+
   // setup stream to background
-  const extensionPort = browser.runtime.connect({ name: windowType });
-  const connectionStream = new PortStream(extensionPort);
+  let extensionPort = browser.runtime.connect({ name: windowType });
+  let connectionStream = new PortStream(extensionPort);
 
   const activeTab = await queryCurrentActiveTab(windowType);
 
-  /**
-   * In case of MV3 the issue of blank screen was very frequent, it is caused by UI initialising before background is ready to send state.
-   * Code below ensures that UI is rendered only after background is ready.
-   */
   if (isManifestV3()) {
-    extensionPort.onMessage.addListener((message) => {
+    /*
+     * In case of MV3 the issue of blank screen was very frequent, it is caused by UI initialising before background is ready to send state.
+     * Code below ensures that UI is rendered only after CONNECTION_READY message is received thus background is ready.
+     * In case UI is already renderd only stream will be updated.
+     */
+    const messageListener = (message) => {
       if (message?.name === 'CONNECTION_READY') {
-        initializeUiWithTab(activeTab);
+        if (isUIInitialised) {
+          updateUiStreams();
+        } else {
+          initializeUiWithTab(activeTab);
+        }
       }
-    });
+    };
+
+    // disconnectListener takes care to remove listeners from closed streams
+    // it also creates new streams and attach event listeners to them
+    const disconnectListener = () => {
+      extensionPort.onMessage.removeListener(messageListener);
+      extensionPort.onDisconnect.removeListener(disconnectListener);
+
+      extensionPort = browser.runtime.connect({ name: windowType });
+      connectionStream = new PortStream(extensionPort);
+      extensionPort.onMessage.addListener(messageListener);
+      extensionPort.onDisconnect.addListener(disconnectListener);
+    };
+
+    extensionPort.onMessage.addListener(messageListener);
+    extensionPort.onDisconnect.addListener(disconnectListener);
   } else {
     initializeUiWithTab(activeTab);
   }
 
-  function displayCriticalError(container, err) {
+  function displayCriticalError(err) {
     container.innerHTML =
       '<div class="critical-error">The MetaMask app failed to load: please open and close MetaMask again to restart.</div>';
     container.style.height = '80px';
@@ -60,19 +93,31 @@ async function start() {
   }
 
   function initializeUiWithTab(tab) {
-    const container = document.getElementById('app-content');
-    initializeUi(tab, container, connectionStream, (err, store) => {
+    initializeUi(tab, connectionStream, (err, store) => {
       if (err) {
-        displayCriticalError(container, err);
+        displayCriticalError(err);
         return;
       }
 
+      isUIInitialised = true;
       const state = store.getState();
       const { metamask: { completedOnboarding } = {} } = state;
 
       if (!completedOnboarding && windowType !== ENVIRONMENT_TYPE_FULLSCREEN) {
         global.platform.openExtensionInBrowser();
       }
+    });
+  }
+
+  // Function to update new backgroundConnection in the UI
+  function updateUiStreams() {
+    connectToAccountManager(connectionStream, (err, backgroundConnection) => {
+      if (err) {
+        displayCriticalError(err);
+        return;
+      }
+
+      updateBackgroundConnection(backgroundConnection);
     });
   }
 }
@@ -101,7 +146,7 @@ async function queryCurrentActiveTab(windowType) {
   });
 }
 
-function initializeUi(activeTab, container, connectionStream, cb) {
+function initializeUi(activeTab, connectionStream, cb) {
   connectToAccountManager(connectionStream, (err, backgroundConnection) => {
     if (err) {
       cb(err);
