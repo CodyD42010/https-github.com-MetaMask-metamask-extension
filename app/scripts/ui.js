@@ -31,9 +31,11 @@ start().catch(log.error);
  * if service worker is inactive it is reactivated and script re-loaded
  * Time has been kept to 1000ms but can be reduced for even faster re-activation of service worker
  */
-setInterval(() => {
-  browser.runtime.sendMessage({ name: 'UI_OPEN' });
-}, 1000);
+if (isManifestV3()) {
+  setInterval(() => {
+    browser.runtime.sendMessage({ name: 'UI_OPEN' });
+  }, 1000);
+}
 
 async function start() {
   // create platform global
@@ -49,6 +51,20 @@ async function start() {
   let connectionStream = new PortStream(extensionPort);
 
   const activeTab = await queryCurrentActiveTab(windowType);
+
+  /**
+   * In case of MV3 the issue of blank screen was very frequent, it is caused by UI initialising before background is ready to send state.
+   * Code below ensures that UI is rendered only after background is ready.
+   */
+  if (isManifestV3()) {
+    extensionPort.onMessage.addListener((message) => {
+      if (message?.name === 'CONNECTION_READY') {
+        initializeUiWithTab(activeTab);
+      }
+    });
+  } else {
+    initializeUiWithTab(activeTab);
+  }
 
   if (isManifestV3()) {
     /*
