@@ -12,9 +12,11 @@ function tryImport(...fileNames) {
 
 function importAllScripts() {
   const startImportScriptsTime = Date.now();
-  // applyLavaMoat has been hard coded to "true" as
-  // tryImport('./runtime-cjs.js') is giving issue with XMLHttpRequest object which is not avaialble to service worker.
-  // we need to dynamically inject values of applyLavaMoat once this is fixed.
+  /*
+   * applyLavaMoat has been hard coded to "true" as
+   * tryImport('./runtime-cjs.js') is giving issue with XMLHttpRequest object which is not avaialble to service worker.
+   * we need to dynamically inject values of applyLavaMoat once this is fixed.
+   */
   const applyLavaMoat = true;
 
   tryImport('./globalthis.js');
@@ -30,6 +32,8 @@ function importAllScripts() {
     tryImport('./lockdown-run.js');
     tryImport('./runtime-cjs.js');
   }
+  // eslint-disable-next-line
+  self.scriptLoaded = true;
 
   const fileList = [
     // The list of files is injected at build time by replacing comment below with comma separated strings of file names
@@ -46,8 +50,26 @@ function importAllScripts() {
   );
 }
 
-// Placing script import call here ensures that scripts are inported each time service worker is activated.
-importAllScripts();
+// eslint-disable-next-line
+self.oninstall = () => {
+  importAllScripts();
+};
+
+/*
+ * Message event listener below loads script if they are no longer available.
+ * chrome below needs to be replaced by cross-browser object,
+ * but there is issue in importing webextension-polyfill into service worker.
+ * chrome does seems to work in at-least all chromium based browsers
+ */
+// eslint-disable-next-line
+chrome.runtime.onMessage.addListener((_1, _2, sendResponse) => {
+  // eslint-disable-next-line
+  if (!self.scriptLoaded) {
+    importAllScripts();
+  }
+  // Response below if not required but there is an error if message listener does not send response.
+  sendResponse({ name: 'SERVICE_WORKER_ACTIVATION' });
+});
 
 /**
  * An open issue is changes in this file break during hot reloading. Reason is dynamic injection of "FILE NAMES".
