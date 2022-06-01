@@ -53,15 +53,13 @@ export const updateBackgroundConnection = (backgroundConnection) => {
 };
 
 export default function launchMetamaskUi(opts, cb) {
+  console.log('into launchMetamaskUi');
   const { backgroundConnection } = opts;
-  // check if we are unlocked first
-  backgroundConnection.getState(function (err, metamaskState) {
-    if (err) {
-      cb(err);
-      return;
-    }
-    startApp(metamaskState, backgroundConnection, opts).then((store) => {
-      reduxStore = store;
+  actions._setBackgroundConnection(backgroundConnection);
+  // eslint-disable-next-line
+  chrome.storage.session.get('ui_state').then(({ ui_state }) => {
+    console.log('ui_state = ', ui_state);
+    startApp(ui_state, backgroundConnection, opts).then((store) => {
       setupDebuggingHelpers(store);
       cb(null, store);
     });

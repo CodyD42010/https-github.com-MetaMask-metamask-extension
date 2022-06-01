@@ -33,14 +33,18 @@ import createStreamSink from './lib/createStreamSink';
 import NotificationManager, {
   NOTIFICATION_MANAGER_EVENTS,
 } from './lib/notification-manager';
-import MetamaskController, {
-  METAMASK_CONTROLLER_EVENTS,
-} from './metamask-controller';
+// import MetamaskController, {
+//   METAMASK_CONTROLLER_EVENTS,
+// } from './metamask-controller';
 import rawFirstTimeState from './first-time-state';
 import getFirstPreferredLangCode from './lib/get-first-preferred-lang-code';
 import getObjStructure from './lib/getObjStructure';
 import setupEnsIpfsResolver from './lib/ens-ipfs/setup';
 import { getPlatform } from './lib/util';
+
+import { sampleState } from './sample_state';
+import { setupMultiplex } from './lib/stream-utils';
+
 /* eslint-enable import/first */
 
 const { sentry } = global;
@@ -235,50 +239,160 @@ async function loadStateFromPersistence() {
  */
 function setupController(initState, initLangCode, remoteSourcePort) {
   //
+  // connect to other contexts
+  //
+  if (isManifestV3() && remoteSourcePort) {
+    connectRemote(remoteSourcePort);
+  }
+
+  browser.runtime.onConnect.addListener(connectRemote);
+  browser.runtime.onConnectExternal.addListener(connectExternal);
+  /**
+   * A runtime.Port object, as provided by the browser:
+   *
+   * @see https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/Port
+   * @typedef Port
+   * @type Object
+   */
+
+  /**
+   * Connects a Port to the MetaMask controller via a multiplexed duplex stream.
+   * This method identifies trusted (MetaMask) interfaces, and connects them differently from untrusted (web pages).
+   *
+   * @param {Port} remotePort - The port provided by a new context.
+   */
+  function connectRemote(remotePort) {
+    const processName = remotePort.name;
+
+    if (metamaskBlockedPorts.includes(remotePort.name)) {
+      return;
+    }
+
+    let isMetaMaskInternalProcess = false;
+    const sourcePlatform = getPlatform();
+
+    if (sourcePlatform === PLATFORM_FIREFOX) {
+      isMetaMaskInternalProcess = metamaskInternalProcessHash[processName];
+    } else {
+      isMetaMaskInternalProcess =
+        remotePort.sender.origin === `chrome-extension://${browser.runtime.id}`;
+    }
+
+    if (isMetaMaskInternalProcess) {
+      const portStream = new PortStream(remotePort);
+      // communication with popup
+      // controller.isClientOpen = true;
+      console.log('test');
+      // eslint-disable-next-line
+      chrome.storage.session.set({ ui_state: sampleState });
+      setupTrustedCommunication(portStream, remotePort.sender);
+
+      if (isManifestV3()) {
+        // Message below if captured by UI code in app/scripts/ui.js which will trigger UI initialisation
+        // This ensures that UI is initialised only after background is ready
+        // It fixes the issue of blank screen coming when extension is loaded, the issue is very frequent in MV3
+        remotePort.postMessage({ name: 'CONNECTION_READY' });
+      }
+
+      // if (processName === ENVIRONMENT_TYPE_POPUP) {
+      //   popupIsOpen = true;
+      //   endOfStream(portStream, () => {
+      //     popupIsOpen = false;
+      //     const isClientOpen = isClientOpenStatus();
+      //     // controller.isClientOpen = isClientOpen;
+      //     onCloseEnvironmentInstances(isClientOpen, ENVIRONMENT_TYPE_POPUP);
+      //   });
+      // }
+
+      // if (processName === ENVIRONMENT_TYPE_NOTIFICATION) {
+      //   notificationIsOpen = true;
+
+      //   endOfStream(portStream, () => {
+      //     notificationIsOpen = false;
+      //     const isClientOpen = isClientOpenStatus();
+      //     // controller.isClientOpen = isClientOpen;
+      //     onCloseEnvironmentInstances(
+      //       isClientOpen,
+      //       ENVIRONMENT_TYPE_NOTIFICATION,
+      //     );
+      //   });
+      // }
+
+      if (processName === ENVIRONMENT_TYPE_FULLSCREEN) {
+        const tabId = remotePort.sender.tab.id;
+        openMetamaskTabsIDs[tabId] = true;
+
+        endOfStream(portStream, () => {
+          delete openMetamaskTabsIDs[tabId];
+          // const isClientOpen = isClientOpenStatus();
+          // // controller.isClientOpen = isClientOpen;
+          // onCloseEnvironmentInstances(
+          //   isClientOpen,
+          //   ENVIRONMENT_TYPE_FULLSCREEN,
+          // );
+        });
+      }
+    } else {
+      if (remotePort.sender && remotePort.sender.tab && remotePort.sender.url) {
+        const tabId = remotePort.sender.tab.id;
+        const url = new URL(remotePort.sender.url);
+        const { origin } = url;
+
+        remotePort.onMessage.addListener((msg) => {
+          if (msg.data && msg.data.method === 'eth_requestAccounts') {
+            requestAccountTabIds[origin] = tabId;
+          }
+        });
+      }
+      connectExternal(remotePort);
+    }
+  }
+
+  //
   // MetaMask Controller
   //
 
-  const controller = new MetamaskController({
-    infuraProjectId: process.env.INFURA_PROJECT_ID,
-    // User confirmation callbacks:
-    showUserConfirmation: triggerUi,
-    openPopup,
-    // initial state
-    initState,
-    // initial locale code
-    initLangCode,
-    // platform specific api
-    platform,
-    notificationManager,
-    browser,
-    getRequestAccountTabIds: () => {
-      return requestAccountTabIds;
-    },
-    getOpenMetamaskTabsIds: () => {
-      return openMetamaskTabsIDs;
-    },
-  });
+  // const controller = new MetamaskController({
+  //   infuraProjectId: process.env.INFURA_PROJECT_ID,
+  //   // User confirmation callbacks:
+  //   showUserConfirmation: triggerUi,
+  //   openPopup,
+  //   // initial state
+  //   initState,
+  //   // initial locale code
+  //   initLangCode,
+  //   // platform specific api
+  //   platform,
+  //   notificationManager,
+  //   browser,
+  //   getRequestAccountTabIds: () => {
+  //     return requestAccountTabIds;
+  //   },
+  //   getOpenMetamaskTabsIds: () => {
+  //     return openMetamaskTabsIDs;
+  //   },
+  // });
 
-  setupEnsIpfsResolver({
-    getCurrentChainId: controller.networkController.getCurrentChainId.bind(
-      controller.networkController,
-    ),
-    getIpfsGateway: controller.preferencesController.getIpfsGateway.bind(
-      controller.preferencesController,
-    ),
-    provider: controller.provider,
-  });
+  // setupEnsIpfsResolver({
+  //   getCurrentChainId: controller.networkController.getCurrentChainId.bind(
+  //     controller.networkController,
+  //   ),
+  //   getIpfsGateway: controller.preferencesController.getIpfsGateway.bind(
+  //     controller.preferencesController,
+  //   ),
+  //   provider: controller.provider,
+  // });
 
-  // setup state persistence
-  pump(
-    storeAsStream(controller.store),
-    debounce(1000),
-    storeTransformStream(versionifyData),
-    createStreamSink(persistData),
-    (error) => {
-      log.error('MetaMask - Persistence pipeline failed', error);
-    },
-  );
+  // // setup state persistence
+  // pump(
+  //   storeAsStream(controller.store),
+  //   debounce(1000),
+  //   storeTransformStream(versionifyData),
+  //   createStreamSink(persistData),
+  //   (error) => {
+  //     log.error('MetaMask - Persistence pipeline failed', error);
+  //   },
+  // );
 
   /**
    * Assigns the given state to the versioned object (with metadata), and returns that.
@@ -317,139 +431,31 @@ function setupController(initState, initLangCode, remoteSourcePort) {
     }
   }
 
-  //
-  // connect to other contexts
-  //
-  if (isManifestV3() && remoteSourcePort) {
-    connectRemote(remoteSourcePort);
-  }
+  // const isClientOpenStatus = () => {
+  //   return (
+  //     popupIsOpen ||
+  //     Boolean(Object.keys(openMetamaskTabsIDs).length) ||
+  //     notificationIsOpen
+  //   );
+  // };
 
-  browser.runtime.onConnect.addListener(connectRemote);
-  browser.runtime.onConnectExternal.addListener(connectExternal);
-
-  const isClientOpenStatus = () => {
-    return (
-      popupIsOpen ||
-      Boolean(Object.keys(openMetamaskTabsIDs).length) ||
-      notificationIsOpen
-    );
-  };
-
-  const onCloseEnvironmentInstances = (isClientOpen, environmentType) => {
-    // if all instances of metamask are closed we call a method on the controller to stop gasFeeController polling
-    if (isClientOpen === false) {
-      controller.onClientClosed();
-      // otherwise we want to only remove the polling tokens for the environment type that has closed
-    } else {
-      // in the case of fullscreen environment a user might have multiple tabs open so we don't want to disconnect all of
-      // its corresponding polling tokens unless all tabs are closed.
-      if (
-        environmentType === ENVIRONMENT_TYPE_FULLSCREEN &&
-        Boolean(Object.keys(openMetamaskTabsIDs).length)
-      ) {
-        return;
-      }
-      controller.onEnvironmentTypeClosed(environmentType);
-    }
-  };
-
-  /**
-   * A runtime.Port object, as provided by the browser:
-   *
-   * @see https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/Port
-   * @typedef Port
-   * @type Object
-   */
-
-  /**
-   * Connects a Port to the MetaMask controller via a multiplexed duplex stream.
-   * This method identifies trusted (MetaMask) interfaces, and connects them differently from untrusted (web pages).
-   *
-   * @param {Port} remotePort - The port provided by a new context.
-   */
-  function connectRemote(remotePort) {
-    const processName = remotePort.name;
-
-    if (metamaskBlockedPorts.includes(remotePort.name)) {
-      return;
-    }
-
-    let isMetaMaskInternalProcess = false;
-    const sourcePlatform = getPlatform();
-
-    if (sourcePlatform === PLATFORM_FIREFOX) {
-      isMetaMaskInternalProcess = metamaskInternalProcessHash[processName];
-    } else {
-      isMetaMaskInternalProcess =
-        remotePort.sender.origin === `chrome-extension://${browser.runtime.id}`;
-    }
-
-    if (isMetaMaskInternalProcess) {
-      const portStream = new PortStream(remotePort);
-      // communication with popup
-      controller.isClientOpen = true;
-      controller.setupTrustedCommunication(portStream, remotePort.sender);
-
-      if (isManifestV3()) {
-        // Message below if captured by UI code in app/scripts/ui.js which will trigger UI initialisation
-        // This ensures that UI is initialised only after background is ready
-        // It fixes the issue of blank screen coming when extension is loaded, the issue is very frequent in MV3
-        remotePort.postMessage({ name: 'CONNECTION_READY' });
-      }
-
-      if (processName === ENVIRONMENT_TYPE_POPUP) {
-        popupIsOpen = true;
-        endOfStream(portStream, () => {
-          popupIsOpen = false;
-          const isClientOpen = isClientOpenStatus();
-          controller.isClientOpen = isClientOpen;
-          onCloseEnvironmentInstances(isClientOpen, ENVIRONMENT_TYPE_POPUP);
-        });
-      }
-
-      if (processName === ENVIRONMENT_TYPE_NOTIFICATION) {
-        notificationIsOpen = true;
-
-        endOfStream(portStream, () => {
-          notificationIsOpen = false;
-          const isClientOpen = isClientOpenStatus();
-          controller.isClientOpen = isClientOpen;
-          onCloseEnvironmentInstances(
-            isClientOpen,
-            ENVIRONMENT_TYPE_NOTIFICATION,
-          );
-        });
-      }
-
-      if (processName === ENVIRONMENT_TYPE_FULLSCREEN) {
-        const tabId = remotePort.sender.tab.id;
-        openMetamaskTabsIDs[tabId] = true;
-
-        endOfStream(portStream, () => {
-          delete openMetamaskTabsIDs[tabId];
-          const isClientOpen = isClientOpenStatus();
-          controller.isClientOpen = isClientOpen;
-          onCloseEnvironmentInstances(
-            isClientOpen,
-            ENVIRONMENT_TYPE_FULLSCREEN,
-          );
-        });
-      }
-    } else {
-      if (remotePort.sender && remotePort.sender.tab && remotePort.sender.url) {
-        const tabId = remotePort.sender.tab.id;
-        const url = new URL(remotePort.sender.url);
-        const { origin } = url;
-
-        remotePort.onMessage.addListener((msg) => {
-          if (msg.data && msg.data.method === 'eth_requestAccounts') {
-            requestAccountTabIds[origin] = tabId;
-          }
-        });
-      }
-      connectExternal(remotePort);
-    }
-  }
+  // const onCloseEnvironmentInstances = (isClientOpen, environmentType) => {
+  //   // if all instances of metamask are closed we call a method on the controller to stop gasFeeController polling
+  //   if (isClientOpen === false) {
+  //     controller.onClientClosed();
+  //     // otherwise we want to only remove the polling tokens for the environment type that has closed
+  //   } else {
+  //     // in the case of fullscreen environment a user might have multiple tabs open so we don't want to disconnect all of
+  //     // its corresponding polling tokens unless all tabs are closed.
+  //     if (
+  //       environmentType === ENVIRONMENT_TYPE_FULLSCREEN &&
+  //       Boolean(Object.keys(openMetamaskTabsIDs).length)
+  //     ) {
+  //       return;
+  //     }
+  //     controller.onEnvironmentTypeClosed(environmentType);
+  //   }
+  // };
 
   // communication with page or other extension
   function connectExternal(remotePort) {
@@ -465,39 +471,39 @@ function setupController(initState, initLangCode, remoteSourcePort) {
   //
 
   updateBadge();
-  controller.txController.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
-  controller.messageManager.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
-  controller.personalMessageManager.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
-  controller.decryptMessageManager.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
-  controller.encryptionPublicKeyManager.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
-  controller.typedMessageManager.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
-  controller.appStateController.on(
-    METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
-    updateBadge,
-  );
+  // controller.txController.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
+  // controller.messageManager.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
+  // controller.personalMessageManager.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
+  // controller.decryptMessageManager.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
+  // controller.encryptionPublicKeyManager.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
+  // controller.typedMessageManager.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
+  // controller.appStateController.on(
+  //   METAMASK_CONTROLLER_EVENTS.UPDATE_BADGE,
+  //   updateBadge,
+  // );
 
-  controller.controllerMessenger.subscribe(
-    METAMASK_CONTROLLER_EVENTS.APPROVAL_STATE_CHANGE,
-    updateBadge,
-  );
+  // controller.controllerMessenger.subscribe(
+  //   METAMASK_CONTROLLER_EVENTS.APPROVAL_STATE_CHANGE,
+  //   updateBadge,
+  // );
 
   /**
    * Updates the Web Extension's "badge" number, on the little fox in the toolbar.
@@ -520,27 +526,27 @@ function setupController(initState, initLangCode, remoteSourcePort) {
   }
 
   function getUnapprovedTransactionCount() {
-    const unapprovedTxCount = controller.txController.getUnapprovedTxCount();
-    const { unapprovedMsgCount } = controller.messageManager;
-    const { unapprovedPersonalMsgCount } = controller.personalMessageManager;
-    const { unapprovedDecryptMsgCount } = controller.decryptMessageManager;
-    const {
-      unapprovedEncryptionPublicKeyMsgCount,
-    } = controller.encryptionPublicKeyManager;
-    const { unapprovedTypedMessagesCount } = controller.typedMessageManager;
-    const pendingApprovalCount = controller.approvalController.getTotalApprovalCount();
-    const waitingForUnlockCount =
-      controller.appStateController.waitingForUnlock.length;
-    return (
-      unapprovedTxCount +
-      unapprovedMsgCount +
-      unapprovedPersonalMsgCount +
-      unapprovedDecryptMsgCount +
-      unapprovedEncryptionPublicKeyMsgCount +
-      unapprovedTypedMessagesCount +
-      pendingApprovalCount +
-      waitingForUnlockCount
-    );
+    // const unapprovedTxCount = controller.txController.getUnapprovedTxCount();
+    // const { unapprovedMsgCount } = controller.messageManager;
+    // const { unapprovedPersonalMsgCount } = controller.personalMessageManager;
+    // const { unapprovedDecryptMsgCount } = controller.decryptMessageManager;
+    // const {
+    //   unapprovedEncryptionPublicKeyMsgCount,
+    // } = controller.encryptionPublicKeyManager;
+    // const { unapprovedTypedMessagesCount } = controller.typedMessageManager;
+    // const pendingApprovalCount = controller.approvalController.getTotalApprovalCount();
+    // const waitingForUnlockCount =
+    //   controller.appStateController.waitingForUnlock.length;
+    // return (
+    //   unapprovedTxCount +
+    //   unapprovedMsgCount +
+    //   unapprovedPersonalMsgCount +
+    //   unapprovedDecryptMsgCount +
+    //   unapprovedEncryptionPublicKeyMsgCount +
+    //   unapprovedTypedMessagesCount +
+    //   pendingApprovalCount +
+    //   waitingForUnlockCount
+    // );
   }
 
   notificationManager.on(
@@ -555,58 +561,56 @@ function setupController(initState, initLangCode, remoteSourcePort) {
   );
 
   function rejectUnapprovedNotifications() {
-    Object.keys(
-      controller.txController.txStateManager.getUnapprovedTxList(),
-    ).forEach((txId) =>
-      controller.txController.txStateManager.setTxStatusRejected(txId),
-    );
-    controller.messageManager.messages
-      .filter((msg) => msg.status === 'unapproved')
-      .forEach((tx) =>
-        controller.messageManager.rejectMsg(
-          tx.id,
-          REJECT_NOTFICIATION_CLOSE_SIG,
-        ),
-      );
-    controller.personalMessageManager.messages
-      .filter((msg) => msg.status === 'unapproved')
-      .forEach((tx) =>
-        controller.personalMessageManager.rejectMsg(
-          tx.id,
-          REJECT_NOTFICIATION_CLOSE_SIG,
-        ),
-      );
-    controller.typedMessageManager.messages
-      .filter((msg) => msg.status === 'unapproved')
-      .forEach((tx) =>
-        controller.typedMessageManager.rejectMsg(
-          tx.id,
-          REJECT_NOTFICIATION_CLOSE_SIG,
-        ),
-      );
-    controller.decryptMessageManager.messages
-      .filter((msg) => msg.status === 'unapproved')
-      .forEach((tx) =>
-        controller.decryptMessageManager.rejectMsg(
-          tx.id,
-          REJECT_NOTFICIATION_CLOSE,
-        ),
-      );
-    controller.encryptionPublicKeyManager.messages
-      .filter((msg) => msg.status === 'unapproved')
-      .forEach((tx) =>
-        controller.encryptionPublicKeyManager.rejectMsg(
-          tx.id,
-          REJECT_NOTFICIATION_CLOSE,
-        ),
-      );
-
-    // Finally, reject all approvals managed by the ApprovalController
-    controller.approvalController.clear(
-      ethErrors.provider.userRejectedRequest(),
-    );
-
-    updateBadge();
+    // Object.keys(
+    //   controller.txController.txStateManager.getUnapprovedTxList(),
+    // ).forEach((txId) =>
+    //   controller.txController.txStateManager.setTxStatusRejected(txId),
+    // );
+    // controller.messageManager.messages
+    //   .filter((msg) => msg.status === 'unapproved')
+    //   .forEach((tx) =>
+    //     controller.messageManager.rejectMsg(
+    //       tx.id,
+    //       REJECT_NOTFICIATION_CLOSE_SIG,
+    //     ),
+    //   );
+    // controller.personalMessageManager.messages
+    //   .filter((msg) => msg.status === 'unapproved')
+    //   .forEach((tx) =>
+    //     controller.personalMessageManager.rejectMsg(
+    //       tx.id,
+    //       REJECT_NOTFICIATION_CLOSE_SIG,
+    //     ),
+    //   );
+    // controller.typedMessageManager.messages
+    //   .filter((msg) => msg.status === 'unapproved')
+    //   .forEach((tx) =>
+    //     controller.typedMessageManager.rejectMsg(
+    //       tx.id,
+    //       REJECT_NOTFICIATION_CLOSE_SIG,
+    //     ),
+    //   );
+    // controller.decryptMessageManager.messages
+    //   .filter((msg) => msg.status === 'unapproved')
+    //   .forEach((tx) =>
+    //     controller.decryptMessageManager.rejectMsg(
+    //       tx.id,
+    //       REJECT_NOTFICIATION_CLOSE,
+    //     ),
+    //   );
+    // controller.encryptionPublicKeyManager.messages
+    //   .filter((msg) => msg.status === 'unapproved')
+    //   .forEach((tx) =>
+    //     controller.encryptionPublicKeyManager.rejectMsg(
+    //       tx.id,
+    //       REJECT_NOTFICIATION_CLOSE,
+    //     ),
+    //   );
+    // // Finally, reject all approvals managed by the ApprovalController
+    // controller.approvalController.clear(
+    //   ethErrors.provider.userRejectedRequest(),
+    // );
+    // updateBadge();
   }
 
   return Promise.resolve();
@@ -669,3 +673,24 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
     platform.openExtensionInBrowser();
   }
 });
+
+/**
+ * Used to create a multiplexed stream for connecting to a trusted context,
+ * like our own user interfaces, which have the provider APIs, but also
+ * receive the exported API from this controller, which includes trusted
+ * functions, like the ability to approve transactions or sign messages.
+ *
+ * @param {*} connectionStream - The duplex stream to connect to.
+ * @param {MessageSender} sender - The sender of the messages on this stream
+ */
+function setupTrustedCommunication(connectionStream, sender) {
+  // setup multiplexing
+  const mux = setupMultiplex(connectionStream);
+  // connect features
+  // this.setupControllerConnection(mux.createStream('controller'));
+  // this.setupProviderConnection(
+  //   mux.createStream('provider'),
+  //   sender,
+  //   SUBJECT_TYPES.INTERNAL,
+  // );
+}
