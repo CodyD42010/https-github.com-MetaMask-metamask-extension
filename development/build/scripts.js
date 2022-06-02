@@ -177,7 +177,12 @@ function createScriptTasks({
   return { dev, test, testDev, prod };
 
   function createTasksForBuildJsExtension({ taskPrefix, devMode, testing }) {
-    const standardEntryPoints = ['background', 'ui', 'content-script'];
+    const standardEntryPoints = [
+      'background',
+      'ui',
+      'content-script',
+      'streams',
+    ];
     const standardSubtask = createTask(
       `${taskPrefix}:standardEntryPoints`,
       createFactoredBuild({
@@ -507,10 +512,11 @@ function createFactoredBuild({
         return;
       }
       const commonSet = sizeGroupMap.get('common');
+      const streamsSet = sizeGroupMap.get('streams');
       // create entry points for each file
       for (const [groupLabel, groupSet] of sizeGroupMap.entries()) {
         // skip "common" group, they are added to all other groups
-        if (groupSet === commonSet) {
+        if (groupSet === commonSet || groupSet === streamsSet) {
           continue;
         }
 

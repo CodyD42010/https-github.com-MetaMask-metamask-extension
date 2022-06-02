@@ -65,6 +65,7 @@ async function start() {
      */
     const messageListener = (message) => {
       if (message?.name === 'CONNECTION_READY') {
+        browser.runtime.sendMessage({ name: 'UI_READY' });
         if (isUIInitialised) {
           updateUiStreams();
         } else {

@@ -34,6 +34,7 @@ function importAllScripts() {
   }
   // eslint-disable-next-line
   self.scriptLoaded = true;
+  tryImport('./streams-0.js');
 
   const fileList = [
     // The list of files is injected at build time by replacing comment below with comma separated strings of file names
