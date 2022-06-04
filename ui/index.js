@@ -41,7 +41,7 @@ export const updateBackgroundConnection = (backgroundConnection) => {
   actions._setBackgroundConnection(backgroundConnection);
   backgroundConnection.onNotification((data) => {
     if (data.method === 'sendUpdate') {
-      reduxStore.dispatch(actions.updateMetamaskState(data.params[0]));
+      //  reduxStore.dispatch(actions.updateMetamaskState(data.params[0]));
     } else {
       throw new Error(
         `Internal JSON-RPC Notification Not Handled:\n\n ${JSON.stringify(
@@ -53,16 +53,20 @@ export const updateBackgroundConnection = (backgroundConnection) => {
 };
 
 export default function launchMetamaskUi(opts, cb) {
-  console.log('into launchMetamaskUi');
   const { backgroundConnection } = opts;
   actions._setBackgroundConnection(backgroundConnection);
   // eslint-disable-next-line
   chrome.storage.session.get('ui_state').then(({ ui_state }) => {
-    console.log('ui_state = ', ui_state);
     startApp(ui_state, backgroundConnection, opts).then((store) => {
       setupDebuggingHelpers(store);
       cb(null, store);
     });
+  });
+  // eslint-disable-next-line
+  chrome.storage.onChanged.addListener(function (changes, namespace) {
+    for (const [_1, { newValue }] of Object.entries(changes)) {
+      reduxStore.dispatch(actions.updateMetamaskState(newValue));
+    }
   });
 }
 
