@@ -1381,10 +1381,15 @@ export default class MetamaskController extends EventEmitter {
     const { vault } = this.keyringController.store.getState();
     const isInitialized = Boolean(vault);
 
-    return {
+    const newState = {
       isInitialized,
       ...this.memStore.getFlatState(),
     };
+
+    // eslint-disable-next-line
+    chrome.storage.session.set({ ui_state: newState });
+
+    return newState;
   }
 
   /**
@@ -3291,8 +3296,6 @@ export default class MetamaskController extends EventEmitter {
     // set up postStream transport
     outStream.on('data', createMetaRPCHandler(api, outStream));
     const handleUpdate = (update) => {
-      // eslint-disable-next-line
-      chrome.storage.session.set({ ui_state: update });
       if (outStream._writableState.ended) {
         return;
       }

@@ -64,8 +64,10 @@ export default function launchMetamaskUi(opts, cb) {
   });
   // eslint-disable-next-line
   chrome.storage.onChanged.addListener(function (changes, namespace) {
-    for (const [_1, { newValue }] of Object.entries(changes)) {
-      reduxStore.dispatch(actions.updateMetamaskState(newValue));
+    for (const [field, { newValue }] of Object.entries(changes)) {
+      if (field === 'ui_state') {
+        reduxStore.dispatch(actions.updateMetamaskState(newValue));
+      }
     }
   });
 }
