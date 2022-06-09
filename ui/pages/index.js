@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
 import * as Sentry from '@sentry/browser';
 import { I18nProvider, LegacyI18nProvider } from '../contexts/i18n';
+import { GasEstimateContextProvider } from '../contexts/gasEstimateContext';
 import {
   MetaMetricsProvider,
   LegacyMetaMetricsProvider,
@@ -40,17 +41,19 @@ class Index extends PureComponent {
 
     return (
       <Provider store={store}>
-        <HashRouter hashType="noslash">
-          <MetaMetricsProvider>
-            <LegacyMetaMetricsProvider>
-              <I18nProvider>
-                <LegacyI18nProvider>
-                  <Routes />
-                </LegacyI18nProvider>
-              </I18nProvider>
-            </LegacyMetaMetricsProvider>
-          </MetaMetricsProvider>
-        </HashRouter>
+        <GasEstimateContextProvider>
+          <HashRouter hashType="noslash">
+            <MetaMetricsProvider>
+              <LegacyMetaMetricsProvider>
+                <I18nProvider>
+                  <LegacyI18nProvider>
+                    <Routes />
+                  </LegacyI18nProvider>
+                </I18nProvider>
+              </LegacyMetaMetricsProvider>
+            </MetaMetricsProvider>
+          </HashRouter>
+        </GasEstimateContextProvider>
       </Provider>
     );
   }
