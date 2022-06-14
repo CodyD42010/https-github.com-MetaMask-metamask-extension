@@ -18,6 +18,7 @@ import { useGasFeeContext } from '../../../contexts/gasFee';
 import AppLoadingSpinner from '../app-loading-spinner';
 import EditGasItem from './edit-gas-item';
 import NetworkStatistics from './network-statistics';
+import { GasEstimateContextProvider } from '../../../contexts/gasEstimateContext';
 
 const EditGasFeePopover = () => {
   const { balanceError, editGasMode } = useGasFeeContext();
@@ -89,7 +90,9 @@ const EditGasFeePopover = () => {
               <EditGasItem priorityLevel={PRIORITY_LEVELS.CUSTOM} />
             </Box>
             <Box>
-              <NetworkStatistics />
+              <GasEstimateContextProvider>
+                <NetworkStatistics />
+              </GasEstimateContextProvider>
               <Typography
                 className="edit-gas-fee-popover__know-more"
                 align="center"

@@ -11,6 +11,7 @@ export const GasEstimateContextProvider = ({ children }) => {
   chrome.storage.onChanged.addListener((changes) => {
     for (const [field, { newValue }] of Object.entries(changes)) {
       if (field === 'ui_state') {
+        console.log('-------------- UPDATING ESTIMATE -----------------');
         setGasEstimateType(newValue.gasEstimateType);
         setGasFeeEstimates(newValue.gasFeeEstimates);
       }

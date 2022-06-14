@@ -989,6 +989,8 @@ export default class ConfirmTransactionBase extends Component {
     !isLegacyTransaction(this.props.txData);
 
   render() {
+    console.log('---------- into ConfirmTransactionBase ----------');
+
     const { t } = this.context;
     const {
       fromName,

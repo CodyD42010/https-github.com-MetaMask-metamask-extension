@@ -7,14 +7,14 @@ import {
 import { isNullish } from '../../../../helpers/utils/util';
 import { formatGasFeeOrFeeRange } from '../../../../helpers/utils/gas';
 import { I18nContext } from '../../../../contexts/i18n';
-import { useGasFeeContext } from '../../../../contexts/gasFee';
+import { useGasEstimateContext } from '../../../../contexts/gasEstimateContext';
 import Typography from '../../../ui/typography/typography';
 import { BaseFeeTooltip, PriorityFeeTooltip } from './tooltips';
 import StatusSlider from './status-slider';
 
 const NetworkStatistics = () => {
   const t = useContext(I18nContext);
-  const { gasFeeEstimates } = useGasFeeContext();
+  const { gasFeeEstimates } = useGasEstimateContext();
   const formattedLatestBaseFee = formatGasFeeOrFeeRange(
     gasFeeEstimates?.estimatedBaseFee,
     {
