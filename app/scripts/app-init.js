@@ -1,8 +1,20 @@
 // eslint-disable-next-line import/unambiguous
+let loadTimes = [];
+const enableLoadtimeLogs = true;
+
 function tryImport(...fileNames) {
   try {
+    const startTime = new Date().getTime();
     // eslint-disable-next-line
     importScripts(...fileNames);
+    const endTime = new Date().getTime();
+    loadTimes.push({
+      name: fileNames[0],
+      value: endTime - startTime,
+      children: [],
+      startTime,
+      endTime,
+    });
     return true;
   } catch (e) {
     console.error(e);
@@ -12,6 +24,7 @@ function tryImport(...fileNames) {
 
 function importAllScripts() {
   const startImportScriptsTime = Date.now();
+  loadTimes = [];
   // value of applyLavaMoat below is dynamically replaced at build time with actual value
   const applyLavaMoat = true;
 
@@ -38,12 +51,29 @@ function importAllScripts() {
 
   fileList.forEach((fileName) => tryImport(fileName));
 
+  const endImportScriptsTime = Date.now();
+
   // for performance metrics/reference
   console.log(
     `SCRIPTS IMPORT COMPLETE in Seconds: ${
       (Date.now() - startImportScriptsTime) / 1000
     }`,
   );
+  if (enableLoadtimeLogs) {
+    console.log(
+      `Time for each import: ${JSON.stringify(
+        {
+          name: 'Total',
+          children: loadTimes,
+          startTime: startImportScriptsTime,
+          endTime: endImportScriptsTime,
+          value: endImportScriptsTime - startImportScriptsTime,
+        },
+        undefined,
+        '    ',
+      )}`,
+    );
+  }
 }
 
 // Placing script import call here ensures that scripts are inported each time service worker is activated.
