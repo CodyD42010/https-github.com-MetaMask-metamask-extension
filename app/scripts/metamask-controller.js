@@ -224,11 +224,13 @@ export default class MetamaskController extends EventEmitter {
       showApprovalRequest: opts.showUserConfirmation,
     });
 
-    this.networkController = new NetworkController(initState.NetworkController);
-    this.networkController.setInfuraProjectId(opts.infuraProjectId);
+    this.networkController = new NetworkController({
+      ...initState.NetworkController,
+      infuraProjectId: opts.infuraProjectId,
+    });
 
     // now we can initialize the RPC provider, which other controllers require
-    this.initializeProvider();
+    this.initializeProvider(opts.infuraProjectId);
     this.provider = this.networkController.getProviderAndBlockTracker().provider;
     this.blockTracker = this.networkController.getProviderAndBlockTracker().blockTracker;
 
@@ -1339,9 +1341,10 @@ export default class MetamaskController extends EventEmitter {
   /**
    * Constructor helper: initialize a provider.
    */
-  initializeProvider() {
+  initializeProvider(infuraProjectId) {
     const version = this.platform.getVersion();
     const providerOpts = {
+      infuraProjectId,
       static: {
         eth_syncing: false,
         web3_clientVersion: `MetaMask/v${version}`,
