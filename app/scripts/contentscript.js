@@ -180,37 +180,53 @@ const initPhishingStreams = () => {
   phishingExtPort.onDisconnect.addListener(resetPhishingStreamAndListeners);
 };
 
+let pageStream;
 /**
  * INPAGE - EXTENSION STREAM LOGIC
  */
 
-const setupPageStreams = () => {
-  // the transport-specific streams for communication between inpage and background
-  const pageStream = new WindowPostMessageStream({
-    name: CONTENT_SCRIPT,
-    target: INPAGE,
-  });
+// const setupPageStreams = () => {
+//   // the transport-specific streams for communication between inpage and background
+//   const pageStream = new WindowPostMessageStream({
+//     name: CONTENT_SCRIPT,
+//     target: INPAGE,
+//   });
 
-  // create and connect channel muxers
-  // so we can handle the channels individually
-  pageMux = new ObjectMultiplex();
-  pageMux.setMaxListeners(25);
+//   // create and connect channel muxers
+//   // so we can handle the channels individually
+//   pageMux = new ObjectMultiplex();
+//   pageMux.setMaxListeners(25);
 
-  pump(pageMux, pageStream, pageMux, (err) =>
-    logStreamDisconnectWarning('MetaMask Inpage Multiplex', err),
-  );
+//   pump(pageMux, pageStream, pageMux, (err) =>
+//     logStreamDisconnectWarning('MetaMask Inpage Multiplex', err),
+//   );
 
-  pageChannel = pageMux.createStream(PROVIDER);
-};
+//   pageChannel = pageMux.createStream(PROVIDER);
+// };
 
 const setupExtensionStreams = () => {
   extensionPort = browser.runtime.connect({ name: CONTENT_SCRIPT });
+  pageStream = new WindowPostMessageStream({
+    name: CONTENT_SCRIPT,
+    target: INPAGE,
+  });
   extensionStream = new PortStream(extensionPort);
   extensionPort.onMessage.addListener(initExtensionStreams);
+  extensionPort.onMessage.addListener((msg) => {
+    console.log('msg = ', msg);
+  });
 };
 
 function initExtensionStreams(message) {
   if (message.data.method === 'METAMASK_EXTENSION_READY') {
+    pageMux = new ObjectMultiplex();
+    pageMux.setMaxListeners(25);
+
+    pump(pageMux, pageStream, pageMux, (err) =>
+      logStreamDisconnectWarning('MetaMask Inpage Multiplex', err),
+    );
+
+    pageChannel = pageMux.createStream(PROVIDER);
     // create and connect channel muxers
     // so we can handle the channels individually
     extensionMux = new ObjectMultiplex();
@@ -242,7 +258,11 @@ function initExtensionStreams(message) {
 
 /** Destroys all of the extension streams */
 const destroyExtensionStreams = () => {
+  pageMux?.removeAllListeners();
+  pageMux?.destroy();
+
   pageChannel?.removeAllListeners();
+  pageChannel?.destroy();
 
   extensionMux?.removeAllListeners();
   extensionMux?.destroy();
@@ -359,7 +379,7 @@ const resetStreamAndListeners = () => {
  * reset the streams if the service worker resets.
  */
 const initStreams = () => {
-  setupPageStreams();
+  // setupPageStreams();
   setupExtensionStreams();
 
   // TODO:LegacyProvider: Delete

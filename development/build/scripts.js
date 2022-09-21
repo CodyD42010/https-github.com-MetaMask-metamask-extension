@@ -252,10 +252,10 @@ function createScriptTasks({
     );
 
     // this can run whenever
-    const disableConsoleSubtask = createTask(
-      `${taskPrefix}:disable-console`,
-      createDisableConsoleBundle({ buildTarget }),
-    );
+    // const disableConsoleSubtask = createTask(
+    //   `${taskPrefix}:disable-console`,
+    //   createDisableConsoleBundle({ buildTarget }),
+    // );
 
     // this can run whenever
     const installSentrySubtask = createTask(
@@ -283,7 +283,7 @@ function createScriptTasks({
     const allSubtasks = [
       standardSubtask,
       contentscriptSubtask,
-      disableConsoleSubtask,
+      // disableConsoleSubtask,
       installSentrySubtask,
     ].map((subtask) =>
       runInChildProcess(subtask, {
@@ -298,28 +298,28 @@ function createScriptTasks({
     return composeParallel(initiateLiveReload, ...allSubtasks);
   }
 
-  /**
-   * Create a bundle for the "disable-console" module.
-   *
-   * @param {object} options - The build options.
-   * @param {BUILD_TARGETS} options.buildTarget - The current build target.
-   * @returns {Function} A function that creates the bundle.
-   */
-  function createDisableConsoleBundle({ buildTarget }) {
-    const label = 'disable-console';
-    return createNormalBundle({
-      browserPlatforms,
-      buildTarget,
-      buildType,
-      destFilepath: `${label}.js`,
-      entryFilepath: `./app/scripts/${label}.js`,
-      ignoredFiles,
-      label,
-      policyOnly,
-      shouldLintFenceFiles,
-      version,
-    });
-  }
+  // /**
+  //  * Create a bundle for the "disable-console" module.
+  //  *
+  //  * @param {object} options - The build options.
+  //  * @param {BUILD_TARGETS} options.buildTarget - The current build target.
+  //  * @returns {Function} A function that creates the bundle.
+  //  */
+  // function createDisableConsoleBundle({ buildTarget }) {
+  //   const label = 'disable-console';
+  //   return createNormalBundle({
+  //     browserPlatforms,
+  //     buildTarget,
+  //     buildType,
+  //     destFilepath: `${label}.js`,
+  //     entryFilepath: `./app/scripts/${label}.js`,
+  //     ignoredFiles,
+  //     label,
+  //     policyOnly,
+  //     shouldLintFenceFiles,
+  //     version,
+  //   });
+  // }
 
   /**
    * Create a bundle for the "sentry-install" module.

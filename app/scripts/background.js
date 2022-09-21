@@ -455,7 +455,7 @@ function setupController(initState, initLangCode, remoteSourcePort) {
     if (metamaskBlockedPorts.includes(remotePort.name)) {
       return;
     }
-
+    console.log('---------------', browser.runtime.id);
     let isMetaMaskInternalProcess = false;
     const sourcePlatform = getPlatform();
 
