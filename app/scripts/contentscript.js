@@ -191,6 +191,10 @@ const setupPageStreams = () => {
     target: INPAGE,
   });
 
+  pageStream.on('data', () => {
+    browser.runtime.sendMessage({ name: WORKER_KEEP_ALIVE_MESSAGE });
+  });
+
   // create and connect channel muxers
   // so we can handle the channels individually
   pageMux = new ObjectMultiplex();
@@ -335,6 +339,7 @@ const destroyLegacyExtensionStreams = () => {
  * and creates a new event listener to the reestablished extension port.
  */
 const resetStreamAndListeners = () => {
+  console.log('----- into resetStreamAndListeners -----');
   extensionPort.onDisconnect.removeListener(resetStreamAndListeners);
 
   destroyExtensionStreams();
@@ -446,11 +451,11 @@ function redirectToPhishingWarning(data = {}) {
   window.location.href = `${baseUrl}#${querystring}`;
 }
 
-const initKeepWorkerAlive = () => {
-  setInterval(() => {
-    browser.runtime.sendMessage({ name: WORKER_KEEP_ALIVE_MESSAGE });
-  }, WORKER_KEEP_ALIVE_INTERVAL);
-};
+// const initKeepWorkerAlive = () => {
+//   setInterval(() => {
+//     browser.runtime.sendMessage({ name: WORKER_KEEP_ALIVE_MESSAGE });
+//   }, WORKER_KEEP_ALIVE_INTERVAL);
+// };
 
 const start = () => {
   const isDetectedPhishingSite =
@@ -464,7 +469,7 @@ const start = () => {
 
   if (shouldInjectProvider()) {
     if (isManifestV3) {
-      initKeepWorkerAlive();
+      // initKeepWorkerAlive();
     } else {
       injectScript(inpageBundle);
     }
