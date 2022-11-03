@@ -120,8 +120,8 @@ async function start() {
      * Code below ensures that UI is rendered only after CONNECTION_READY message is received thus background is ready.
      * In case the UI is already rendered, only update the streams.
      */
-    const messageListener = async (message) => {
-      if (message?.name === 'CONNECTION_READY') {
+    const messageListener = async (msg) => {
+      if (msg.data?.method === 'startSync') {
         if (isUIInitialised) {
           // Currently when service worker is revived we create new streams
           // in later version we might try to improve it by reviving same streams.
@@ -227,7 +227,7 @@ async function start() {
     // resetExtensionStreamAndListeners takes care to remove listeners from closed streams
     // it also creates new streams and attach event listeners to them
     const resetExtensionStreamAndListeners = () => {
-      extensionPort.onMessage.removeListener(messageListener);
+      // extensionPort.onMessage.removeListener(messageListener);
       extensionPort.onDisconnect.removeListener(
         resetExtensionStreamAndListeners,
       );
@@ -237,7 +237,8 @@ async function start() {
 
       extensionPort = browser.runtime.connect({ name: windowType });
       connectionStream = new PortStream(extensionPort);
-      extensionPort.onMessage.addListener(messageListener);
+      connectionStream.on('data', messageListener);
+      // extensionPort.onMessage.addListener(messageListener);
       extensionPort.onDisconnect.addListener(resetExtensionStreamAndListeners);
     };
 

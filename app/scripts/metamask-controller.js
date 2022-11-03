@@ -3456,6 +3456,17 @@ export default class MetamaskController extends EventEmitter {
       });
     };
     this.on('update', handleUpdate);
+    const startSync = () => {
+      if (outStream._writableState.ended) {
+        return;
+      }
+      // send notification to client-side
+      outStream.write({
+        jsonrpc: '2.0',
+        method: 'startSync',
+      });
+    };
+    this.on('unlock', startSync);
     outStream.on('end', () => {
       this.activeControllerConnections -= 1;
       this.emit(
