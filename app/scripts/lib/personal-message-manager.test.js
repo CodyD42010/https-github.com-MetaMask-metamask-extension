@@ -181,12 +181,11 @@ describe('Personal Message Manager', () => {
 
     it("should throw an error if the SIWE message's domain doesn't match", async () => {
       const request = { origin: 'https://mismatched-domain.com' };
-      const { host: siweDomain } = new URL(origin);
-      const { host: browserDomain } = new URL(request.origin);
-      const expectedError = `SIWE domain is not valid: "${browserDomain}" !== "${siweDomain}"`;
-      expect(async () => {
-        await messageManager.addUnapprovedMessage(msgParams, request);
-      }).toThrow(expectedError);
+      const expectedError =
+        'SIWE domain is not valid: "mismatched-domain.com" !== "localhost:8080"';
+      await expect(
+        messageManager.addUnapprovedMessage(msgParams, request),
+      ).rejects.toThrow(expectedError);
     });
   });
 });
