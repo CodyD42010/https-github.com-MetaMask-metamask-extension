@@ -5,8 +5,8 @@ import {
   createBlockCacheMiddleware,
   createInflightCacheMiddleware,
   createBlockTrackerInspectorMiddleware,
-  providerFromMiddleware,
 } from '@metamask/eth-json-rpc-middleware';
+import { providerFromMiddleware } from '@metamask/eth-json-rpc-provider';
 
 import { createInfuraMiddleware } from '@metamask/eth-json-rpc-infura';
 import { PollingBlockTracker } from 'eth-block-tracker';
