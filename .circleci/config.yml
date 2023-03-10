@@ -391,7 +391,7 @@ jobs:
           condition:
             not:
               matches:
-                pattern: /^master$/
+                pattern: /^master5$/
                 value: << pipeline.git.branch >>
           steps:
             - run:
