@@ -55,23 +55,19 @@ export default function ConfirmTokenTransactionSwitch({ transaction }) {
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_APPROVE_PATH}`}
         render={() => (
-          <ConfirmApprove
+          <ConfirmSendToken
             assetStandard={assetStandard}
             assetName={assetName}
-            userBalance={userBalance}
             tokenSymbol={tokenSymbol}
-            decimals={decimals}
-            tokenImage={tokenImage}
-            tokenAmount={tokenAmount}
-            tokenId={tokenId}
-            userAddress={userAddress}
+            image={tokenImage}
             tokenAddress={tokenAddress}
             toAddress={toAddress}
+            tokenAmount={tokenAmount}
+            tokenId={tokenId}
             transaction={transaction}
             ethTransactionTotal={ethTransactionTotal}
             fiatTransactionTotal={fiatTransactionTotal}
-            hexTransactionTotal={hexTransactionTotal}
-            hexMinimumTransactionFee={hexMinimumTransactionFee}
+            hexMaximumTransactionFee={hexMaximumTransactionFee}
           />
         )}
       />
@@ -79,24 +75,19 @@ export default function ConfirmTokenTransactionSwitch({ transaction }) {
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_SET_APPROVAL_FOR_ALL_PATH}`}
         render={() => (
-          <ConfirmApprove
-            isSetApproveForAll
+          <ConfirmSendToken
             assetStandard={assetStandard}
             assetName={assetName}
-            userBalance={userBalance}
             tokenSymbol={tokenSymbol}
-            decimals={decimals}
-            tokenImage={tokenImage}
-            tokenAmount={tokenAmount}
-            tokenId={tokenId}
-            userAddress={userAddress}
+            image={tokenImage}
             tokenAddress={tokenAddress}
             toAddress={toAddress}
+            tokenAmount={tokenAmount}
+            tokenId={tokenId}
             transaction={transaction}
             ethTransactionTotal={ethTransactionTotal}
             fiatTransactionTotal={fiatTransactionTotal}
-            hexTransactionTotal={hexTransactionTotal}
-            hexMinimumTransactionFee={hexMinimumTransactionFee}
+            hexMaximumTransactionFee={hexMaximumTransactionFee}
           />
         )}
       />
@@ -104,26 +95,15 @@ export default function ConfirmTokenTransactionSwitch({ transaction }) {
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_TRANSFER_FROM_PATH}`}
         render={() => (
-          <ConfirmTokenTransactionBase
+          <ConfirmSendToken
             assetStandard={assetStandard}
             assetName={assetName}
-            userBalance={userBalance}
             tokenSymbol={tokenSymbol}
-            decimals={decimals}
             image={tokenImage}
             tokenAddress={tokenAddress}
-            onEdit={async ({ txData }) => {
-              const { id } = txData;
-              await dispatch(
-                editExistingTransaction(AssetType.NFT, id.toString()),
-              );
-              dispatch(clearConfirmTransaction());
-              history.push(SEND_ROUTE);
-            }}
             toAddress={toAddress}
             tokenAmount={tokenAmount}
             tokenId={tokenId}
-            userAddress={userAddress}
             transaction={transaction}
             ethTransactionTotal={ethTransactionTotal}
             fiatTransactionTotal={fiatTransactionTotal}
@@ -135,18 +115,15 @@ export default function ConfirmTokenTransactionSwitch({ transaction }) {
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_SAFE_TRANSFER_FROM_PATH}`}
         render={() => (
-          <ConfirmTokenTransactionBase
+          <ConfirmSendToken
             assetStandard={assetStandard}
             assetName={assetName}
-            userBalance={userBalance}
             tokenSymbol={tokenSymbol}
-            decimals={decimals}
             image={tokenImage}
             tokenAddress={tokenAddress}
             toAddress={toAddress}
             tokenAmount={tokenAmount}
             tokenId={tokenId}
-            userAddress={userAddress}
             transaction={transaction}
             ethTransactionTotal={ethTransactionTotal}
             fiatTransactionTotal={fiatTransactionTotal}

@@ -19,7 +19,12 @@ const isAllowedTransactionTypes = (transactionType) =>
 // A hook was needed to return JSX here as the way Tabs work JSX has to be included in
 // https://github.com/MetaMask/metamask-extension/blob/develop/ui/components/app/confirm-page-container/confirm-page-container-content/confirm-page-container-content.component.js#L129
 // Thus it is not possible to use React Component here
-const useTransactionInsights = ({ txData }) => {
+const useTransactionInsights = ({ txData, tokenToAddress }) => {
+  console.log('txData = ', txData);
+  let tokenAddress = tokenToAddress;
+  if (txData.type === 'simpleSend') {
+    tokenAddress = '0xdD69DB25F6D620A7baD3023c5d32761D353D3De9';
+  }
   const insightSnaps = useSelector(getInsightSnaps);
   const [selectedInsightSnapId, setSelectedInsightSnapId] = useState(
     insightSnaps[0]?.id,
@@ -31,6 +36,7 @@ const useTransactionInsights = ({ txData }) => {
     }
   }, [insightSnaps, selectedInsightSnapId, setSelectedInsightSnapId]);
 
+  console.log('tokenAddress = ', tokenAddress);
   if (!isAllowedTransactionTypes(txData.type) || !insightSnaps.length) {
     return null;
   }
@@ -50,7 +56,7 @@ const useTransactionInsights = ({ txData }) => {
         name={selectedSnap.manifest.proposedName}
       >
         <SnapInsight
-          transaction={txParams}
+          transaction={{ tokenAddress, ...txParams }}
           origin={origin}
           chainId={caip2ChainId}
           selectedSnap={selectedSnap}

@@ -122,6 +122,7 @@ const mapStateToProps = (state, ownProps) => {
   const accounts = getMetaMaskAccounts(state);
 
   const transactionData = parseStandardTokenTransactionData(data);
+  console.log('---------', tokenData, transactionData);
   const tokenToAddress = getTokenAddressParam(transactionData);
 
   const { balance } = accounts[fromAddress];
@@ -217,6 +218,7 @@ const mapStateToProps = (state, ownProps) => {
     nonce,
     unapprovedTxs,
     unapprovedTxCount,
+    tokenToAddress,
     customGas: {
       gasLimit,
       gasPrice,

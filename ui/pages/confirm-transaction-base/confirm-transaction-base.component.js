@@ -132,6 +132,7 @@ export default class ConfirmTransactionBase extends Component {
     isApprovalOrRejection: PropTypes.bool,
     assetStandard: PropTypes.string,
     useCurrencyRateCheck: PropTypes.bool,
+    tokenToAddress: PropTypes.string,
   };
 
   state = {
@@ -802,6 +803,7 @@ export default class ConfirmTransactionBase extends Component {
       isApprovalOrRejection,
       assetStandard,
       title,
+      tokenToAddress,
     } = this.props;
     const {
       submitting,
@@ -876,6 +878,7 @@ export default class ConfirmTransactionBase extends Component {
           errorKey={errorKey}
           hasSimulationError={hasSimulationError}
           warning={submitWarning}
+          tokenToAddress={tokenToAddress}
           disabled={
             renderSimulationFailureWarning ||
             !valid ||

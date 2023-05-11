@@ -99,6 +99,7 @@ const ConfirmPageContainer = (props) => {
     txData,
     assetStandard,
     isApprovalOrRejection,
+    tokenToAddress,
   } = props;
 
   const t = useI18nContext();
@@ -150,6 +151,7 @@ const ConfirmPageContainer = (props) => {
   // this code can bemoved to it.
   const insightComponent = useTransactionInsights({
     txData,
+    tokenToAddress,
   });
   ///: END:ONLY_INCLUDE_IN
 
@@ -398,6 +400,7 @@ ConfirmPageContainer.propTypes = {
   supportsEIP1559: PropTypes.bool,
   nativeCurrency: PropTypes.string,
   isApprovalOrRejection: PropTypes.bool,
+  tokenToAddress: PropTypes.string,
 };
 
 export default ConfirmPageContainer;
