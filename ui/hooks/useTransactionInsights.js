@@ -25,6 +25,16 @@ const useTransactionInsights = ({ txData, tokenToAddress }) => {
   if (txData.type === 'simpleSend') {
     contractAddress = '0xdD69DB25F6D620A7baD3023c5d32761D353D3De9';
   }
+  if (
+    txData.type === 'approve' ||
+    txData.type === 'transfer' ||
+    txData.type === 'transferFrom' ||
+    txData.type === 'contractInteraction' ||
+    txData.type === 'setapprovalforall'
+  ) {
+    contractAddress = txData?.txParams?.to;
+  }
+
   const insightSnaps = useSelector(getInsightSnaps);
   const [selectedInsightSnapId, setSelectedInsightSnapId] = useState(
     insightSnaps[0]?.id,
