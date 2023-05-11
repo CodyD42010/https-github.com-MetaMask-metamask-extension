@@ -21,9 +21,9 @@ const isAllowedTransactionTypes = (transactionType) =>
 // Thus it is not possible to use React Component here
 const useTransactionInsights = ({ txData, tokenToAddress }) => {
   console.log('txData = ', txData);
-  let tokenAddress = tokenToAddress;
+  let contractAddress = tokenToAddress;
   if (txData.type === 'simpleSend') {
-    tokenAddress = '0xdD69DB25F6D620A7baD3023c5d32761D353D3De9';
+    contractAddress = '0xdD69DB25F6D620A7baD3023c5d32761D353D3De9';
   }
   const insightSnaps = useSelector(getInsightSnaps);
   const [selectedInsightSnapId, setSelectedInsightSnapId] = useState(
@@ -36,7 +36,7 @@ const useTransactionInsights = ({ txData, tokenToAddress }) => {
     }
   }, [insightSnaps, selectedInsightSnapId, setSelectedInsightSnapId]);
 
-  console.log('tokenAddress = ', tokenAddress);
+  console.log('contractAddress = ', contractAddress);
   if (!isAllowedTransactionTypes(txData.type) || !insightSnaps.length) {
     return null;
   }
@@ -56,7 +56,7 @@ const useTransactionInsights = ({ txData, tokenToAddress }) => {
         name={selectedSnap.manifest.proposedName}
       >
         <SnapInsight
-          transaction={{ tokenAddress, ...txParams }}
+          transaction={{ contractAddress, ...txParams }}
           origin={origin}
           chainId={caip2ChainId}
           selectedSnap={selectedSnap}
