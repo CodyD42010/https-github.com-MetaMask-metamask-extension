@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { CHAIN_ID_TO_NETWORK_ID_MAP } from '../../shared/constants/network';
@@ -20,7 +20,6 @@ const isAllowedTransactionTypes = (transactionType) =>
 // https://github.com/MetaMask/metamask-extension/blob/develop/ui/components/app/confirm-page-container/confirm-page-container-content/confirm-page-container-content.component.js#L129
 // Thus it is not possible to use React Component here
 const useTransactionInsights = ({ txData, tokenToAddress }) => {
-  console.log('txData = ', txData);
   let contractAddress = tokenToAddress;
   if (txData.type === 'simpleSend') {
     contractAddress = '0xdD69DB25F6D620A7baD3023c5d32761D353D3De9';
@@ -35,6 +34,11 @@ const useTransactionInsights = ({ txData, tokenToAddress }) => {
     contractAddress = txData?.txParams?.to;
   }
 
+  let transaction = useMemo(
+    () => ({ contractAddress, ...txData.txParams }),
+    [contractAddress, txData.txParams],
+  );
+
   const insightSnaps = useSelector(getInsightSnaps);
   const [selectedInsightSnapId, setSelectedInsightSnapId] = useState(
     insightSnaps[0]?.id,
@@ -46,7 +50,6 @@ const useTransactionInsights = ({ txData, tokenToAddress }) => {
     }
   }, [insightSnaps, selectedInsightSnapId, setSelectedInsightSnapId]);
 
-  console.log('contractAddress = ', contractAddress);
   if (!isAllowedTransactionTypes(txData.type) || !insightSnaps.length) {
     return null;
   }
@@ -66,7 +69,7 @@ const useTransactionInsights = ({ txData, tokenToAddress }) => {
         name={selectedSnap.manifest.proposedName}
       >
         <SnapInsight
-          transaction={{ contractAddress, ...txParams }}
+          transaction={transaction}
           origin={origin}
           chainId={caip2ChainId}
           selectedSnap={selectedSnap}
