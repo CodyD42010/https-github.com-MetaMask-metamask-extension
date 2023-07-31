@@ -1,5 +1,3 @@
-import { PPOM } from '@blockaid/ppom';
-
 import { PPOMController } from '@metamask/ppom-validator';
 
 const ConfirmationMethods = Object.freeze([
@@ -30,7 +28,7 @@ export function createPPOMMiddleware(ppomController: PPOMController) {
     try {
       if (ConfirmationMethods.includes(req.method)) {
         // eslint-disable-next-line require-atomic-updates
-        req.ppomResponse = await ppomController.usePPOM(async (ppom: PPOM) => {
+        req.ppomResponse = await ppomController.usePPOM(async (ppom: any) => {
           return ppom.validateJsonRpc(req);
         });
       }

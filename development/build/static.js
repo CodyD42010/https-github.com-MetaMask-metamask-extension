@@ -202,13 +202,13 @@ function getCopyTargets(
     },
   ];
 
-  if (activeFeatures.includes('blockaid')) {
-    allCopyTargets.push({
-      src: getPathInsideNodeModules('@blockaid/ppom', '/'),
-      pattern: '*.wasm',
-      dest: '',
-    });
-  }
+  // if (activeFeatures.includes('blockaid')) {
+  //   allCopyTargets.push({
+  //     src: getPathInsideNodeModules('@blockaid/ppom', '/'),
+  //     pattern: '*.wasm',
+  //     dest: '',
+  //   });
+  // }
 
   const copyTargetsDev = [
     ...allCopyTargets,
