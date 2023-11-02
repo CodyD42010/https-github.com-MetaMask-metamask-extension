@@ -38,6 +38,8 @@ describe('Unlock wallet', function () {
         await unlockWallet(driver);
         await waitForAccountRendered(driver);
 
+        console.log('process.env', process.env);
+
         let mockedRequests;
         await driver.wait(async () => {
           const isPending = await mockedEndpoint.isPending();
