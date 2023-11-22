@@ -5162,7 +5162,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/obs-store@npm:^8.0.0, @metamask/obs-store@npm:^8.1.0":
+"@metamask/obs-store@npm:^8.0.0":
   version: 8.1.0
   resolution: "@metamask/obs-store@npm:8.1.0"
   dependencies:
@@ -24916,7 +24916,7 @@ __metadata:
     "@metamask/name-controller": "npm:^4.2.0"
     "@metamask/network-controller": "patch:@metamask/network-controller@npm%3A18.1.0#~/.yarn/patches/@metamask-network-controller-npm-18.1.0-680908c29a.patch"
     "@metamask/notification-controller": "npm:^3.0.0"
-    "@metamask/obs-store": "npm:^8.1.0"
+    "@metamask/obs-store": "npm:^9.0.0"
     "@metamask/permission-controller": "npm:^9.0.1"
     "@metamask/permission-log-controller": "npm:^1.0.0"
     "@metamask/phishing-controller": "npm:^8.0.2"
