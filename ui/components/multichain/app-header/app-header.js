@@ -43,7 +43,6 @@ import {
   getTestNetworkBackgroundColor,
   getSelectedInternalAccount,
   getUnapprovedTransactions,
-  ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
   getTheme,
   ///: END:ONLY_INCLUDE_IF
 } from '../../../selectors';
@@ -56,7 +55,10 @@ import {
 } from '../../../store/actions';
 import MetafoxLogo from '../../ui/metafox-logo';
 import { getEnvironmentType } from '../../../../app/scripts/lib/util';
-import { ENVIRONMENT_TYPE_POPUP } from '../../../../shared/constants/app';
+import {
+  ENVIRONMENT_TYPE_POPUP,
+  ENVIRONMENT_TYPE_SIDEPANEL,
+} from '../../../../shared/constants/app';
 import ConnectedStatusIndicator from '../../app/connected-status-indicator';
 import { useI18nContext } from '../../../hooks/useI18nContext';
 import {
@@ -74,6 +76,7 @@ export const AppHeader = ({ location }) => {
   const [multichainProductTourStep, setMultichainProductTourStep] = useState(1);
   const menuRef = useRef(false);
   const origin = useSelector(getOriginOfCurrentTab);
+  const pendingConfirmations = useSelector(getUnapprovedConfirmations);
   const history = useHistory();
   const isHomePage = location.pathname === DEFAULT_ROUTE;
   const isUnlocked = useSelector(getIsUnlocked);
@@ -100,6 +103,7 @@ export const AppHeader = ({ location }) => {
   const checksummedCurrentAddress = toChecksumHexAddress(currentAddress);
   const [copied, handleCopy] = useCopyToClipboard(MINUTE);
 
+  const isSidePanel = getEnvironmentType() === ENVIRONMENT_TYPE_SIDEPANEL;
   const popupStatus = getEnvironmentType() === ENVIRONMENT_TYPE_POPUP;
   const showConnectedStatus =
     process.env.MULTICHAIN ||
@@ -164,6 +168,8 @@ export const AppHeader = ({ location }) => {
   // look as desired
   const headerBottomMargin = !popupStatus && disableNetworkPicker ? 4 : 0;
 
+  const hideAppHeader = isSidePanel && pendingConfirmations.length > 0;
+
   return (
     <>
       {isUnlocked && !popupStatus ? (
@@ -185,7 +191,7 @@ export const AppHeader = ({ location }) => {
         </Box>
       ) : null}
       <Box
-        display={Display.Flex}
+        display={hideAppHeader ? Display.None : Display.Flex}
         className={classnames('multichain-app-header', {
           'multichain-app-header-shadow': !isUnlocked || popupStatus,
         })}

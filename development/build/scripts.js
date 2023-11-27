@@ -733,6 +733,11 @@ function createFactoredBuild({
               applyLavaMoat,
             });
             renderHtmlFile({
+              htmlName: 'sidepanel',
+              browserPlatforms,
+              applyLavaMoat,
+            });
+            renderHtmlFile({
               htmlName: 'notification',
               browserPlatforms,
               applyLavaMoat,

@@ -6,5 +6,8 @@
     "matches": ["https://metamask.io/*"],
     "ids": ["*"]
   },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "minimum_chrome_version": "88"
 }

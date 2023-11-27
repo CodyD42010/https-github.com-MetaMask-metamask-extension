@@ -25,6 +25,7 @@ import { ethErrors } from 'eth-rpc-errors';
 import {
   ENVIRONMENT_TYPE_POPUP,
   ENVIRONMENT_TYPE_NOTIFICATION,
+  ENVIRONMENT_TYPE_SIDEPANEL,
   ENVIRONMENT_TYPE_FULLSCREEN,
   EXTENSION_MESSAGES,
   PLATFORM_FIREFOX,
@@ -98,6 +99,7 @@ const notificationManager = new NotificationManager();
 
 let popupIsOpen = false;
 let notificationIsOpen = false;
+let sidePanelIsOpen = false;
 let uiIsTriggering = false;
 const openMetamaskTabsIDs = {};
 const requestAccountTabIds = {};
@@ -531,7 +533,8 @@ export function setupController(
     return (
       popupIsOpen ||
       Boolean(Object.keys(openMetamaskTabsIDs).length) ||
-      notificationIsOpen
+      notificationIsOpen ||
+      sidePanelIsOpen
     );
   };
 
@@ -635,6 +638,17 @@ export function setupController(
             isClientOpen,
             ENVIRONMENT_TYPE_NOTIFICATION,
           );
+        });
+      }
+
+      if (processName === ENVIRONMENT_TYPE_SIDEPANEL) {
+        sidePanelIsOpen = true;
+
+        endOfStream(portStream, () => {
+          sidePanelIsOpen = false;
+          const isClientOpen = isClientOpenStatus();
+          controller.isClientOpen = isClientOpen;
+          onCloseEnvironmentInstances(isClientOpen, ENVIRONMENT_TYPE_SIDEPANEL);
         });
       }
 
@@ -870,7 +884,8 @@ async function triggerUi() {
   if (
     !uiIsTriggering &&
     (isVivaldi || !popupIsOpen) &&
-    !currentlyActiveMetamaskTab
+    !currentlyActiveMetamaskTab &&
+    !sidePanelIsOpen
   ) {
     uiIsTriggering = true;
     try {
@@ -907,6 +922,21 @@ const addAppInstalledEvent = () => {
   }, 1000);
 };
 
+browser.runtime.onInstalled.addListener(() => {
+  browser.contextMenus.create({
+    id: 'openSidePanel',
+    title: 'MetaMask Sidepanel',
+    contexts: ['all'],
+  });
+});
+
+browser.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'openSidePanel') {
+    // This will open the panel in all the pages on the current window.
+    browser.sidePanel.open({ windowId: tab.windowId });
+  }
+});
+
 // On first install, open a new tab with MetaMask
 async function onInstall() {
   const storeAlreadyExisted = Boolean(await localStore.get());
@@ -918,6 +948,16 @@ async function onInstall() {
     addAppInstalledEvent();
     platform.openExtensionInBrowser();
   }
+
+  browser.contextMenus.create({
+    id: 'openSidePanel',
+    title: 'MetaMask Sidepanel',
+    contexts: ['all'],
+  });
+
+  browser.sidePanel
+    .setPanelBehavior({ openPanelOnActionClick: true })
+    .catch((error) => console.error(error));
 }
 
 function setupSentryGetStateGlobal(store) {

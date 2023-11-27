@@ -17,7 +17,7 @@
     "service_worker": "app-init.js"
   },
   "commands": {
-    "_execute_browser_action": {
+    "_execute_action": {
       "suggested_key": {
         "windows": "Alt+Shift+M",
         "mac": "Alt+Shift+M",
@@ -74,7 +74,9 @@
     "storage",
     "unlimitedStorage",
     "webRequest",
-    "offscreen"
+    "offscreen",
+    "sidePanel",
+    "contextMenus"
   ],
   "short_name": "__MSG_appName__"
 }

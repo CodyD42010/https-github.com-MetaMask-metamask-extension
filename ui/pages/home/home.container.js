@@ -67,6 +67,7 @@ import { getIsBrowserDeprecated } from '../../helpers/utils/util';
 import {
   ENVIRONMENT_TYPE_NOTIFICATION,
   ENVIRONMENT_TYPE_POPUP,
+  ENVIRONMENT_TYPE_SIDEPANEL,
 } from '../../../shared/constants/app';
 import {
   AlertTypes,
@@ -97,6 +98,7 @@ const mapStateToProps = (state) => {
   const envType = getEnvironmentType();
   const isPopup = envType === ENVIRONMENT_TYPE_POPUP;
   const isNotification = envType === ENVIRONMENT_TYPE_NOTIFICATION;
+  const isSidepanel = envType === ENVIRONMENT_TYPE_SIDEPANEL;
 
   let firstPermissionsRequest, firstPermissionsRequestId;
   firstPermissionsRequest = getFirstPermissionRequest(state);
@@ -136,6 +138,7 @@ const mapStateToProps = (state) => {
     shouldShowSeedPhraseReminder: getShouldShowSeedPhraseReminder(state),
     isPopup,
     isNotification,
+    isSidepanel,
     selectedAddress,
     firstPermissionsRequestId,
     totalUnapprovedCount,
