@@ -63,6 +63,9 @@ export default class AppStateController extends EventEmitter {
         '0x539': true,
       },
       surveyLinkLastClickedOrClosed: null,
+      showFavourites: false,
+      showFavouriteNumbers: false,
+      appActiveTab: {},
     });
     this.timer = null;
 
@@ -377,6 +380,25 @@ export default class AppStateController extends EventEmitter {
    */
   setTrezorModel(trezorModel) {
     this.store.updateState({ trezorModel });
+  }
+
+  setShowFavourites({ showFavourites, revertTimeout }) {
+    clearTimeout(this.showFavouritesTimeout);
+    this.store.updateState({ showFavourites });
+    if (revertTimeout) {
+      this.showFavouritesTimeout = setTimeout(
+        () => this.store.updateState({ showFavourites: false }),
+        revertTimeout,
+      );
+    }
+  }
+
+  setShowFavouriteNumbers({ showFavouriteNumbers }) {
+    this.store.updateState({ showFavouriteNumbers });
+  }
+
+  setAppActiveTab(appActiveTab) {
+    this.store.updateState({ appActiveTab });
   }
 
   /**

@@ -43,6 +43,8 @@ import {
   getTestNetworkBackgroundColor,
   getSelectedInternalAccount,
   getUnapprovedTransactions,
+  getUnapprovedConfirmations,
+  ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
   getTheme,
   ///: END:ONLY_INCLUDE_IF
 } from '../../../selectors';

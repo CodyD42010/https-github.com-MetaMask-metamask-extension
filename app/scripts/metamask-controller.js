@@ -2941,10 +2941,16 @@ export default class MetamaskController extends EventEmitter {
         appStateController.setShowBetaHeader.bind(appStateController),
       setShowProductTour:
         appStateController.setShowProductTour.bind(appStateController),
+      setShowFavourites:
+        appStateController.setShowFavourites.bind(appStateController),
+      setShowFavouriteNumbers:
+        appStateController.setShowFavouriteNumbers.bind(appStateController),
       updateNftDropDownState:
         appStateController.updateNftDropDownState.bind(appStateController),
       setFirstTimeUsedNetwork:
         appStateController.setFirstTimeUsedNetwork.bind(appStateController),
+
+      openFavourite: this.openFavourite.bind(this),
 
       // EnsController
       tryReverseResolveAddress:
@@ -5410,6 +5416,35 @@ export default class MetamaskController extends EventEmitter {
   async backToSafetyPhishingWarning() {
     const extensionURL = this.platform.getExtensionURL();
     await this.platform.switchToAnotherURL(undefined, extensionURL);
+  }
+
+  async openFavourite({ href: favouriteHref }) {
+    const activeTab = this.appStateController.store.getState().appActiveTab;
+    const { url } = activeTab;
+    const { href: activeTabHref } = url ? new URL(url) : {};
+
+    if (favouriteHref === activeTabHref) {
+      return;
+    }
+
+    const tabs = await this.extension.tabs.query({
+      url: '<all_urls>',
+      windowType: 'normal',
+    });
+
+    const tabWithHrefOpen = tabs.find((tab) => {
+      const { url: tabUrl } = tab;
+      const { href: tabHref } = tabUrl ? new URL(tabUrl) : {};
+      return favouriteHref === tabHref;
+    });
+
+    if (tabWithHrefOpen) {
+      this.platform.switchToTab(tabWithHrefOpen.id, { active: true });
+    } else {
+      this.platform.openTab({
+        url: favouriteHref,
+      });
+    }
   }
 
   /**

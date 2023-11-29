@@ -11,7 +11,10 @@ import {
   SNAPS_ROUTE,
   ///: END:ONLY_INCLUDE_IF(snaps)
 } from '../../../helpers/constants/routes';
-import { lockMetamask } from '../../../store/actions';
+import {
+  lockMetamask,
+  setBackgroundShowFavourites,
+} from '../../../store/actions';
 import { useI18nContext } from '../../../hooks/useI18nContext';
 import {
   Box,
@@ -162,6 +165,18 @@ export const GlobalMenu = ({ closeMenu, anchorElement }) => {
         )
         ///: END:ONLY_INCLUDE_IF
       }
+      {getEnvironmentType() === ENVIRONMENT_TYPE_FULLSCREEN ? null : (
+        <MenuItem
+          iconName={IconName.Star}
+          onClick={() => {
+            setBackgroundShowFavourites({ showFavourites: true });
+            closeMenu();
+          }}
+          data-testid="global-menu-favourites"
+        >
+          Favourites
+        </MenuItem>
+      )}
       {getEnvironmentType() === ENVIRONMENT_TYPE_FULLSCREEN ? null : (
         <MenuItem
           iconName={IconName.Expand}

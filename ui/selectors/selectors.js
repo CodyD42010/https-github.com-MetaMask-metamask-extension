@@ -904,7 +904,11 @@ export function getFeatureFlags(state) {
 }
 
 export function getOriginOfCurrentTab(state) {
-  return state.activeTab.origin;
+  return (state.metamask.appActiveTab || state.activeTab).origin;
+}
+
+export function getFavourites(state) {
+  return state.metamask.favourites;
 }
 
 export function getIpfsGateway(state) {

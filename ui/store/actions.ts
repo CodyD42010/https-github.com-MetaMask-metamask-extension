@@ -1712,7 +1712,7 @@ export function setSelectedAccount(
     const state = getState();
     const unconnectedAccountAccountAlertIsEnabled =
       getUnconnectedAccountAlertEnabledness(state);
-    const activeTabOrigin = state.activeTab.origin;
+    const activeTabOrigin = (state.metamask.appActiveTab || state.activeTab).origin;
     const selectedAddress = getSelectedAddress(state);
     const permittedAccountsForCurrentTab =
       getPermittedAccountsForCurrentTab(state);
@@ -4489,6 +4489,18 @@ export function hideBetaHeader() {
 
 export function hideProductTour() {
   return submitRequestToBackground('setShowProductTour', [false]);
+}
+
+export function setBackgroundShowFavourites({ showFavourites }) {
+  return submitRequestToBackground('setShowFavourites', [{ showFavourites }]);
+}
+
+export function setBackgroundShowFavouriteNumbers({ showFavouriteNumbers }) {
+  return setBackgroundShowFavouriteNumbers('setShowFavourites', [{ showFavouriteNumbers }]);
+}
+
+export function openFavourite(href) {
+  return submitRequestToBackground('openFavourite', [{ href }]);
 }
 
 // TODO: codeword NOT_A_THUNK @brad-decker

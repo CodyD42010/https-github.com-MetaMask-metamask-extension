@@ -25,8 +25,10 @@ import CreateAccountPage from '../create-account/create-account.component';
 import ConfirmAddSuggestedNftPage from '../confirm-add-suggested-nft';
 import Loading from '../../components/ui/loading-screen';
 import LoadingNetwork from '../../components/app/loading-network-screen';
+import Favourites from '../../components/app/favourites';
 import { Modal } from '../../components/app/modals';
 import Alert from '../../components/ui/alert';
+import { setBackgroundShowFavourites } from '../../store/actions';
 import {
   AppHeader,
   AccountListMenu,
@@ -107,6 +109,7 @@ import { EXTENSION_ERROR_PAGE_TYPES } from '../../../shared/constants/desktop';
 import {
   ENVIRONMENT_TYPE_NOTIFICATION,
   ENVIRONMENT_TYPE_POPUP,
+  ENVIRONMENT_TYPE_SIDEPANEL,
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   SNAP_MANAGE_ACCOUNTS_CONFIRMATION_TYPES,
   ///: END:ONLY_INCLUDE_IF
@@ -173,16 +176,22 @@ export default class Routes extends Component {
     hideImportTokensModal: PropTypes.func.isRequired,
     isSelectActionModalOpen: PropTypes.bool.isRequired,
     hideSelectActionModal: PropTypes.func.isRequired,
+    favourites: PropTypes.object,
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
     isShowKeyringSnapRemovalResultModal: PropTypes.bool.isRequired,
     hideShowKeyringSnapRemovalResultModal: PropTypes.func.isRequired,
     pendingConfirmations: PropTypes.array.isRequired,
     ///: END:ONLY_INCLUDE_IF
+    backgroundShowFavourites: PropTypes.bool,
   };
 
   static contextTypes = {
     t: PropTypes.func,
     metricsEvent: PropTypes.func,
+  };
+
+  state = {
+    showFavouriteNumbers: false,
   };
 
   handleOsTheme() {
@@ -193,21 +202,57 @@ export default class Routes extends Component {
     document.documentElement.setAttribute('data-theme', osTheme);
   }
 
-  ///: BEGIN:ONLY_INCLUDE_IF(desktop)
+  handleKeyDown = (event) => {
+    const { backgroundShowFavourites, favourites } = this.props;
+
+    if (backgroundShowFavourites) {
+      if (event.key === 'Escape') {
+        setBackgroundShowFavourites({ showFavourites: false });
+      } else if (event.altKey && event.shiftKey) {
+        if (event.code >= 'Digit1' && event.code <= 'Digit9') {
+          const pressedNumber = event.code.replace('Digit', '');
+          const favouriteHref = Object.values(favourites).find(favourite => Number(favourite.number) === Number(pressedNumber))?.href;
+          if (favouriteHref) {
+            global.platform.openTab({ url: favouriteHref })
+          }
+        } else {
+          this.setState({ showFavouriteNumbers: true });
+        }
+      }
+    }
+  };
+
+  handleKeyUp = (event) => {
+    if (event.key === 'Alt') {
+      this.setState({ showFavouriteNumbers: false });
+    } else if (event.key === 'Shift') {
+      this.setState({ showFavouriteNumbers: false });
+    }
+  };
+
   componentDidMount() {
     const { history } = this.props;
+    ///: BEGIN:ONLY_INCLUDE_IF(desktop)
     browserAPI.runtime.onMessage.addListener(
       registerOnDesktopDisconnect(history),
     );
+    ///: END:ONLY_INCLUDE_IF
+    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
+
+    window.focus();
   }
 
   componentWillUnmount() {
     const { history } = this.props;
+    ///: BEGIN:ONLY_INCLUDE_IF(desktop)
     browserAPI.runtime.onMessage.removeListener(
       registerOnDesktopDisconnect(history),
     );
+    ///: END:ONLY_INCLUDE_IF
+    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keydown', this.handleKeyUp);
   }
-  ///: END:ONLY_INCLUDE_IF
 
   componentDidUpdate(prevProps) {
     const { theme } = this.props;
@@ -580,13 +625,14 @@ export default class Routes extends Component {
       hideIpfsModal,
       hideImportTokensModal,
       hideSelectActionModal,
+      backgroundShowFavourites,
       ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
       isShowKeyringSnapRemovalResultModal,
       hideShowKeyringSnapRemovalResultModal,
       pendingConfirmations,
       ///: END:ONLY_INCLUDE_IF
     } = this.props;
-
+    const { showFavouriteNumbers } = this.state;
     const loadMessage =
       loadingMessage || isNetworkLoading
         ? this.getConnectingLabel(loadingMessage)
@@ -602,6 +648,7 @@ export default class Routes extends Component {
       allAccountsOnNetworkAreEmpty;
 
     const windowType = getEnvironmentType();
+    const isSidePanel = ENVIRONMENT_TYPE_SIDEPANEL;
 
     const shouldShowNetworkDeprecationWarning =
       windowType !== ENVIRONMENT_TYPE_NOTIFICATION &&
@@ -630,6 +677,14 @@ export default class Routes extends Component {
       >
         {shouldShowNetworkDeprecationWarning ? <DeprecatedNetworks /> : null}
         {shouldShowNetworkInfo && <NewNetworkInfo />}
+        {backgroundShowFavourites && isSidePanel && (
+          <Favourites
+            showFavouriteNumbers={showFavouriteNumbers}
+            onClose={() =>
+              setBackgroundShowFavourites({ showFavourites: false })
+            }
+          />
+        )}
         <QRHardwarePopover />
         <Modal />
         <Alert visible={this.props.alertOpen} msg={alertMessage} />

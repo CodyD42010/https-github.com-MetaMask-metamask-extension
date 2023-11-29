@@ -100,6 +100,7 @@ export default class PreferencesController {
       snapRegistryList: {},
       transactionSecurityCheckEnabled: false,
       theme: ThemeType.os,
+      favourites: {},
       ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
       snapsAddSnapAccountModalDismissed: false,
       ///: END:ONLY_INCLUDE_IF
@@ -123,6 +124,13 @@ export default class PreferencesController {
     this._showShouldLineaMainnetNetwork();
   }
   // PUBLIC METHODS
+
+  addToFavourites(favourite) {
+    const { favourites } = this.store.getState();
+    this.store.updateState({
+      favourites: { ...favourites, [favourite.href]: favourite },
+    });
+  }
 
   /**
    * Sets the {@code forgottenPassword} state property

@@ -275,9 +275,10 @@ export function getAccountToConnectToActiveTab(state) {
 
 export function getOrderedConnectedAccountsForActiveTab(state) {
   const {
-    activeTab,
-    metamask: { permissionHistory },
+    activeTab: _activeTab,
+    metamask: { permissionHistory, appActiveTab },
   } = state;
+  const activeTab = appActiveTab || _activeTab;
 
   const permissionHistoryByAccount =
     // eslint-disable-next-line camelcase
@@ -307,8 +308,9 @@ export function getOrderedConnectedAccountsForActiveTab(state) {
 }
 
 export function getPermissionsForActiveTab(state) {
-  const { activeTab, metamask } = state;
-  const { subjects = {} } = metamask;
+  const { activeTab: _activeTab, metamask } = state;
+  const { subjects = {}, appActiveTab } = metamask;
+  const activeTab = appActiveTab || _activeTab;
 
   const permissions = subjects[activeTab.origin]?.permissions ?? {};
   return Object.keys(permissions).map((parentCapability) => {
@@ -320,8 +322,9 @@ export function getPermissionsForActiveTab(state) {
 }
 
 export function activeTabHasPermissions(state) {
-  const { activeTab, metamask } = state;
-  const { subjects = {} } = metamask;
+  const { activeTab: _activeTab, metamask } = state;
+  const { subjects = {}, appActiveTab } = metamask;
+  const activeTab = appActiveTab || _activeTab;
 
   return Boolean(
     Object.keys(subjects[activeTab.origin]?.permissions || {}).length > 0,
