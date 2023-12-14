@@ -60,6 +60,9 @@ export enum Color {
 export enum BackgroundColor {
   backgroundDefault = 'background-default',
   backgroundAlternative = 'background-alternative',
+  iconDefault = 'icon-default',
+  iconAlternative = 'icon-alternative',
+  iconMuted = 'icon-muted',
   overlayDefault = 'overlay-default',
   primaryDefault = 'primary-default',
   primaryAlternative = 'primary-alternative',
