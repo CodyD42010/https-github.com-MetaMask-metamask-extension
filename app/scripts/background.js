@@ -972,14 +972,17 @@ async function onInstall() {
       const { favourites } = controller.preferencesController.store.getState();
 
       let highestFavouriteNumber = 0;
-      for (let key in favourites) {
-          if (favourites[key].number > highestFavouriteNumber) {
-              highestFavouriteNumber = favourites[key].number;
-          }
+      for (const key in favourites) {
+        if (favourites[key].number > highestFavouriteNumber) {
+          highestFavouriteNumber = favourites[key].number;
+        }
       }
 
       if (appActiveTab.url) {
-        const favouriteInfo = { ...appActiveTab, number: highestFavouriteNumber + 1 };
+        const favouriteInfo = {
+          ...appActiveTab,
+          number: highestFavouriteNumber + 1,
+        };
         delete favouriteInfo.id;
         delete favouriteInfo.protocol;
         delete favouriteInfo.host;
@@ -987,6 +990,14 @@ async function onInstall() {
         delete favouriteInfo.protocol;
         controller.preferencesController.addToFavourites(favouriteInfo);
       }
+    }
+
+    if (command === 'show-favourite-numbers') {
+      const { showFavouriteNumbers } =
+        controller.appStateController.store.getState();
+      controller.appStateController.setShowFavouriteNumbers({
+        showFavouriteNumbers: !showFavouriteNumbers,
+      });
     }
   });
 
@@ -1035,20 +1046,6 @@ async function onInstall() {
       favIconUrl,
     });
   });
-
-  // browser.tabs.onCreated.addListener(async ({ tabId }) => {
-  //   const activeTab = await browser.tabs.get(tabId);
-  //   const { id, title, url, favIconUrl } = activeTab;
-  //   const { origin, protocol, host, href } = url ? new URL(url) : {};
-
-  //   console.log({ id, title, origin, protocol, url })
-
-  //   if (!origin || origin === 'null') {
-  //     return {};
-  //   }
-
-  //   controller.appStateController.setAppActiveTab({ id, title, origin, protocol, url, host, href, favIconUrl })
-  // })
 }
 
 function setupSentryGetStateGlobal(store) {

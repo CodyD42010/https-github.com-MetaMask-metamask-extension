@@ -4499,8 +4499,12 @@ export function setBackgroundShowFavouriteNumbers({ showFavouriteNumbers }) {
   return setBackgroundShowFavouriteNumbers('setShowFavourites', [{ showFavouriteNumbers }]);
 }
 
-export function openFavourite(href) {
+export function openFavourite({ href }) {
   return submitRequestToBackground('openFavourite', [{ href }]);
+}
+
+export function deleteFavourite(favouriteToDelete) {
+  return submitRequestToBackground('deleteFavourite', [favouriteToDelete]);
 }
 
 // TODO: codeword NOT_A_THUNK @brad-decker

@@ -28,7 +28,11 @@ import LoadingNetwork from '../../components/app/loading-network-screen';
 import Favourites from '../../components/app/favourites';
 import { Modal } from '../../components/app/modals';
 import Alert from '../../components/ui/alert';
-import { setBackgroundShowFavourites } from '../../store/actions';
+import {
+  setBackgroundShowFavourites,
+  setBackgroundShowFavouriteNumbers,
+  openFavourite,
+} from '../../store/actions';
 import {
   AppHeader,
   AccountListMenu,
@@ -177,6 +181,7 @@ export default class Routes extends Component {
     isSelectActionModalOpen: PropTypes.bool.isRequired,
     hideSelectActionModal: PropTypes.func.isRequired,
     favourites: PropTypes.object,
+    backgroundShowFavouriteNumbers: PropTypes.bool,
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
     isShowKeyringSnapRemovalResultModal: PropTypes.bool.isRequired,
     hideShowKeyringSnapRemovalResultModal: PropTypes.func.isRequired,
@@ -202,8 +207,13 @@ export default class Routes extends Component {
     document.documentElement.setAttribute('data-theme', osTheme);
   }
 
-  handleKeyDown = (event) => {
-    const { backgroundShowFavourites, favourites } = this.props;
+  handleKeyDown = async (event) => {
+    const {
+      backgroundShowFavourites,
+      favourites,
+      backgroundShowFavouriteNumbers,
+    } = this.props;
+    const { showFavouriteNumbers } = this.state;
 
     if (backgroundShowFavourites) {
       if (event.key === 'Escape') {
@@ -211,22 +221,21 @@ export default class Routes extends Component {
       } else if (event.altKey && event.shiftKey) {
         if (event.code >= 'Digit1' && event.code <= 'Digit9') {
           const pressedNumber = event.code.replace('Digit', '');
-          const favouriteHref = Object.values(favourites).find(favourite => Number(favourite.number) === Number(pressedNumber))?.href;
+          const favouriteHref = Object.values(favourites).find(
+            (favourite) => Number(favourite.number) === Number(pressedNumber),
+          )?.href;
           if (favouriteHref) {
-            global.platform.openTab({ url: favouriteHref })
+            await openFavourite({ href: favouriteHref });
           }
-        } else {
-          this.setState({ showFavouriteNumbers: true });
+        } else if (event.key === 'A') {
+          if (showFavouriteNumbers || backgroundShowFavouriteNumbers) {
+            this.setState({ showFavouriteNumbers: false });
+            setBackgroundShowFavouriteNumbers(false);
+          } else {
+            this.setState({ showFavouriteNumbers: true });
+          }
         }
       }
-    }
-  };
-
-  handleKeyUp = (event) => {
-    if (event.key === 'Alt') {
-      this.setState({ showFavouriteNumbers: false });
-    } else if (event.key === 'Shift') {
-      this.setState({ showFavouriteNumbers: false });
     }
   };
 
@@ -264,6 +273,29 @@ export default class Routes extends Component {
         document.documentElement.setAttribute('data-theme', theme);
       }
     }
+
+    // if (backgroundShowFavourites && !prevProps.backgroundShowFavourites) {
+    //   window.focus();
+    //   const keyboardEvent = window.document.createEvent('KeyboardEvent');
+    //   const initMethod =
+    //     typeof keyboardEvent.initKeyboardEvent !== 'undefined'
+    //       ? 'initKeyboardEvent'
+    //       : 'initKeyEvent';
+
+    //   keyboardEvent[initMethod](
+    //     'keydown', // event type: keydown, keyup, keypress
+    //     true, // bubbles
+    //     true, // cancelable
+    //     window, // view: should be window
+    //     false, // ctrlKey
+    //     false, // altKey
+    //     false, // shiftKey
+    //     false, // metaKey
+    //     9, // keyCode: unsigned long - the virtual key code, else 0
+    //     0, // charCode: unsigned long - the Unicode character associated with the depressed key, else 0
+    //   );
+    //   document.dispatchEvent(keyboardEvent);
+    // }
   }
 
   UNSAFE_componentWillMount() {
@@ -626,6 +658,7 @@ export default class Routes extends Component {
       hideImportTokensModal,
       hideSelectActionModal,
       backgroundShowFavourites,
+      backgroundShowFavouriteNumbers,
       ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
       isShowKeyringSnapRemovalResultModal,
       hideShowKeyringSnapRemovalResultModal,
@@ -679,7 +712,9 @@ export default class Routes extends Component {
         {shouldShowNetworkInfo && <NewNetworkInfo />}
         {backgroundShowFavourites && isSidePanel && (
           <Favourites
-            showFavouriteNumbers={showFavouriteNumbers}
+            showFavouriteNumbers={
+              showFavouriteNumbers || backgroundShowFavouriteNumbers
+            }
             onClose={() =>
               setBackgroundShowFavourites({ showFavourites: false })
             }

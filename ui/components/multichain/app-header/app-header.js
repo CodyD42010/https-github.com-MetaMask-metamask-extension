@@ -260,7 +260,10 @@ export const AppHeader = ({ location }) => {
                       e.preventDefault();
                       networkOpenCallback();
                     }}
-                    display={[Display.None, Display.Flex]} // show on desktop hide on popover
+                    display={[
+                      isSidePanel ? Display.Flex : Display.None,
+                      Display.Flex,
+                    ]} // show on desktop hide on popover
                     className="multichain-app-header__contents__network-picker"
                     disabled={disableNetworkPicker}
                     data-testid="network-display"

@@ -27,6 +27,7 @@ const PHISHING_WARNING_PAGE = 'metamask-phishing-warning-page';
 // stream channels
 const PHISHING_SAFELIST = 'metamask-phishing-safelist';
 const PROVIDER = 'metamask-provider';
+const PAGE_KEY_EVENTS = 'page_key_events';
 
 // For more information about these legacy streams, see here:
 // https://github.com/MetaMask/metamask-extension/issues/15491
@@ -55,6 +56,7 @@ let phishingExtChannel,
 
 let extensionMux,
   extensionChannel,
+  extensionKeyEventsChannel,
   extensionPort,
   extensionPhishingStream,
   extensionStream,
@@ -263,6 +265,14 @@ const setupExtensionStreams = () => {
   pump(pageChannel, extensionChannel, pageChannel, (error) =>
     console.debug(
       `MetaMask: Muxed traffic for channel "${PROVIDER}" failed.`,
+      error,
+    ),
+  );
+
+  extensionKeyEventsChannel = extensionMux.createStream(PAGE_KEY_EVENTS);
+  pump(pageChannel, extensionChannel, pageChannel, (error) =>
+    console.debug(
+      `MetaMask: Muxed traffic for channel "${PAGE_KEY_EVENTS}" failed.`,
       error,
     ),
   );
@@ -565,3 +575,17 @@ const start = () => {
 };
 
 start();
+
+window.document.addEventListener('keydown', (event) => {
+  if (event.altKey && event.shiftKey) {
+    if (event.code >= 'Digit1' && event.code <= 'Digit9') {
+      const pressedNumber = event.code.replace('Digit', '');
+      const { currentTarget } = event;
+      const currentTargetOrigin = currentTarget?.location?.origin;
+      extensionKeyEventsChannel.write({
+        target: 'EXTENSION_BACKGROUND', // the post-message-stream "target"
+        data: { pressedNumber, origin: currentTargetOrigin },
+      });
+    }
+  }
+});
