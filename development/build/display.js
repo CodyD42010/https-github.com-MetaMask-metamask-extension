@@ -29,6 +29,7 @@ function setupTaskDisplay(taskEvents) {
   });
   taskEvents.on('complete', () => {
     displayChart(taskData);
+    process.exit(1);
   });
 }
 

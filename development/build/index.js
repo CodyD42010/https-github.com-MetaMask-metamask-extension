@@ -211,7 +211,7 @@ async function defineAndRunBuildTasks() {
         scriptTasks.dev,
         staticTasks.dev,
         manifestTasks.dev,
-        reload,
+        // reload,
       ),
     ),
   );

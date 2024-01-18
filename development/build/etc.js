@@ -23,7 +23,7 @@ function createEtcTasks({ browserPlatforms, buildType, livereload, version }) {
   });
 
   const reload = createTask(TASKS.RELOAD, function devReload() {
-    livereload.listen({ port: 35729 });
+    // livereload.listen({ port: 35729 });
   });
 
   // zip tasks for distribution

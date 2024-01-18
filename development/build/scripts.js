@@ -364,18 +364,18 @@ function createScriptTasks({
 
     // task for initiating browser livereload
     const initiateLiveReload = async () => {
-      if (isDevBuild(buildTarget)) {
-        // trigger live reload when the bundles are updated
-        // this is not ideal, but overcomes the limitations:
-        // - run from the main process (not child process tasks)
-        // - after the first build has completed (thus the timeout)
-        // - build tasks never "complete" when run with livereload + child process
-        setTimeout(() => {
-          watch('./dist/*/*.js', (event) => {
-            livereload.changed(event.path);
-          });
-        }, 75e3);
-      }
+      // if (isDevBuild(buildTarget)) {
+      //   // trigger live reload when the bundles are updated
+      //   // this is not ideal, but overcomes the limitations:
+      //   // - run from the main process (not child process tasks)
+      //   // - after the first build has completed (thus the timeout)
+      //   // - build tasks never "complete" when run with livereload + child process
+      //   setTimeout(() => {
+      //     watch('./dist/*/*.js', (event) => {
+      //       livereload.changed(event.path);
+      //     });
+      //   }, 75e3);
+      // }
     };
 
     // make each bundle run in a separate process
@@ -619,7 +619,7 @@ function createFactoredBuild({
     const { bundlerOpts, events } = buildConfiguration;
 
     // devMode options
-    const reloadOnChange = isDevBuild(buildTarget);
+    const reloadOnChange = false; // isDevBuild(buildTarget);
     const minify = !isDevBuild(buildTarget);
 
     const environment = getEnvironment({ buildTarget });
@@ -912,7 +912,7 @@ function createNormalBundle({
 
     // devMode options
     const devMode = isDevBuild(buildTarget);
-    const reloadOnChange = Boolean(devMode);
+    const reloadOnChange = false; // Boolean(devMode);
     const minify = Boolean(devMode) === false;
 
     const environment = getEnvironment({ buildTarget });
@@ -1043,7 +1043,7 @@ function setupBundlerDefaults(
 
   // Setup reload on change
   if (reloadOnChange) {
-    setupReloadOnChange(buildConfiguration);
+    // setupReloadOnChange(buildConfiguration);
   }
 
   if (!policyOnly) {
