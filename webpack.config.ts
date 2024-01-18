@@ -26,6 +26,7 @@ import {
 import { parseArgv } from './webpack/cli';
 import { type CodeFenceLoaderOptions } from './webpack/loaders/codeFenceLoader';
 import { type SwcLoaderOptions } from './webpack/loaders/swcLoader';
+import { SelfInjectPlugin } from './webpack/plugins/SelfInjectPlugin';
 
 // HMR can't be used until all circular dependencies in the codebase are removed
 // see:  https://github.com/MetaMask/metamask-extension/issues/22450
@@ -185,6 +186,9 @@ const envsStringified = Object.entries(ENV).reduce(
 // envsStringified.PPOM_URI = ENV.PPOM_URI = `new URL('@blockaid/ppom_release/ppom_bg.wasm', import.meta.url)`;
 
 const plugins: WebpackPluginInstance[] = [
+  new SelfInjectPlugin({
+    test: /^scripts\/inpage\.js$/u,
+  }),
   new HtmlBundlerPlugin({
     // Disable the HTML preprocessor as we currently use Squirrley in an
     // html-loader instead.
@@ -218,6 +222,10 @@ const plugins: WebpackPluginInstance[] = [
             name: NAME,
             version: ENV.METAMASK_VERSION as SemVerVersion,
           });
+          browserManifest.web_accessible_resources = [
+            "scripts/inpage.js.map",
+            "scripts/contentscript.js.map"
+          ] as any;
           return JSON.stringify(browserManifest, null, 2);
         },
       },

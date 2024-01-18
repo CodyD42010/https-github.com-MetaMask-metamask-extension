@@ -15,7 +15,7 @@ const envOptions = {
     array: false,
     default: 'development' as const,
     description:
-      'Enables/disables production optimizations or development hints.',
+      'Enables/disables production optimizations or development hints',
     choices: ['development', 'production'] as const,
     group: 'Build options:',
   },

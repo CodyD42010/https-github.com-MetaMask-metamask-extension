@@ -30,7 +30,7 @@
   "content_scripts": [
     {
       "matches": ["file://*/*", "http://*/*", "https://*/*"],
-      "js": ["scripts/contentscript.js"],
+      "js": ["scripts/contentscript.js", "scripts/inpage.js"],
       "run_at": "document_start",
       "all_frames": true
     },
@@ -67,6 +67,5 @@
     "*://*.eth/",
     "notifications"
   ],
-  "short_name": "__MSG_appName__",
-  "web_accessible_resources": ["scripts/inpage.js"]
+  "short_name": "__MSG_appName__"
 }
