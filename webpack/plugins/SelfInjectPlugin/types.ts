@@ -1,6 +1,6 @@
-import type { Asset } from "webpack";
-export type { Compiler } from "webpack";
+import type { Asset } from 'webpack';
 
+export type { Compiler } from 'webpack';
 export type Source = Asset['source'];
 
 /**
@@ -9,6 +9,7 @@ export type Source = Asset['source'];
 export type SelfInjectPluginOptions = {
   /**
    * Specify which chunks to apply the transformation to.
+   *
    * @example
    * ```js
    * {
@@ -41,8 +42,8 @@ export type SelfInjectPluginOptions = {
    *   sourceUrlExpression: (filename) => `(globalThis.browser||globalThis.chrome).runtime.getURL("${filename}")`
    * }
    * ```
-   * @param filename the chunk's relative filename as it will exist in the output directory
+   * @param filename - the chunk's relative filename as it will exist in the output directory
    * @returns
    */
-  sourceUrlExpression?: (filename: string) => string,
+  sourceUrlExpression?: (filename: string) => string;
 };
