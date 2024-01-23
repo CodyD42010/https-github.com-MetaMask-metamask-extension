@@ -46,7 +46,6 @@ export class ZipPlugin {
   constructor(options: Partial<ZipPluginOptions> = {}) {
     validate(schema, options, { name: NAME });
 
-    // `as any` because we'll fill in any missing bits with defaults
     this.options = { ...options } as any;
 
     this.options.mtime ??= Date.now();
@@ -64,9 +63,8 @@ export class ZipPlugin {
       name: NAME,
       stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER,
     };
-    compilation.hooks.processAssets.tapPromise(options, (assets) =>
-      this.zipAssets(compilation, assets),
-    );
+    const tap = (assets: Assets) => this.zipAssets(compilation, assets);
+    compilation.hooks.processAssets.tapPromise(options, tap);
   }
 
   /**
@@ -95,13 +93,10 @@ export class ZipPlugin {
       };
 
       const { mtime } = this.options;
-      const compressionOptions: DeflateOptions = {
-        level: this.options.level,
-      };
+      const compressionOptions: DeflateOptions = { level: this.options.level };
 
       for (const assetName in assets) {
         if (errored) {
-          // there was an error, stop processing now.
           return;
         }
 

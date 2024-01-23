@@ -4,7 +4,7 @@ import type zlib from 'node:zlib';
 import { SemVerVersion, isValidSemVerVersion } from '@metamask/utils';
 import { merge } from 'lodash';
 import type chalkType from 'chalk';
-import { type EntryObject } from 'webpack';
+import { Chunk, type EntryObject, type Stats, version } from 'webpack';
 import type TerserPluginType from 'terser-webpack-plugin';
 
 export type Manifest = chrome.runtime.Manifest;
@@ -12,12 +12,24 @@ export type ManifestV2 = chrome.runtime.ManifestV2;
 export type ManifestV3 = chrome.runtime.ManifestV3;
 
 /**
- * Supported browsers
+ * Target browsers
  */
 export const Browsers = ['brave', 'chrome', 'firefox', 'opera'] as const;
 export type Browser = (typeof Browsers)[number];
 
+/**
+ * Regular expression to match files in `node_modules`
+ */
 export const NODE_MODULES_RE = /^.*\/node_modules\/.*$/u;
+
+export const colors = Boolean(process.stderr.isTTY);
+
+/**
+ * No Operation. A function that does nothing and returns nothing.
+ *
+ * @returns `undefined`
+ */
+export const noop = () => undefined;
 
 /**
  *
@@ -25,7 +37,7 @@ export const NODE_MODULES_RE = /^.*\/node_modules\/.*$/u;
  * @throws Throws an error if the version is not a valid semantic version.
  */
 export const getMetaMaskVersion = (): SemVerVersion => {
-  const { version } = require('../package.json');
+  const { version } = require('../../../package.json');
   if (isValidSemVerVersion(version)) {
     return version as SemVerVersion;
   }
@@ -45,7 +57,7 @@ export const mergeEnv = (userEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv => {
   // the gulp build system does it.
   let env: NodeJS.ProcessEnv = {};
   try {
-    const rawConfig = readFileSync(join(__dirname, '../.metamaskrc'));
+    const rawConfig = readFileSync(join(__dirname, '../../../.metamaskrc'));
     env = require('dotenv').parse(rawConfig);
   } catch {
     console.log('No .metamaskrc file found, using default env');
@@ -110,7 +122,7 @@ export const generateManifest = (
 
   const browserManifestOverrides: Partial<Manifest> = require(join(
     __dirname,
-    `../app/manifest/v${baseManifest.manifest_version}/${browser}.json`,
+    `../../../app/manifest/v${baseManifest.manifest_version}/${browser}.json`,
   ));
 
   const overrides = {
@@ -128,13 +140,14 @@ export const generateManifest = (
 };
 
 /**
- * Collects all entry files
+ * Collects all entry files for use with webpack.
  *
  * @param manifest - Base manifest file
  * @param dir - Absolute directory to search for entry files listed in the base
  * manifest
  * @returns an `entry` object containing html and JS entry points for use with
- * webpack, and an array, `manifestScripts`, list of filepaths of all scripts that were added to it.
+ * webpack, and an array, `manifestScripts`, list of filepaths of all scripts
+ * that were added to it.
  */
 export function combineEntriesFromManifestAndDir(
   manifest: Manifest,
@@ -144,7 +157,7 @@ export function combineEntriesFromManifestAndDir(
   const selfContainedScripts: Set<string> = new Set([
     // Snow shouldn't be chunked
     'snow.prod',
-    'use-snow'
+    'use-snow',
   ]);
 
   function addManifestScript(filename: string | undefined) {
@@ -186,7 +199,19 @@ export function combineEntriesFromManifestAndDir(
       addHtml(file);
     }
   }
-  return { entry, selfContainedScripts };
+
+  /**
+   * Ignore scripts that were found in the manifest, as these are only loaded by
+   * the browser extension platform itself.
+   *
+   * @param chunk
+   * @param chunk.name
+   * @returns
+   */
+  function canBeChunked({ name }: Chunk): boolean {
+    return !name || !selfContainedScripts.has(name);
+  }
+  return { entry, canBeChunked };
 }
 
 function assertValidEntryFileName(file: string, dir: string) {
@@ -226,12 +251,13 @@ ${chalk.red('Reason:')} ${chalk.white(reason)}
 
 ${chalk.white.bold(`Suggested Action${solutions.length === 1 ? '' : 's'}:`)}
 ${solutions
-        .map((solution) => `${chalk.hex('EF811A')('•')} ${chalk.white(solution)}`)
-        .join('\n')}
-${context
-        ? `\n${chalk.white.dim.bold('Context:')} ${chalk.white.dim(context)}`
-        : ``
-      }
+  .map((solution) => `${chalk.hex('EF811A')('•')} ${chalk.white(solution)}`)
+  .join('\n')}
+${
+  context
+    ? `\n${chalk.white.dim.bold('Context:')} ${chalk.white.dim(context)}`
+    : ``
+}
 `;
     super(message);
     this.message = message;
@@ -245,6 +271,8 @@ ${context
  * The author timestamp is used for its consistency across different
  * repositories and its inclusion in the Git commit hash calculation. This makes
  * it a stable choice for reproducible builds.
+ *
+ * Does not require git and is faster than shelling out to git.
  *
  * @param gitDir
  * @returns Millisecond precision timestamp in UTC of the last commit on the
@@ -269,9 +297,9 @@ export function getLastCommitDateTimeUtc(
   // determine if we're in a detached HEAD state or on a branch
   const oid = ref.startsWith('ref: ')
     ? // HEAD is pointer to a branch; load the commit hash
-    readFileSync(join(gitDir, ref.slice(5)), 'utf-8').trim()
+      readFileSync(join(gitDir, ref.slice(5)), 'utf-8').trim()
     : // HEAD is detached; so use the commit hash directly
-    ref;
+      ref;
 
   // read the commit object from the file system
   const commitPath = join(gitDir, 'objects', oid.slice(0, 2), oid.slice(2));
@@ -301,7 +329,56 @@ export function getMinimizers() {
     new TerserPlugin({
       // use SWC to minify (about 7x faster than Terser)
       minify: TerserPlugin.swcMinify,
+      // do not minify snow.
       exclude: /snow\.prod/u,
     }),
   ];
 }
+
+function green(message: string): string {
+  return colors ? `\x1b[1m\x1b[32m${message}\x1b[0m` : message;
+}
+function orange(message: string): string {
+  return colors ? `\x1b[1m\x1b[38;2;246;133;27m${message}\x1b[0m` : message;
+}
+
+/**
+ * Logs a summary of build information to `stderr`.
+ *
+ * @param logStats - If `true`, logs the full stats object to `stderr`,
+ * otherwise logs only errors and a completion message, if it completed.
+ * @param err
+ * @param stats
+ */
+export function logSummary(
+  logStats: boolean,
+  err: Error | null | undefined,
+  stats: Stats | undefined,
+) {
+  err && console.error(err);
+
+  if (stats) {
+    stats.compilation.name = orange(`🦊 ${stats.compilation.compiler.name}`);
+    if (logStats) {
+      // log everything. computing stats is slow, so we only do it if asked.
+      console.error(stats.toString({ colors }));
+    } else if (stats.hasErrors() || stats.hasWarnings()) {
+      // always log about errors and warnings, if we have them.
+      const message = stats.toString({ colors, preset: 'errors-warnings' });
+      console.error(message);
+    } else {
+      // log a basic status message if we don't have errors or warnings.
+      console.error(
+        `${stats.compilation.name} (webpack ${version}) compiled ${green(
+          'successfully',
+        )} in ${stats.endTime - stats.startTime}ms`,
+      );
+    }
+  }
+}
+
+/**
+ * @param array
+ * @returns a new array with duplicate values removed and sorted
+ */
+export const uniqueSort = (array: string[]) => [...new Set(array)].sort();

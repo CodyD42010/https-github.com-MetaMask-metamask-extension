@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["datetime", "datetimes", "lavamoat"],
+  "cSpell.words": ["datetime", "datetimes", "endregion", "lavamoat"],
   "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
   "editor.tabSize": 2,
   "files.trimTrailingWhitespace": true,

@@ -20162,9 +20162,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-bundler-webpack-plugin@npm:^3.0.3":
-  version: 3.4.3
-  resolution: "html-bundler-webpack-plugin@npm:3.4.3"
+"html-bundler-webpack-plugin@npm:3.4.5":
+  version: 3.4.5
+  resolution: "html-bundler-webpack-plugin@npm:3.4.5"
   dependencies:
     ansis: "npm:2.0.1"
     enhanced-resolve: "npm:>=5.7.0"
@@ -20194,7 +20194,7 @@ __metadata:
       optional: true
     twig:
       optional: true
-  checksum: a4b1bd0552b696fb15228848e7c752ebd0614fe53f0a99c624182e1a18dfc07623de8fda5a95adbb912ce53569da3138f956fc6afd6e78f83ec06ab1e0a54cad
+  checksum: 6d874d7f0570a13aa5d968b1a466d17ef3573d078d41c17d291708a4b47c59094591836f92959f25f7a4e9488e3a9e0680389a3e7047325e57e4983741a71ce4
   languageName: node
   linkType: hard
 
@@ -25351,7 +25351,7 @@ __metadata:
     gulp-watch: "npm:^5.0.1"
     gulp-zip: "npm:^5.1.0"
     history: "npm:^5.0.0"
-    html-bundler-webpack-plugin: "npm:^3.0.3"
+    html-bundler-webpack-plugin: "npm:3.4.5"
     human-standard-token-abi: "npm:^2.0.0"
     husky: "npm:^8.0.3"
     immer: "npm:^9.0.6"
