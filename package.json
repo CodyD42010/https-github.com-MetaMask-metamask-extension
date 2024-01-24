@@ -465,6 +465,7 @@
     "@types/watchify": "^3.11.1",
     "@types/webextension-polyfill": "^0.10.4",
     "@types/yargs": "^17.0.32",
+    "@types/yargs-parser": "^21",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
     "@whitespace/storybook-addon-html": "^5.1.6",
@@ -602,7 +603,8 @@
     "webextension-polyfill": "^0.8.0",
     "webpack": "^5.89.0",
     "webpack-dev-server": "^4.15.1",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "yargs-parser": "^21.1.1"
   },
   "engines": {
     "node": ">= 18",
