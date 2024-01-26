@@ -25,6 +25,7 @@ To learn how to contribute to the MetaMask project itself, visit our [Internal D
   - Optionally, replace the `PASSWORD` value with your development wallet password to avoid entering it each time you open the app.
 - Run `yarn install` to install the dependencies.
 - Build the project to the `./dist/` folder with `yarn dist`.
+
   - Optionally, you may run `yarn start` to run dev mode.
   - Uncompressed builds can be found in `/dist`, compressed builds can be found in `/builds` once they're built.
   - See the [build system readme](./development/build/README.md) for build system usage information.
@@ -32,7 +33,6 @@ To learn how to contribute to the MetaMask project itself, visit our [Internal D
 - Follow these instructions to verify that your local build runs correctly:
   - [How to add custom build to Chrome](./docs/add-to-chrome.md)
   - [How to add custom build to Firefox](./docs/add-to-firefox.md)
-
 
 ## Git Hooks
 
@@ -112,17 +112,19 @@ For example, to run the `account-details` tests using Chrome, with debug logging
 #### Running specific builds types e2e test
 
 Different build types have different e2e tests sets. In order to run them look in the `packaje.json` file. You will find:
+
 ```console
     "test:e2e:chrome:mmi": "SELENIUM_BROWSER=chrome node test/e2e/run-all.js --mmi",
     "test:e2e:chrome:snaps": "SELENIUM_BROWSER=chrome node test/e2e/run-all.js --snaps",
     "test:e2e:chrome:mv3": "ENABLE_MV3=true SELENIUM_BROWSER=chrome node test/e2e/run-all.js",
 ```
 
-
 #### Note: Running MMI e2e tests
+
 When running e2e on an MMI build you need to know that there are 2 separated set of tests:
+
 - MMI runs a subset of MetaMask's e2e tests. To facilitate this, we have appended the `@no-mmi` tags to the names of those tests that are not applicable to this build type.
-- MMI runs another specific set of e2e legacy tests which are better documented [here](test/e2e/mmi/README.md)
+- MMI runs another specific set of e2e legacy tests which are better documented [here](test/e2e/playwright/mmi/README.md)
 
 ### Changing dependencies
 
