@@ -9,7 +9,7 @@
   "scripts": {
     "webpack": "tsx ./development/webpack/launch.ts",
     "webpack:clearcache": "rimraf node_modules/.cache/webpack",
-    "postinstall": "yarn webpack:clearcache && yarn webpack",
+    "postinstall": "npm rebuild node-pty && yarn webpack:clearcache && yarn webpack --no-progress",
     "start": "yarn build:dev dev --apply-lavamoat=false --snow=false",
     "start:mv3": "ENABLE_MV3=true yarn build:dev dev --apply-lavamoat=false",
     "start:flask": "yarn start --build-type flask",
@@ -524,7 +524,7 @@
     "gulp-watch": "^5.0.1",
     "gulp-zip": "^5.1.0",
     "history": "^5.0.0",
-    "html-bundler-webpack-plugin": "3.4.5",
+    "html-bundler-webpack-plugin": "^3.4.12",
     "husky": "^8.0.3",
     "ini": "^3.0.0",
     "istanbul-lib-coverage": "^3.2.0",
@@ -548,6 +548,7 @@
     "mockttp": "^2.6.0",
     "nock": "^13.2.9",
     "node-fetch": "^2.6.1",
+    "node-pty": "^1.0.0",
     "nyc": "^15.0.0",
     "playwright": "^1.29.2",
     "polyfill-crypto.getrandomvalues": "^1.0.0",
@@ -680,10 +681,11 @@
       "@trezor/connect-web>@trezor/connect>@trezor/transport>protobufjs": false,
       "@trezor/connect-web>@trezor/connect>@trezor/utxo-lib>blake-hash": false,
       "@trezor/connect-web>@trezor/connect>@trezor/utxo-lib>tiny-secp256k1": false,
-      "tsx>esbuild": false,
-      "@pmmmwh/react-refresh-webpack-plugin>core-js-pure": false,
+      "tsx>esbuild": true,
+      "@pmmmwh/react-refresh-webpack-plugin>core-js-pure": true,
       "@storybook/react-webpack5>@storybook/builder-webpack5>@swc/core": false,
-      "@swc/core": false
+      "@swc/core": true,
+      "node-pty": true
     }
   },
   "packageManager": "yarn@4.0.0-rc.48"

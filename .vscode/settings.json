@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["datetime", "datetimes", "endregion", "lavamoat"],
+  "cSpell.words": [
+    "blockaid",
+    "browserlistrc",
+    "datetime",
+    "datetimes",
+    "endregion",
+    "lavamoat"
+  ],
   "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
   "editor.tabSize": 2,
   "files.trimTrailingWhitespace": true,

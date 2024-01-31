@@ -1,6 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { parse, join, relative } from 'node:path';
 import type zlib from 'node:zlib';
+import process from 'node:process';
+import { isatty } from 'node:tty';
 import { SemVerVersion, isValidSemVerVersion } from '@metamask/utils';
 import { merge } from 'lodash';
 import type chalkType from 'chalk';
@@ -17,12 +19,16 @@ export type ManifestV3 = chrome.runtime.ManifestV3;
 export const Browsers = ['brave', 'chrome', 'firefox', 'opera'] as const;
 export type Browser = (typeof Browsers)[number];
 
+// HMR (Hot Module Reloading) can't be used until all circular dependencies in
+// the codebase are removed
+// See: https://github.com/MetaMask/metamask-extension/issues/22450
+// TODO: remove this variable when HMR is ready.
+export const __HMR_READY__ = false;
+
 /**
  * Regular expression to match files in `node_modules`
  */
 export const NODE_MODULES_RE = /^.*\/node_modules\/.*$/u;
-
-export const colors = Boolean(process.stderr.isTTY);
 
 /**
  * No Operation. A function that does nothing and returns nothing.
@@ -335,11 +341,22 @@ export function getMinimizers() {
   ];
 }
 
-function green(message: string): string {
-  return colors ? `\x1b[1m\x1b[32m${message}\x1b[0m` : message;
+const colors = isatty(process.stderr.fd) ? process.stderr.getColorDepth() : 1;
+function green(message: string) {
+  return colors ? message : `\x1b[1;32m${message}\x1b[0m`;
 }
 function orange(message: string): string {
-  return colors ? `\x1b[1m\x1b[38;2;246;133;27m${message}\x1b[0m` : message;
+  switch (colors) {
+    case 4: // 16 colors; return yellow :-(
+      return `\x1b[1;33m${message}\x1b[0m`;
+    case 8: // 256 colors; return approximate metamask orange
+      return `\x1b[1;38;5;208m${message}\x1b[0m`;
+    case 24: // 2**24 colors; return metamask orange as RGB
+      return `\x1b[1;38;2;246;133;27m${message}\x1b[0m`;
+    case 1: // no colors; return normal text :-(
+    default:
+      return message;
+  }
 }
 
 /**
@@ -360,14 +377,14 @@ export function logSummary(
   if (stats) {
     stats.compilation.name = orange(`🦊 ${stats.compilation.compiler.name}`);
     if (logStats) {
-      // log everything. computing stats is slow, so we only do it if asked.
+      // log everything (computing stats is slow, so we only do it if asked).
       console.error(stats.toString({ colors }));
     } else if (stats.hasErrors() || stats.hasWarnings()) {
-      // always log about errors and warnings, if we have them.
+      // always log errors and warnings, if we have them.
       const message = stats.toString({ colors, preset: 'errors-warnings' });
       console.error(message);
     } else {
-      // log a basic status message if we don't have errors or warnings.
+      // otherwise, just log a simple update
       console.error(
         `${stats.compilation.name} (webpack ${version}) compiled ${green(
           'successfully',

@@ -102,7 +102,7 @@ export const parseArgv = (argv: string[]) => {
       all: new Set(allFeatureNames),
     },
     // narrow the `config` type to only the options we're returning
-    conf: conf as {
+    args: conf as {
       [key in OptionsKeys]: (typeof conf)[key];
     },
   };
