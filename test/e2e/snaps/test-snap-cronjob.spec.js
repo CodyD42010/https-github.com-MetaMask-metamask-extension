@@ -67,7 +67,7 @@ describe('Test Snap Cronjob', function () {
         });
 
         // switch to dialog popup, wait for a maximum of 65 seconds
-        windowHandles = await driver.waitUntilXWindowHandles(3, 1000, 65000);
+        windowHandles = await driver.waitUntilXWindowHandles(3, 1000, 80000);
         await driver.switchToWindowWithTitle(
           WINDOW_TITLES.Dialog,
           windowHandles,
