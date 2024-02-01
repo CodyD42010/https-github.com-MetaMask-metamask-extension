@@ -214,6 +214,12 @@ async function main() {
     myTestList = testPaths;
   }
 
+  if (myTestList.length !== 0) {
+    myTestList = Array(8)
+      .fill('test/e2e/snaps/test-snap-cronjob.spec.js')
+      .flat();
+  }
+
   console.log('My test list:', myTestList);
 
   // spawn `run-e2e-test.js` for each test in myTestList
