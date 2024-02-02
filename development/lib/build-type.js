@@ -21,7 +21,7 @@ const {
 const yaml = require('js-yaml');
 const { uniqWith } = require('lodash');
 
-const BUILDS_YML_PATH = path.resolve('./builds.yml');
+const BUILDS_YML_PATH = path.resolve(path.join(__dirname, '../../builds.yml'));
 
 /**
  * @type {import('superstruct').Infer<typeof BuildTypesStruct> | null}
