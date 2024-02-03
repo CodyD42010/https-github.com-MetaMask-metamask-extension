@@ -8,7 +8,7 @@ export default function shouldInjectProvider() {
     doctypeCheck() &&
     suffixCheck() &&
     documentElementCheck() &&
-    !blockedDomainCheck()
+    !blockedUrlCheck()
   );
 }
 
@@ -59,12 +59,13 @@ function documentElementCheck() {
 }
 
 /**
- * Checks if the current domain is blocked
+ * Checks if the current url is blocked
  *
- * @returns {boolean} {@code true} if the current domain is blocked
+ * @returns {boolean} {@code true} if the current url is blocked
  */
-function blockedDomainCheck() {
-  const blockedDomains = [
+function blockedUrlCheck() {
+  // TODO: these should be regular expressions or functions.
+  const blockedUrls = [
     'execution.consensys.io',
     'execution.metamask.io',
     'uscourts.gov',
@@ -79,17 +80,34 @@ function blockedDomainCheck() {
     'sharefile.com',
     'battle.net',
   ];
-  const currentUrl = window.location.href;
-  let currentRegex;
-  for (let i = 0; i < blockedDomains.length; i++) {
-    const blockedDomain = blockedDomains[i].replaceAll('.', '\\.');
-    currentRegex = new RegExp(
-      `(?:https?:\\/\\/)(?:(?!${blockedDomain}).)*$`,
-      'u',
-    );
-    if (!currentRegex.test(currentUrl)) {
-      return true;
+
+  // NOTE: this doesn't include the port, if we want port we need to change to
+  // `windows.location.host`
+  const host = windows.location.hostname;
+  // ignore search and hash parts (e.g., `?search=1#hash`)
+  const pathname = windows.location.pathname;
+  const protocol = window.location.protocol;
+
+  // Check if the extracted domain is in the blocked domains list
+  return blockedUrls.some((blockedUrl) => {
+    const url = new URL(`${protocol}//${blockedUrl}`);
+    // sanity check; this blocklist algo doesn't support search or hash parts
+    if (url.search !== "" && url.hash !== "") {
+      throw new Error(`Blocked URL should not have search or hash parts, or the ${blockedUrlCheck.name} function should be updated to handle this scenario.`);
     }
-  }
-  return false;
+    // we want to block this domain and any and all subdomains
+    // If the window.location is www.execution.consensys.io and the domain is
+    // `execution.consensys.io` we want to block it. However, we do NOT want to
+    // block `non-execution.consensys.io`, hence the extra "." in the `endsWith`
+    // check.
+    if (host === url.hostname || host.endsWith("." + url.hostname)) {
+      // if our blockedUrl does not have a pathname we're done checking
+      if (url.pathname === "/") {
+        return true;
+        // if we do have a path name we check for an exact match.
+      } else if (url.pathname === pathname) {
+        return true;
+      }
+    }
+  });
 }
