@@ -78,6 +78,19 @@ exports[`Confirm should match snapshot for personal signature 1`] = `
         </div>
       </div>
       <div
+        class="mm-box request-signature__mismatch-info mm-box--margin-bottom-4 mm-box--padding-4 mm-box--display-flex mm-box--width-full mm-box--background-color-primary-muted"
+      >
+        <span
+          class="mm-box mm-icon mm-icon--size-md mm-box--margin-right-2 mm-box--display-inline-block mm-box--color-info-default"
+          style="mask-image: url('./images/icons/info.svg');"
+        />
+        <p
+          class="mm-box mm-text mm-text--body-xs mm-box--color-text-default"
+        >
+          Your selected account (0x8Eeee...73D12) is different than the account trying to sign (0x8Eeee...73D12)
+        </p>
+      </div>
+      <div
         class="mm-box mm-box--padding-inline-4"
       >
         <h2
