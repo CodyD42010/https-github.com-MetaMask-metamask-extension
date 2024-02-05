@@ -41,7 +41,7 @@ const Footer = () => {
     if (!currentConfirmation) {
       return;
     }
-    dispatch(resolvePendingApproval(currentConfirmation.id));
+    dispatch(resolvePendingApproval(currentConfirmation.id, undefined));
   }, [currentConfirmation]);
 
   return (
