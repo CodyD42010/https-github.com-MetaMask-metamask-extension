@@ -2,6 +2,9 @@ import React from 'react';
 
 import { Footer } from '../../components/app/confirm/footer';
 import { Header } from '../../components/app/confirm/header';
+///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
+import { MMISignatureSection } from '../../components/app/confirm/mmi-signature-section';
+///: END:ONLY_INCLUDE_IF
 import { SenderInfo } from '../../components/app/confirm/sender-info';
 import { SignatureMessage } from '../../components/app/confirm/signature-message';
 import { ConfirmTitle } from '../../components/app/confirm/title';
@@ -31,6 +34,11 @@ const Confirm = () => {
     >
       <Box>
         <Header />
+        {
+          ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
+          <MMISignatureSection />
+          ///: END:ONLY_INCLUDE_IF
+        }
         <Box paddingInline={4}>
           <ConfirmTitle />
           <SenderInfo />
