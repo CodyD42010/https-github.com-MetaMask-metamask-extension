@@ -1,19 +1,49 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { ethErrors, serializeError } from 'eth-rpc-errors';
+import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  BlockSize,
+  Display,
+  FlexDirection,
+} from '../../../../helpers/constants/design-system';
+import { currentConfirmationSelector } from '../../../../selectors';
+import {
+  rejectPendingApproval,
+  resolvePendingApproval,
+} from '../../../../store/actions';
+import { useI18nContext } from '../../../../hooks/useI18nContext';
 import {
   Box,
   Button,
   ButtonSize,
   ButtonVariant,
 } from '../../../component-library';
-import {
-  BlockSize,
-  Display,
-  FlexDirection,
-} from '../../../../helpers/constants/design-system';
-import { useI18nContext } from '../../../../hooks/useI18nContext';
 
 const Footer = () => {
   const t = useI18nContext();
+  const currentConfirmation = useSelector(currentConfirmationSelector);
+  const dispatch = useDispatch();
+
+  const onCancel = useCallback(() => {
+    if (!currentConfirmation) {
+      return;
+    }
+    dispatch(
+      rejectPendingApproval(
+        currentConfirmation.id,
+        serializeError(ethErrors.provider.userRejectedRequest()),
+      ),
+    );
+  }, [currentConfirmation]);
+
+  const onSubmit = useCallback(() => {
+    if (!currentConfirmation) {
+      return;
+    }
+    dispatch(resolvePendingApproval(currentConfirmation.id));
+  }, [currentConfirmation]);
+
   return (
     <Box
       display={Display.Flex}
@@ -25,15 +55,17 @@ const Footer = () => {
       <Button
         block
         data-testid="confirm-footer-cancel-button"
-        variant={ButtonVariant.Secondary}
+        onClick={onCancel}
         size={ButtonSize.Lg}
+        variant={ButtonVariant.Secondary}
       >
         {t('cancel')}
       </Button>
       <Button
-        size={ButtonSize.Lg}
         block
         data-testid="confirm-footer-confirm-button"
+        onClick={onSubmit}
+        size={ButtonSize.Lg}
       >
         {t('confirm')}
       </Button>

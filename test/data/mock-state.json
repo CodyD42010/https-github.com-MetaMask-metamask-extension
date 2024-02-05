@@ -1,4 +1,7 @@
 {
+  "localeMessages": {
+    "currentLocale": "en"
+  },
   "DNS": {
     "resolution": null
   },
