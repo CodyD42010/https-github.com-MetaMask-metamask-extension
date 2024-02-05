@@ -1,7 +1,4 @@
 {
-  "localeMessages": {
-    "currentLocale": "en"
-  },
   "DNS": {
     "resolution": null
   },
@@ -36,6 +33,9 @@
   },
   "history": {
     "mostRecentOverviewPage": "/mostRecentOverviewPage"
+  },
+  "localeMessages": {
+    "currentLocale": "en"
   },
   "metamask": {
     "use4ByteResolution": true,
