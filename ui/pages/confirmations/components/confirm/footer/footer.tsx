@@ -43,19 +43,13 @@ const Footer = () => {
     <PageFooter>
       <Button
         block
-        data-testid="confirm-footer-cancel-button"
         onClick={onCancel}
         size={ButtonSize.Lg}
         variant={ButtonVariant.Secondary}
       >
         {t('cancel')}
       </Button>
-      <Button
-        block
-        data-testid="confirm-footer-confirm-button"
-        onClick={onSubmit}
-        size={ButtonSize.Lg}
-      >
+      <Button block onClick={onSubmit} size={ButtonSize.Lg}>
         {t('confirm')}
       </Button>
     </PageFooter>
