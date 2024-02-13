@@ -5,7 +5,7 @@ import { fireEvent, renderWithProvider } from '../../../../../../test/jest';
 import * as Actions from '../../../../../store/actions';
 import configureStore from '../../../../../store/store';
 
-import { Footer } from './';
+import { Footer } from '.';
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
