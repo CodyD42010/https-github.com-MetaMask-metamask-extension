@@ -1,13 +1,7 @@
 import React from 'react';
 
-import { Box } from '../../../components/component-library';
-import {
-  BackgroundColor,
-  BlockSize,
-  Display,
-  FlexDirection,
-  JustifyContent,
-} from '../../../helpers/constants/design-system';
+import { Content, Page } from '../../../components/multichain/pages/page';
+import { BackgroundColor } from '../../../helpers/constants/design-system';
 import { Footer } from '../components/confirm/footer';
 import { Header } from '../components/confirm/header';
 ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
@@ -24,29 +18,20 @@ const Confirm = () => {
   syncConfirmPath();
 
   return (
-    <Box
-      backgroundColor={BackgroundColor.backgroundAlternative}
-      display={Display.Flex}
-      flexDirection={FlexDirection.Column}
-      justifyContent={JustifyContent.spaceBetween}
-      height={BlockSize.Full}
-      width={BlockSize.Full}
-    >
-      <Box>
-        <Header />
-        {
-          ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
-          <MMISignatureSection />
-          ///: END:ONLY_INCLUDE_IF
-        }
-        <Box paddingInline={4}>
-          <Title />
-          <Info />
-          <SignatureMessage />
-        </Box>
-      </Box>
+    <Page>
+      <Header />
+      {
+        ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
+        <MMISignatureSection />
+        ///: END:ONLY_INCLUDE_IF
+      }
+      <Content backgroundColor={BackgroundColor.backgroundAlternative}>
+        <Title />
+        <Info />
+        <SignatureMessage />
+      </Content>
       <Footer />
-    </Box>
+    </Page>
   );
 };
 

@@ -71,8 +71,8 @@ const MMISignatureSection: React.FC = memo(() => {
       />
       <Text variant={TextVariant.bodyXs} color={TextColor.textDefault}>
         {t('mismatchAccount', [
-          shortenAddress(selectedAccount.address),
-          shortenAddress(fromAccount.address),
+          shortenAddress(selectedAccount?.address),
+          shortenAddress(fromAccount?.address),
         ])}
       </Text>
     </Box>
