@@ -69,56 +69,48 @@ function runningOnCircleCI(testPaths) {
 
 async function main() {
   const { argv } = yargs(hideBin(process.argv))
-    .usage(
-      '$0 [options]',
-      'Run all E2E tests, with a variable number of retries.',
-      (_yargs) =>
-        _yargs
-          .option('browser', {
-            description: `Set the browser used; either 'chrome' or 'firefox'.`,
-            type: 'string',
-            choices: ['chrome', 'firefox'],
-          })
-          .option('debug', {
-            default: process.env.E2E_DEBUG === 'true',
-            description:
-              'Run tests in debug mode, logging each driver interaction',
-            type: 'boolean',
-          })
-          .option('mmi', {
-            description: `Run only mmi related tests`,
-            type: 'boolean',
-          })
-          .option('rpc', {
-            description: `run json-rpc specific e2e tests`,
-            type: 'boolean',
-          })
-          .option('multi-provider', {
-            description: `run multi injected provider e2e tests`,
-            type: 'boolean',
-          })
-          .option('build-type', {
-            description: `Sets the build-type to test for. This may filter out tests.`,
-            type: 'string',
-            choices: Object.keys(loadBuildTypesConfig().buildTypes),
-          })
-          .option('retries', {
-            description:
-              'Set how many times the test should be retried upon failure.',
-            type: 'number',
-          })
-          .option('update-snapshot', {
-            alias: 'u',
-            default: false,
-            description: 'Update E2E snapshots',
-            type: 'boolean',
-          })
-          .option('update-privacy-snapshot', {
-            default: false,
-            description:
-              'Update the privacy snapshot to include new hosts and paths',
-            type: 'boolean',
-          }),
+    .usage('$0 [options]', 'Run all E2E tests', (_yargs) =>
+      _yargs
+        .option('browser', {
+          description: `Set the browser used; either 'chrome' or 'firefox'.`,
+          type: 'string',
+          choices: ['chrome', 'firefox'],
+        })
+        .option('debug', {
+          default: process.env.E2E_DEBUG === 'true',
+          description:
+            'Run tests in debug mode, logging each driver interaction',
+          type: 'boolean',
+        })
+        .option('mmi', {
+          description: `Run only mmi related tests`,
+          type: 'boolean',
+        })
+        .option('rpc', {
+          description: `run json-rpc specific e2e tests`,
+          type: 'boolean',
+        })
+        .option('multi-provider', {
+          description: `run multi injected provider e2e tests`,
+          type: 'boolean',
+        })
+        .option('build-type', {
+          description: `Sets the build-type to test for. This may filter out tests.`,
+          type: 'string',
+          choices: Object.keys(loadBuildTypesConfig().buildTypes),
+        })
+        .option('update-snapshot', {
+          alias: 'u',
+          default: false,
+          description: 'Update E2E snapshots',
+          type: 'boolean',
+        })
+        .option('update-privacy-snapshot', {
+          default: false,
+          description:
+            'Update the privacy snapshot to include new hosts and paths',
+          type: 'boolean',
+        }),
     )
     .strict()
     .help('help');
@@ -126,7 +118,6 @@ async function main() {
   const {
     browser,
     debug,
-    retries,
     mmi,
     rpc,
     buildType,
@@ -188,9 +179,6 @@ async function main() {
   const args = [runE2eTestPath];
   if (browser) {
     args.push('--browser', browser);
-  }
-  if (retries) {
-    args.push('--retries', retries);
   }
   if (debug) {
     args.push('--debug');

@@ -1,10 +1,7 @@
 const { promises: fs } = require('fs');
-const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { runInShell } = require('../../development/lib/run-command');
 const { exitWithError } = require('../../development/lib/exit-with-error');
-const { retry } = require('../../development/lib/retry');
 
 async function main() {
   const { argv } = yargs(hideBin(process.argv))
@@ -27,17 +24,6 @@ async function main() {
           })
           .option('mmi', {
             description: 'Run only mmi related tests',
-            type: 'boolean',
-          })
-          .option('retries', {
-            default: 0,
-            description:
-              'Set how many times the test should be retried upon failure.',
-            type: 'number',
-          })
-          .option('retry-until-failure', {
-            default: false,
-            description: 'Retries until the test fails',
             type: 'boolean',
           })
           .option('leave-running', {
@@ -72,8 +58,6 @@ async function main() {
     debug,
     mmi,
     e2eTestPath,
-    retries,
-    retryUntilFailure,
     leaveRunning,
     updateSnapshot,
     updatePrivacySnapshot,
@@ -111,13 +95,8 @@ async function main() {
     process.env.E2E_DEBUG = 'true';
   }
 
-  let testTimeoutInMilliseconds = 80 * 1000;
-  let exit = '--exit';
-
   if (leaveRunning) {
     process.env.E2E_LEAVE_RUNNING = 'true';
-    testTimeoutInMilliseconds = 0;
-    exit = '--no-exit';
   }
 
   if (updateSnapshot) {
@@ -128,7 +107,6 @@ async function main() {
     process.env.UPDATE_PRIVACY_SNAPSHOT = 'true';
   }
 
-  const configFile = path.join(__dirname, '.mocharc.js');
   const extraArgs = process.env.E2E_ARGS?.split(' ') || [];
 
   // If mmi flag is passed
@@ -140,20 +118,6 @@ async function main() {
 
   const dir = 'test/test-results/e2e';
   fs.mkdir(dir, { recursive: true });
-
-  await retry({ retries, retryUntilFailure }, async () => {
-    await runInShell('yarn', [
-      'mocha',
-      `--config=${configFile}`,
-      `--timeout=${testTimeoutInMilliseconds}`,
-      '--reporter=mocha-junit-reporter',
-      '--reporter-options',
-      `mochaFile=test/test-results/e2e/[hash].xml,toConsole=true`,
-      ...extraArgs,
-      e2eTestPath,
-      exit,
-    ]);
-  });
 }
 
 main().catch((error) => {

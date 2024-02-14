@@ -97,8 +97,6 @@ Single e2e tests can be run with `yarn test:e2e:single test/e2e/tests/TEST_NAME.
                                             [string] [choices: "chrome", "firefox"]
   --debug             Run tests in debug mode, logging each driver interaction
                                                          [boolean] [default: false]
-  --retries           Set how many times the test should be retried upon failure.
-                                                              [number] [default: 0]
   --leave-running     Leaves the browser running after a test fails, along with
                       anything else that the test used (ganache, the test dapp,
                       etc.)                              [boolean] [default: false]
