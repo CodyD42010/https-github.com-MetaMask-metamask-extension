@@ -12,6 +12,14 @@ jest.mock('react-redux', () => ({
   useDispatch: () => jest.fn(),
 }));
 
+const mockHistoryReplace = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useHistory: () => ({
+    replace: mockHistoryReplace,
+  }),
+}));
+
 const render = () => {
   const store = configureStore({
     metamask: {
@@ -41,6 +49,26 @@ const render = () => {
             test: 'value',
           },
         },
+        testApprovalId3: {
+          id: 'testApprovalId3',
+          time: 1528133319649,
+          origin: 'metamask',
+          type: 'personal_sign',
+          requestData: {
+            txId: 'testTransactionId',
+          },
+          requestState: {
+            test: 'value',
+          },
+        },
+      },
+    },
+    confirm: {
+      currentConfirmation: {
+        id: 'testApprovalId2',
+        msgParams: {
+          from: '0x0dcd5d886577d5081b0c52e242ef29e70be3e7bc',
+        },
       },
     },
   });
@@ -57,17 +85,35 @@ describe('ConfirmNav', () => {
   it('renders the "Reject all" Button', () => {
     const { getAllByRole, getByText } = render();
     const buttons = getAllByRole('button');
-    expect(buttons).toHaveLength(1);
+    expect(buttons).toHaveLength(3);
     expect(getByText('Reject all')).toBeInTheDocument();
+  });
+
+  it('renders button to navigate to previous or next confirmation', () => {
+    const { getAllByRole, getByLabelText } = render();
+    const buttons = getAllByRole('button');
+    expect(buttons).toHaveLength(3);
+    expect(getByLabelText('Previous Confirmation')).toBeInTheDocument();
+    expect(getByLabelText('Next Confirmation')).toBeInTheDocument();
+  });
+
+  it('invoke history replace method when previous or next buttons are clicked', () => {
+    const { getByLabelText } = render();
+    const prevButton = getByLabelText('Previous Confirmation');
+    fireEvent.click(prevButton);
+    expect(mockHistoryReplace).toHaveBeenCalledTimes(1);
+    const nextButton = getByLabelText('Next Confirmation');
+    fireEvent.click(nextButton);
+    expect(mockHistoryReplace).toHaveBeenCalledTimes(2);
   });
 
   it('invoke action rejectPendingApproval for all pending approvals when "Reject all" button is clicked', () => {
     const { getByRole } = render();
-    const rejectAllButton = getByRole('button');
+    const rejectAllButton = getByRole('button', { name: /Reject all/iu });
     const rejectSpy = jest
       .spyOn(Actions, 'rejectPendingApproval')
       .mockImplementation(() => ({} as any));
     fireEvent.click(rejectAllButton);
-    expect(rejectSpy).toHaveBeenCalledTimes(2);
+    expect(rejectSpy).toHaveBeenCalledTimes(3);
   });
 });

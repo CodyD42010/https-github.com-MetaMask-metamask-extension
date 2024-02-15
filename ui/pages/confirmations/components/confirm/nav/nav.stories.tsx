@@ -34,6 +34,26 @@ const store = configureStore({
           test: 'value',
         },
       },
+      testApprovalId3: {
+        id: 'testApprovalId3',
+        time: 1528133319649,
+        origin: 'metamask',
+        type: 'personal_sign',
+        requestData: {
+          txId: 'testTransactionId',
+        },
+        requestState: {
+          test: 'value',
+        },
+      },
+    },
+  },
+  confirm: {
+    currentConfirmation: {
+      id: 'testApprovalId2',
+      msgParams: {
+        from: '0x0dcd5d886577d5081b0c52e242ef29e70be3e7bc',
+      },
     },
   },
 });
