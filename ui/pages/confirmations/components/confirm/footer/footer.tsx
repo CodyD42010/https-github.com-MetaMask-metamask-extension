@@ -10,14 +10,12 @@ import {
 import { Footer as PageFooter } from '../../../../../components/multichain/pages/page';
 import { useI18nContext } from '../../../../../hooks/useI18nContext';
 import { useMMIConfirmationInfo } from '../../../../../hooks/useMMIConfirmations';
-import {
-  currentConfirmationSelector,
-  doesAddressRequireLedgerHidConnection,
-} from '../../../../../selectors';
+import { doesAddressRequireLedgerHidConnection } from '../../../../../selectors';
 import {
   rejectPendingApproval,
   resolvePendingApproval,
 } from '../../../../../store/actions';
+import { currentConfirmationSelector } from '../../../selectors';
 
 const Footer = () => {
   const t = useI18nContext();

@@ -8,5 +8,6 @@ const SignatureApprovalTypes = [
   ApprovalType.EthSignTypedData,
 ];
 
-export const isSignatureApprovalRequest = (request: ApprovalRequest<Record<string, Json>>) =>
-  SignatureApprovalTypes.includes(request.type as ApprovalType);
+export const isSignatureApprovalRequest = (
+  request: ApprovalRequest<Record<string, Json>>,
+) => SignatureApprovalTypes.includes(request.type as ApprovalType);

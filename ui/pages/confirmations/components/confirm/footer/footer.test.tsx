@@ -4,9 +4,11 @@ import mockState from '../../../../../../test/data/mock-state.json';
 import { fireEvent, renderWithProvider } from '../../../../../../test/jest';
 import * as Actions from '../../../../../store/actions';
 import configureStore from '../../../../../store/store';
-
+import {
+  LedgerTransportTypes,
+  WebHIDConnectedStatuses,
+} from '../../../../../../shared/constants/hardware-wallets';
 import Footer from './footer';
-import { LedgerTransportTypes, WebHIDConnectedStatuses } from '../../../../../../shared/constants/hardware-wallets';
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -25,7 +27,7 @@ const render = (args = {}) => {
         },
       },
     },
-    ...args
+    ...args,
   });
 
   return renderWithProvider(<Footer />, store);
@@ -69,7 +71,7 @@ describe('ConfirmFooter', () => {
     const { getAllByRole } = render({
       metamask: {
         ...mockState.metamask,
-        ledgerTransportType: LedgerTransportTypes.webhid
+        ledgerTransportType: LedgerTransportTypes.webhid,
       },
       confirm: {
         currentConfirmation: {
@@ -80,8 +82,8 @@ describe('ConfirmFooter', () => {
       },
       appState: {
         ...mockState.appState,
-        ledgerWebHidConnectedStatus: WebHIDConnectedStatuses.notConnected
-      }
+        ledgerWebHidConnectedStatus: WebHIDConnectedStatuses.notConnected,
+      },
     });
     const submitButton = getAllByRole('button')[1];
     expect(submitButton).toBeDisabled();

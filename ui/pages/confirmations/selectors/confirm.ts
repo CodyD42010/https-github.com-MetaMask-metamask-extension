@@ -1,7 +1,7 @@
 import { ApprovalType } from '@metamask/controller-utils';
 
 import { getPendingApprovals } from '../../../selectors/approvals';
-import { ConfirmMetamaskState } from '../../../pages/confirmations/types/confirm';
+import { ConfirmMetamaskState } from '../types/confirm';
 
 const ConfirmationApprovalTypes = [
   ApprovalType.EthSign,

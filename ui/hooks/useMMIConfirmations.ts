@@ -1,3 +1,4 @@
+import { TransactionType } from '@metamask/transaction-controller';
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -5,7 +6,6 @@ import { currentConfirmationSelector } from '../pages/confirmations/selectors';
 import { getAccountType } from '../selectors';
 import { completedTx, showModal } from '../store/actions';
 import { mmiActionsFactory } from '../store/institutional/institution-background';
-import { TransactionType } from '@metamask/transaction-controller';
 
 export function useMMIConfirmationInfo() {
   const dispatch = useDispatch();
