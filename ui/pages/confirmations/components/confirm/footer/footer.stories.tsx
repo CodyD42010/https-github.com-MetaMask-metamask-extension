@@ -20,7 +20,7 @@ const store = configureStore({
 });
 
 const Story = {
-  title: 'Components/App/Confirm/Footer',
+  title: 'Confirmations/Components/Confirm/Footer',
   component: Footer,
   decorators: [(story: any) => <Provider store={store}>{story()}</Provider>],
 };
