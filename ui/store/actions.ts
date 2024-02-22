@@ -1,3 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck `redux-thunk` and `@reduxjs/toolkit` are not compatible with
+// TypeScript 5.3.3. We can't update them because we rely on an old version of
+// @reduxjs/toolkit to be patched by our patch files. The patch is 6000+ lines.
+// I don't want to try to figure that one out.
 import { ReactFragment } from 'react';
 import log from 'loglevel';
 import { captureException } from '@sentry/browser';
@@ -27,6 +32,7 @@ import {
   TransactionType,
 } from '@metamask/transaction-controller';
 import { NetworkClientId } from '@metamask/network-controller';
+import { InterfaceState } from '@metamask/snaps-sdk';
 import { getMethodDataAsync } from '../helpers/utils/transactions.util';
 import switchDirection from '../../shared/lib/switch-direction';
 import {
@@ -3232,7 +3238,7 @@ export function detectNfts(): ThunkAction<
 }
 
 export function setAdvancedGasFee(
-  val: { chainId: Hex; maxBaseFee?: Hex; priorityFee?: Hex } | null,
+  val: { chainId: Hex; maxBaseFee?: string; priorityFee?: string } | null,
 ): ThunkAction<void, MetaMaskReduxState, unknown, AnyAction> {
   return (dispatch: MetaMaskReduxDispatch) => {
     dispatch(showLoadingIndication());
@@ -4565,6 +4571,10 @@ export function hideBetaHeader() {
   return submitRequestToBackground('setShowBetaHeader', [false]);
 }
 
+export function hidePermissionsTour() {
+  return submitRequestToBackground('setShowPermissionsTour', [false]);
+}
+
 export function hideProductTour() {
   return submitRequestToBackground('setShowProductTour', [false]);
 }
@@ -4787,6 +4797,38 @@ export function setSnapsInstallPrivacyWarningShownStatus(shown: boolean) {
       [shown],
     );
   };
+}
+
+/**
+ * Update the state of a given Snap interface.
+ *
+ * @param id - The Snap interface ID.
+ * @param state - The interface state.
+ * @returns Promise Resolved on successfully submitted background request.
+ */
+export function updateInterfaceState(
+  id: string,
+  state: InterfaceState,
+): ThunkAction<void, MetaMaskReduxState, unknown, AnyAction> {
+  return (async (dispatch: MetaMaskReduxDispatch) => {
+    await submitRequestToBackground<void>('updateInterfaceState', [id, state]);
+    await forceUpdateMetamaskState(dispatch);
+  }) as any;
+}
+
+/**
+ * Delete the Snap interface from state.
+ *
+ * @param id - The Snap interface ID.
+ * @returns Promise Resolved on successfully submitted background request.
+ */
+export function deleteInterface(
+  id: string,
+): ThunkAction<void, MetaMaskReduxState, unknown, AnyAction> {
+  return (async (dispatch: MetaMaskReduxDispatch) => {
+    await submitRequestToBackground<void>('deleteInterface', [id]);
+    await forceUpdateMetamaskState(dispatch);
+  }) as any;
 }
 ///: END:ONLY_INCLUDE_IF
 
