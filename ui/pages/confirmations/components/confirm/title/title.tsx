@@ -12,10 +12,12 @@ import { currentConfirmationSelector } from '../../../../../selectors';
 
 const typeToTitleTKey: Partial<Record<TransactionType, string>> = {
   [TransactionType.personalSign]: 'confirmTitleSignature',
+  contractDeployment: 'contractDeployment',
 };
 
 const typeToDescTKey: Partial<Record<TransactionType, string>> = {
   [TransactionType.personalSign]: 'confirmTitleDescSignature',
+  contractDeployment: 'contractDescription',
 };
 
 const ConfirmTitle: React.FC = memo(() => {

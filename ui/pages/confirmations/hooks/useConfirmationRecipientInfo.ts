@@ -14,10 +14,21 @@ function useConfirmationRecipientInfo() {
   let recipientName = '';
 
   if (currentConfirmation) {
-    const { msgParams } = currentConfirmation;
-    // url for all signature requests
-    if (msgParams) {
-      recipientAddress = msgParams.from;
+    if (currentConfirmation.type === 'personal_sign') {
+      const { msgParams } = currentConfirmation;
+      // url for all signature requests
+      if (msgParams) {
+        recipientAddress = msgParams.from;
+      }
+    } else if (currentConfirmation.type === 'contractDeployment') {
+      const { txParams } = currentConfirmation as any;
+      // url for rest of transactions
+      if (txParams) {
+        recipientAddress = txParams.from;
+      }
+    }
+
+    if (recipientAddress) {
       const fromAccount = getAccountByAddress(allAccounts, recipientAddress);
       recipientName = fromAccount?.name;
     }

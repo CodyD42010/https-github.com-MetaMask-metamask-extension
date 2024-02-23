@@ -13,7 +13,9 @@ export type SignatureRequestType = {
   custodyId?: string;
 };
 
-export type Confirmation = SignatureRequestType;
+export type SomeTransaction = Record<any, any>;
+
+export type Confirmation = SignatureRequestType | SomeTransaction;
 
 export type ConfirmMetamaskState = {
   confirm: {

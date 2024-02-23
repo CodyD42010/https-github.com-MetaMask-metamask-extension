@@ -54,6 +54,7 @@ const Nav = () => {
 
   const onNavigateToTransaction = useCallback(
     (pos: number) => {
+      console.log('---------------', pendingConfirmations, currentConfirmationPosition + pos)
       const nextConfirmation =
         pendingConfirmations[currentConfirmationPosition + pos];
       // todo: once all signature request pages are ported to new designs
