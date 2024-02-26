@@ -452,7 +452,7 @@ function createScriptTasks({
         buildTarget,
         buildType,
         browserPlatforms,
-        destFilepath: `${inpage}.js`,
+        destFilepath: `scripts/${inpage}.js`,
         entryFilepath: `./app/scripts/${inpage}.js`,
         label: inpage,
         ignoredFiles,
@@ -470,7 +470,7 @@ function createScriptTasks({
         // stringify inpage.js into itself, and then make it inject itself into the page
         browserPlatforms.forEach((browser) => {
           makeSelfInjecting(
-            path.join(__dirname, `../../dist/${browser}/${inpage}.js`),
+            path.join(__dirname, `../../dist/${browser}/scripts/${inpage}.js`),
           );
         });
         // delete the inpage.js source map, as it no longer represents inpage.js
@@ -478,14 +478,17 @@ function createScriptTasks({
         // useful anyway, as inpage.js is injected as a `script.textContent`,
         // and not tracked in Sentry or browsers devtools anyway.
         unlinkSync(
-          path.join(__dirname, `../../dist/sourcemaps/${inpage}.js.map`),
+          path.join(
+            __dirname,
+            `../../dist/sourcemaps/scripts/${inpage}.js.map`,
+          ),
         );
       },
       createNormalBundle({
         buildTarget,
         buildType,
         browserPlatforms,
-        destFilepath: `${contentscript}.js`,
+        destFilepath: `scripts/${contentscript}.js`,
         entryFilepath: `./app/scripts/${contentscript}.js`,
         label: contentscript,
         ignoredFiles,
@@ -1326,7 +1329,19 @@ function renderHtmlFile({
   const htmlTemplate = readFileSync(htmlFilePath, 'utf8');
 
   const eta = new Eta();
-  const htmlOutput = eta.renderString(htmlTemplate, { isMMI, isTest });
+  const htmlOutput = eta
+    .renderString(htmlTemplate, { isMMI, isTest })
+    // these replacements are added to support the webpack build's automatic
+    // compilation of html files, which the gulp-based process doesn't support.
+    .replace('./scripts/load-background.ts', './load-background.js')
+    .replace(
+      '<script src="./load-background.js"></script>',
+      '<script src="./load-background.js"></script>\n    <script src="./chromereload.js"></script>',
+    )
+    .replace('./scripts/load-ui.ts', './load-app.js')
+    .replace('../ui/css/index.scss', './index.css')
+    .replace('@lavamoat/snow/snow.prod.js', './snow.js')
+    .replace('./scripts/use-snow.js', './use-snow.js');
   browserPlatforms.forEach((platform) => {
     const dest = `./dist/${platform}/${htmlName}.html`;
     // we dont have a way of creating async events atm
