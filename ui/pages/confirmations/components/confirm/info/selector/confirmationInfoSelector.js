@@ -1,157 +1,129 @@
+import React from 'react';
 import { parseStandardTokenTransactionData } from '../../../../../../../shared/modules/transaction.utils';
-import { ConfirmInfoRowType } from '../../../../../../components/app/confirm/info/info';
+import {
+  ConfirmInfoRowText,
+  ConfirmInfoRowUrl,
+} from '../../../../../../components/app/confirm/info/row';
 import { getSelectedAccountCachedBalance } from '../../../../../../selectors';
 
-const personalSignInfoSelector = (state) => {
+const personalSignInfoSelector = (state, t) => {
   const { currentConfirmation } = state.confirm;
 
   return [
-    {
-      label: 'request_from',
-      type: ConfirmInfoRowType.UrlType,
-      rowProps: {
-        url: currentConfirmation.msgParams?.origin,
-        tooltip: 'this is some dummy tooltip',
-      },
-    },
+    <ConfirmInfoRowUrl
+      key="request_from"
+      label={t('request_from')}
+      url={currentConfirmation.msgParams?.origin}
+      tooltip="this is some dummy tooltip"
+    />,
   ];
 };
 
-const contractDeploymentInfoSelector = (state) => {
+const contractDeploymentInfoSelector = (state, t) => {
   const { currentConfirmation } = state.confirm;
 
   return [
-    {
-      label: 'request_from',
-      type: ConfirmInfoRowType.UrlType,
-      rowProps: {
-        url: currentConfirmation.origin,
-        tooltip: 'this is some dummy tooltip',
-      },
-    },
-    {
-      label: 'sender',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.from,
-      },
-    },
-    {
-      label: 'default_gas_estimates',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.defaultGasEstimates.estimateType,
-      },
-    },
-    {
-      label: 'maxFeePerGas',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        // example here displays gas, gas editing will be handled by value component
-        // when edit icon it clicked it will open gas selection modal and update the gas value
-        // using the id passed from here
-        text: currentConfirmation.txParams?.maxFeePerGas,
-        confirmation_id: currentConfirmation.id,
-      },
-    },
-    {
-      label: 'maxPriorityFeePerGas',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.maxPriorityFeePerGas,
-      },
-    },
+    <ConfirmInfoRowUrl
+      key="request_from"
+      label={t('request_from')}
+      url={currentConfirmation.origin}
+      tooltip="this is some dummy tooltip"
+    />,
+    <ConfirmInfoRowText
+      key="sender"
+      label={t('sender')}
+      text={currentConfirmation.txParams?.from}
+    />,
+    <ConfirmInfoRowText
+      key="default_gas_estimates"
+      label={t('default_gas_estimates')}
+      text={currentConfirmation.defaultGasEstimates.estimateType}
+    />,
+    <ConfirmInfoRowText
+      key="maxFeePerGas"
+      label={t('maxFeePerGas')}
+      text={currentConfirmation.txParams?.maxFeePerGas}
+      confirmation_id={currentConfirmation.id}
+    />,
+    <ConfirmInfoRowText
+      key="maxPriorityFeePerGas"
+      label={t('maxPriorityFeePerGas')}
+      text={currentConfirmation.txParams?.maxPriorityFeePerGas}
+      confirmation_id={currentConfirmation.id}
+    />,
   ];
 };
 
-const simpleSendInfoSelector = (state) => {
-  // these examplex include some state fields to display why state access is requires at this stage.
+const simpleSendInfoSelector = (state, t) => {
   const { currentConfirmation } = state.confirm;
   const balance = getSelectedAccountCachedBalance(state);
 
   return [
-    {
-      label: 'Request From',
-      type: ConfirmInfoRowType.UrlType,
-      rowProps: {
-        url: currentConfirmation.origin,
-        tooltip: 'this is some dummy tooltip',
-      },
-    },
-    {
-      label: 'maxFeePerGas',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.maxFeePerGas,
-      },
-    },
-    {
-      label: 'sender',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.from,
-      },
-    },
-    {
-      label: 'default_gas_estimates',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.defaultGasEstimates.estimateType,
-      },
-    },
-    {
-      label: 'User balance',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: balance,
-      },
-    },
-    {
-      label: 'Amount',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.value,
-      },
-    },
+    <ConfirmInfoRowUrl
+      key="request_from"
+      label={t('request_from')}
+      text={currentConfirmation.origin}
+      tooltip="this is some dummy tooltip"
+    />,
+    <ConfirmInfoRowText
+      key="maxFeePerGas"
+      label={t('maxFeePerGas')}
+      text={currentConfirmation.txParams?.maxFeePerGas}
+      confirmation_id={currentConfirmation.id}
+    />,
+    <ConfirmInfoRowText
+      key="sender"
+      label={t('sender')}
+      text={currentConfirmation.txParams?.from}
+    />,
+    <ConfirmInfoRowText
+      key="default_gas_estimates"
+      label={t('default_gas_estimates')}
+      text={currentConfirmation.defaultGasEstimates.estimateType}
+    />,
+    <ConfirmInfoRowText
+      key="user_balance"
+      label={t('user_balance')}
+      text={balance}
+    />,
+    <ConfirmInfoRowText
+      key="amount"
+      label={t('amount')}
+      text={currentConfirmation.txParams?.value}
+      confirmation_id={currentConfirmation.id}
+    />,
   ];
 };
 
-const approveInfoSelector = (state) => {
+const approveInfoSelector = (state, t) => {
   const { currentConfirmation } = state.confirm;
   const tokenData = parseStandardTokenTransactionData(
     currentConfirmation.txParams?.data,
   );
 
   return [
-    {
-      label: 'request_from',
-      type: ConfirmInfoRowType.UrlType,
-      rowProps: {
-        url: currentConfirmation.origin,
-        tooltip: 'this is some dummy tooltip',
-      },
-    },
-    {
-      label: 'sender',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.from,
-      },
-    },
-    {
-      label: 'Amount',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: currentConfirmation.txParams?.value,
-      },
-    },
-    {
-      label: 'token',
-      type: ConfirmInfoRowType.Text,
-      rowProps: {
-        text: JSON.stringify(tokenData),
-      },
-    },
+    <ConfirmInfoRowUrl
+      key="request_from"
+      label={t('request_from')}
+      url={currentConfirmation.origin}
+      tooltip="this is some dummy tooltip"
+    />,
+    <ConfirmInfoRowText
+      key="sender"
+      label={t('sender')}
+      text={currentConfirmation.txParams?.from}
+    />,
+    <ConfirmInfoRowText
+      key="amount"
+      label={t('amount')}
+      text={currentConfirmation.txParams?.value}
+      confirmation_id={currentConfirmation.id}
+    />,
+    <ConfirmInfoRowText
+      key="token"
+      label={t('token')}
+      text={JSON.stringify(tokenData)}
+    />,
   ];
 };
 
