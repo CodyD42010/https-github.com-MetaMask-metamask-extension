@@ -7,7 +7,7 @@
     "url": "https://github.com/MetaMask/metamask-extension.git"
   },
   "scripts": {
-    "start": "yarn build:dev dev --apply-lavamoat=false --snow=false",
+    "start": "yarn build:dev dev --apply-lavamoat=false --snow=false --sentry=false",
     "start:mv3": "ENABLE_MV3=true yarn build:dev dev --apply-lavamoat=false",
     "start:flask": "yarn start --build-type flask",
     "start:mmi": "yarn start --build-type mmi",
@@ -18,8 +18,8 @@
     "dist:mmi:debug": "yarn dist --build-type mmi --apply-lavamoat=false",
     "build": "yarn lavamoat:build",
     "build:dev": "node development/build/index.js",
-    "start:test": "BLOCKAID_FILE_CDN=static.metafi.codefi.network/api/v1/confirmations/ppom SEGMENT_HOST='https://api.segment.io' SEGMENT_WRITE_KEY='FAKE' SENTRY_DSN_DEV=https://fake@sentry.io/0000000 yarn build:dev testDev --apply-lavamoat=false --snow=false",
-    "start:test:flask": "SEGMENT_HOST='https://api.segment.io' SEGMENT_WRITE_KEY='FAKE' SENTRY_DSN_DEV=https://fake@sentry.io/0000000 yarn build:dev testDev --build-type flask --apply-lavamoat=false --snow=false",
+    "start:test": "BLOCKAID_FILE_CDN=static.metafi.codefi.network/api/v1/confirmations/ppom SEGMENT_HOST='https://api.segment.io' SEGMENT_WRITE_KEY='FAKE' SENTRY_DSN_DEV=https://fake@sentry.io/0000000 yarn build:dev testDev --apply-lavamoat=false --snow=false --sentry=false",
+    "start:test:flask": "SEGMENT_HOST='https://api.segment.io' SEGMENT_WRITE_KEY='FAKE' SENTRY_DSN_DEV=https://fake@sentry.io/0000000 yarn build:dev testDev --build-type flask --apply-lavamoat=false --snow=false --sentry=false",
     "start:test:mv3": "ENABLE_MV3=true SEGMENT_HOST='https://api.segment.io' SEGMENT_WRITE_KEY='FAKE' SENTRY_DSN_DEV=https://fake@sentry.io/0000000 yarn build:dev testDev",
     "benchmark:chrome": "SELENIUM_BROWSER=chrome ts-node test/e2e/benchmark.js",
     "mv3:stats:chrome": "SELENIUM_BROWSER=chrome ENABLE_MV3=true ts-node test/e2e/mv3-perf-stats/index.js",

@@ -57,7 +57,17 @@ function importAllScripts() {
     throw new Error('Missing APPLY_LAVAMOAT environment variable');
   }
 
-  loadFile('./sentry-install.js');
+  // value of useSentry below is dynamically replaced at build time with actual value
+  const useSentry = process.env.USE_SENTRY;
+  if (typeof useSentry !== 'boolean') {
+    throw new Error('Missing USE_SENTRY environment variable');
+  }
+
+  if (useSentry) {
+    loadFile('./sentry-install.js');
+  } else {
+    globalThis.stateHooks = globalThis.stateHooks || {};
+  }
 
   // eslint-disable-next-line no-undef
   const isWorker = !self.document;

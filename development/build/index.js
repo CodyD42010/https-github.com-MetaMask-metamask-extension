@@ -80,6 +80,7 @@ async function defineAndRunBuildTasks() {
     skipStats,
     version,
     platform,
+    sentry,
   } = await parseArgv();
 
   const isRootTask = Object.values(BUILD_TARGETS).includes(entryTask);
@@ -199,6 +200,7 @@ async function defineAndRunBuildTasks() {
     policyOnly,
     shouldLintFenceFiles,
     version,
+    sentry,
   });
 
   const { clean, reload, zip } = createEtcTasks({
@@ -333,6 +335,12 @@ testDev: Create an unoptimized, live-reloading build for debugging e2e tests.`,
             'Whether to include Snow files in the extension bundle. Setting this to `false` can be useful during development if you want to handle Snow errors later.',
           type: 'boolean',
         })
+        .option('sentry', {
+          default: true,
+          description:
+            "Whether to include Sentry files in the extension bundle. Setting this to `false` can be useful during development as Sentry won't intercept logs or pollute stack traces.",
+          type: 'boolean',
+        })
         .option('policy-only', {
           default: false,
           description:
@@ -374,6 +382,7 @@ testDev: Create an unoptimized, live-reloading build for debugging e2e tests.`,
     lintFenceFiles,
     lockdown,
     snow,
+    sentry,
     policyOnly,
     skipStats,
     task,
@@ -404,6 +413,7 @@ testDev: Create an unoptimized, live-reloading build for debugging e2e tests.`,
     skipStats,
     version,
     platform,
+    sentry,
   };
 }
 

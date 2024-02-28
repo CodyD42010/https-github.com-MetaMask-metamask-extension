@@ -247,6 +247,8 @@ module.exports = createScriptTasks;
  * @param {boolean} options.shouldLintFenceFiles - Whether files with code
  * fences should be linted after fences have been removed.
  * @param {string} options.version - The current version of the extension.
+ * @param {boolean} options.sentry - Whether the build should use sentry at
+ * runtime or not.
  * @returns {object} A set of tasks, one for each build target.
  */
 function createScriptTasks({
@@ -259,6 +261,7 @@ function createScriptTasks({
   policyOnly,
   shouldLintFenceFiles,
   version,
+  sentry,
 }) {
   // high level tasks
   return {
@@ -266,26 +269,31 @@ function createScriptTasks({
     dev: createTasksForScriptBundles({
       buildTarget: BUILD_TARGETS.DEV,
       taskPrefix: 'scripts:core:dev',
+      sentry,
     }),
     // production-like distributable build
     dist: createTasksForScriptBundles({
       buildTarget: BUILD_TARGETS.DIST,
       taskPrefix: 'scripts:core:dist',
+      sentry,
     }),
     // production
     prod: createTasksForScriptBundles({
       buildTarget: BUILD_TARGETS.PROD,
       taskPrefix: 'scripts:core:prod',
+      sentry,
     }),
     // built for CI tests
     test: createTasksForScriptBundles({
       buildTarget: BUILD_TARGETS.TEST,
       taskPrefix: 'scripts:core:test',
+      sentry,
     }),
     // built for CI test debugging
     testDev: createTasksForScriptBundles({
       buildTarget: BUILD_TARGETS.TEST_DEV,
       taskPrefix: 'scripts:core:test-live',
+      sentry,
     }),
   };
 
@@ -299,8 +307,9 @@ function createScriptTasks({
    * JavaScript modules are intended for.
    * @param {string} options.taskPrefix - The prefix to use for the name of
    * each defined task.
+   * @param options.sentry
    */
-  function createTasksForScriptBundles({ buildTarget, taskPrefix }) {
+  function createTasksForScriptBundles({ buildTarget, taskPrefix, sentry }) {
     const standardEntryPoints = ['background', 'ui', 'content-script'];
 
     // In MV3 we will need to build our offscreen entry point bundle and any
@@ -330,6 +339,7 @@ function createScriptTasks({
         policyOnly,
         shouldLintFenceFiles,
         version,
+        sentry,
       }),
     );
 
@@ -373,7 +383,7 @@ function createScriptTasks({
       standardSubtask,
       contentscriptSubtask,
       disableConsoleSubtask,
-      installSentrySubtask,
+      ...(sentry ? [installSentrySubtask] : []),
     ].map((subtask) =>
       runInChildProcess(subtask, {
         applyLavaMoat,
@@ -381,6 +391,7 @@ function createScriptTasks({
         isLavaMoat,
         policyOnly,
         shouldLintFenceFiles,
+        sentry,
       }),
     );
     // make a parent task that runs each task in a child thread
@@ -523,6 +534,7 @@ function createScriptTasks({
  * @param {boolean} options.shouldLintFenceFiles - Whether files with code
  * fences should be linted after fences have been removed.
  * @param {string} options.version - The current version of the extension.
+ * @param options.sentry
  * @returns {Function} A function that creates the set of bundles.
  */
 async function createManifestV3AppInitializationBundle({
@@ -535,6 +547,7 @@ async function createManifestV3AppInitializationBundle({
   policyOnly,
   shouldLintFenceFiles,
   version,
+  sentry,
 }) {
   const label = 'app-init';
   // TODO: remove this filter for firefox once MV3 is supported in it
@@ -553,6 +566,7 @@ async function createManifestV3AppInitializationBundle({
   const extraEnvironmentVariables = {
     APPLY_LAVAMOAT: applyLavaMoat,
     FILE_NAMES: jsBundles.join(','),
+    USE_SENTRY: sentry,
   };
 
   await createNormalBundle({
@@ -609,6 +623,7 @@ async function createManifestV3AppInitializationBundle({
  * @param {boolean} options.shouldLintFenceFiles - Whether files with code
  * fences should be linted after fences have been removed.
  * @param {string} options.version - The current version of the extension.
+ * @param options.sentry
  * @returns {Function} A function that creates the set of bundles.
  */
 function createFactoredBuild({
@@ -621,6 +636,7 @@ function createFactoredBuild({
   policyOnly,
   shouldLintFenceFiles,
   version,
+  sentry,
 }) {
   return async function () {
     // create bundler setup and apply defaults
@@ -772,6 +788,7 @@ function createFactoredBuild({
               browserPlatforms,
               applyLavaMoat,
               destinationFileName: 'load-app.js',
+              sentry,
             });
             break;
           }
@@ -789,6 +806,7 @@ function createFactoredBuild({
               browserPlatforms,
               applyLavaMoat,
               destinationFileName: 'load-background.js',
+              sentry,
             });
             if (process.env.ENABLE_MV3) {
               const jsBundles = [
@@ -805,6 +823,7 @@ function createFactoredBuild({
                 policyOnly,
                 shouldLintFenceFiles,
                 version,
+                sentry,
               });
             }
             break;
@@ -826,6 +845,7 @@ function createFactoredBuild({
               browserPlatforms,
               applyLavaMoat,
               destinationFileName: 'load-offscreen.js',
+              sentry,
             });
             break;
           }
@@ -1266,6 +1286,7 @@ function renderJavaScriptLoader({
   browserPlatforms,
   applyLavaMoat,
   destinationFileName,
+  sentry,
 }) {
   if (applyLavaMoat === undefined) {
     throw new Error(
@@ -1289,7 +1310,7 @@ function renderJavaScriptLoader({
   const requiredScripts = [
     './snow.js',
     './use-snow.js',
-    './sentry-install.js',
+    ...(sentry ? ['./sentry-install.js'] : ['./init-globals.js']),
     ...securityScripts,
     ...jsBundles,
   ];
