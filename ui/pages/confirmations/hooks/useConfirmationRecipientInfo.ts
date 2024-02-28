@@ -20,7 +20,7 @@ function useConfirmationRecipientInfo() {
       if (msgParams) {
         recipientAddress = msgParams.from;
       }
-    } else if (currentConfirmation.type === 'contractDeployment') {
+    } else {
       const { txParams } = currentConfirmation as any;
       // url for rest of transactions
       if (txParams) {

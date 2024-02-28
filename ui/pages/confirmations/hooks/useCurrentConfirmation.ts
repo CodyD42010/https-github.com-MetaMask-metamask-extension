@@ -19,7 +19,7 @@ const useCurrentConfirmation = () => {
   const { id: paramsTransactionId } = useParams<{ id: string }>();
   const unapprovedPersonalMsgs = useSelector(unapprovedPersonalMsgsSelector);
   const pendingTransactions = useSelector(transactionsSelector);
-  console.log('---------------', pendingTransactions);
+
   const latestPendingConfirmation: Approval = useSelector(
     latestPendingConfirmationSelector,
   );
@@ -51,6 +51,13 @@ const useCurrentConfirmation = () => {
         const unapprovedTransaction = pendingTransactions.find(
           (tran: any) => tran.id === pendingConfirmation?.id,
         );
+        if (
+          unapprovedTransaction.type !== 'simpleSend' &&
+          unapprovedTransaction.type !== 'contractDeployment' &&
+          unapprovedTransaction.type !== 'approve'
+        ) {
+          return;
+        }
         setCurrentConfirmation(unapprovedTransaction);
         return;
       }

@@ -946,6 +946,18 @@
   "contractDescription": {
     "message": "To protect yourself against scammers, take a moment to verify third-party details."
   },
+  "simpleSend": {
+    "message": "Simple Send"
+  },
+  "approveTrxn": {
+    "message": "Approve."
+  },
+  "simpleSendDescription": {
+    "message": "To protect yourself against scammers, take a moment to verify third-party details."
+  },
+  "approveDescription": {
+    "message": "To protect yourself against scammers, take a moment to verify third-party details."
+  },
   "contractInteraction": {
     "message": "Contract interaction"
   },

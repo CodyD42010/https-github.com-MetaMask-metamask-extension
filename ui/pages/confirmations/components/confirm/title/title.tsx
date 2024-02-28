@@ -13,11 +13,15 @@ import { currentConfirmationSelector } from '../../../../../selectors';
 const typeToTitleTKey: Partial<Record<TransactionType, string>> = {
   [TransactionType.personalSign]: 'confirmTitleSignature',
   contractDeployment: 'contractDeployment',
+  simpleSend: 'simpleSend',
+  approve: 'approveTrxn',
 };
 
 const typeToDescTKey: Partial<Record<TransactionType, string>> = {
   [TransactionType.personalSign]: 'confirmTitleDescSignature',
   contractDeployment: 'contractDescription',
+  simpleSend: 'simpleSendDescription',
+  approve: 'approveDescription',
 };
 
 const ConfirmTitle: React.FC = memo(() => {
