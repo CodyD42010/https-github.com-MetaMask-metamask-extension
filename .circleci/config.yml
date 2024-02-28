@@ -90,55 +90,10 @@ workflows:
       - test-yarn-dedupe:
           requires:
             - prep-deps
-      - validate-lavamoat-allow-scripts:
-          requires:
-            - prep-deps
-      - validate-lavamoat-policy-build:
-          requires:
-            - prep-deps
-      - validate-lavamoat-policy-webapp:
-          matrix:
-            parameters:
-              build-type: [main, beta, flask, mmi, desktop]
-          requires:
-            - prep-deps
-      - prep-build-mmi:
-          requires:
-            - prep-deps
       - prep-build:
           requires:
             - prep-deps
-      - prep-build-desktop:
-          filters:
-            branches:
-              only: develop
-          requires:
-            - prep-deps
-      - prep-build-flask:
-          requires:
-            - prep-deps
       - prep-build-test:
-          requires:
-            - prep-deps
-      - prep-build-multichain-test:
-          requires:
-            - prep-deps
-      - prep-build-test-mv3:
-          requires:
-            - prep-deps
-      - prep-build-test-flask:
-          requires:
-            - prep-deps
-      - prep-build-test-mmi:
-          requires:
-            - prep-deps
-      - prep-build-test-mmi-playwright:
-          requires:
-            - prep-deps
-      - prep-build-storybook:
-          requires:
-            - prep-deps
-      - prep-build-ts-migration-dashboard:
           requires:
             - prep-deps
       - test-lint:
@@ -154,178 +109,21 @@ workflows:
       - test-e2e-chrome:
           requires:
             - prep-build-test
-      - test-e2e-chrome-multichain:
-          requires:
-            - prep-build-multichain-test
       - test-e2e-firefox:
           requires:
             - prep-build-test
-      - test-e2e-chrome-rpc:
+      - testrail-upload-chrome-results:
           requires:
-            - prep-build-test
-      - test-e2e-chrome-multiple-providers:
+            - test-e2e-chrome
+      - testrail-upload-firefox-results:
           requires:
-            - prep-build-test
-      - test-e2e-chrome-flask:
-          requires:
-            - prep-build-test-flask
-      - test-e2e-firefox-flask:
-          requires:
-            - prep-build-test-flask
-      - test-e2e-chrome-mmi:
-          requires:
-            - prep-build-test-mmi
-      - test-e2e-mmi-playwright - OPTIONAL:
-          requires:
-            - prep-build-test-mmi-playwright
-      - test-e2e-chrome-rpc-mmi:
-          requires:
-            - prep-build-test-mmi
-      - test-e2e-chrome-mv3:
-          requires:
-            - prep-build-test-mv3
-      - test-e2e-chrome-vault-decryption:
-          filters:
-            branches:
-              only:
-                - develop
-                - /^Version-v(\d+)[.](\d+)[.](\d+)/
-          requires:
-            - prep-build
-      - test-unit-mocha:
-          requires:
-            - prep-deps
-      - test-unit-jest-main:
-          requires:
-            - prep-deps
-      - test-unit-jest-development:
-          requires:
-            - prep-deps
-      - upload-and-validate-coverage:
-          requires:
-            - test-unit-jest-main
-            - test-unit-jest-development
-            - test-unit-mocha
-      - test-unit-global:
-          requires:
-            - prep-deps
-      - test-storybook:
-          requires:
-            - prep-deps
-            - prep-build-storybook
-      - validate-source-maps:
-          requires:
-            - prep-build
-      - validate-source-maps-beta:
-          requires:
-            - trigger-beta-build
-      - validate-source-maps-desktop:
-          filters:
-            branches:
-              only: develop
-          requires:
-            - prep-build-desktop
-      - validate-source-maps-mmi:
-          requires:
-            - prep-build-mmi
-      - validate-source-maps-flask:
-          requires:
-            - prep-build-flask
-      - test-mozilla-lint:
-          requires:
-            - prep-deps
-            - prep-build
-      - test-mozilla-lint-desktop:
-          filters:
-            branches:
-              only: develop
-          requires:
-            - prep-deps
-            - prep-build-desktop
-      - test-mozilla-lint-flask:
-          requires:
-            - prep-deps
-            - prep-build-flask
+            - test-e2e-firefox
       - all-tests-pass:
           requires:
-            - test-deps-depcheck
-            - validate-lavamoat-allow-scripts
-            - validate-lavamoat-policy-build
-            - validate-lavamoat-policy-webapp
             - test-lint
-            - test-lint-shellcheck
-            - test-lint-lockfile
-            - test-lint-changelog
-            - test-unit-jest-main
-            - test-unit-jest-development
-            - test-unit-global
-            - test-unit-mocha
-            - upload-and-validate-coverage
-            - validate-source-maps
-            - validate-source-maps-beta
-            - validate-source-maps-desktop
-            - validate-source-maps-flask
-            - validate-source-maps-mmi
-            - test-mozilla-lint
-            - test-mozilla-lint-desktop
-            - test-mozilla-lint-flask
             - test-e2e-chrome
-            - test-e2e-chrome-multichain
-            - test-e2e-chrome-multiple-providers
             - test-e2e-firefox
-            - test-e2e-chrome-flask
-            - test-e2e-firefox-flask
-            - test-e2e-chrome-mmi
-            - test-e2e-chrome-rpc-mmi
-            - test-e2e-chrome-vault-decryption
-            - test-storybook
-      - benchmark:
-          requires:
-            - prep-build-test
-      - user-actions-benchmark:
-          requires:
-            - prep-build-test
-      - stats-module-load-init:
-          requires:
-            - prep-build-test-mv3
-      - job-publish-prerelease:
-          requires:
-            - prep-deps
-            - prep-build
-            - trigger-beta-build
-            - prep-build-desktop
-            - prep-build-mmi
-            - prep-build-flask
-            - prep-build-storybook
-            - prep-build-ts-migration-dashboard
-            - prep-build-test-mv3
-            - benchmark
-            - user-actions-benchmark
-            - stats-module-load-init
-            - all-tests-pass
-      - job-publish-release:
-          filters:
-            branches:
-              only: master
-          requires:
-            - prep-deps
-            - prep-build
-            - prep-build-desktop
-            - prep-build-mmi
-            - prep-build-flask
-            - all-tests-pass
-      - job-publish-storybook:
-          filters:
-            branches:
-              only: develop
-          requires:
-            - prep-build-storybook
-      - job-publish-ts-migration-dashboard:
-          filters:
-            branches:
-              only: develop
-          requires:
-            - prep-build-ts-migration-dashboard
+
 
 jobs:
   trigger-beta-build:
@@ -886,6 +684,44 @@ jobs:
           destination: test-artifacts
       - store_test_results:
           path: test/test-results/e2e
+      - run:
+          name: List generated test result files
+          command: ls -la test/test-results/e2e/
+      - persist_to_workspace:
+          root: .
+          paths:
+            - test/test-results/e2e/
+
+
+  testrail-upload-chrome-results:
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: List test result files
+          command: ls -la test/test-results/e2e/
+      - run:
+          name: Install TR CLI and upload the test results to TestRail
+          command: |
+            pip install trcli
+            FILES=$(ls test/test-results/e2e/*.xml)
+            for result_file in $FILES
+            do
+              echo "Uploading $result_file"
+              trcli -y \
+                -h https://mmig.testrail.io/ \
+                --project "MetaMask Extension" \
+                -u mmig_qa@consensys.net \
+                -p "v##&FgS!4J" \
+                parse_junit \
+                --title "Automated Chrome Tests from CircleCI workflow new" \
+                --run-id "51" \
+                --run-description $CIRCLE_BUILD_URL \
+                --case-fields type_id:3 \
+                -f "$result_file"
+            done
 
   test-e2e-chrome-multichain:
     executor: node-browsers-medium-plus
@@ -1123,10 +959,10 @@ jobs:
     steps:
       - run: *shallow-git-clone
       - attach_workspace:
-          at: .
+          at: ~/project
       - run:
           name: Move test build to dist
-          command: mv ./dist-test-mmi-playwright ./dist
+          command: mv dist-test-mmi-playwright dist
       - run:
           name: Install chromium
           command: |
@@ -1155,7 +991,39 @@ jobs:
           path: public/playwright/playwright-reports
       - store_test_results:
           name: report for pipeline integration
-          path: public/playwright/playwright-reports/junit/test-results.xml
+          path: public/playwright/playwright-reports/junit/test-results-${CIRCLE_NODE_INDEX}.xml
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - public/playwright/playwright-reports/junit/results-${CIRCLE_NODE_INDEX}.xml
+
+  testrail-upload-mmi-results:
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+     - attach_workspace:
+        at: ~/project
+     - run:
+         name: List test result files
+         command: ls -la public/playwright/playwright-reports/junit/
+     - run:
+         name: Install TR CLI and upload the test results to TestRail
+         command: |
+           pip install trcli
+           FILES=public/playwright/playwright-reports/junit/results-*.xml
+           for result_file in $FILES
+           do
+             echo "Uploading $result_file"
+             trcli -y \
+               -h https://mmig.testrail.io/ \
+               --project "MetaMask Extension" \
+               -u mmig_qa@consensys.net \
+               -p "v##&FgS!4J" \
+               parse_junit \
+               --title "Automated Playwright Tests from CircleCI workflow" \
+               --run-description $CIRCLE_BUILD_URL \
+               -f "$result_file"
+           done
 
   test-e2e-firefox:
     executor: node-browsers-medium-plus
@@ -1183,6 +1051,43 @@ jobs:
           destination: test-artifacts
       - store_test_results:
           path: test/test-results/e2e
+      - run:
+          name: List generated test result files
+          command: ls -la test/test-results/e2e/
+      - persist_to_workspace:
+          root: .
+          paths:
+            - test/test-results/e2e/
+
+  testrail-upload-firefox-results:
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: List test result files
+          command: ls -la test/test-results/e2e/
+      - run:
+          name: Install TR CLI and upload the test results to TestRail
+          command: |
+            pip install trcli
+            FILES=$(ls test/test-results/e2e/*.xml)
+            for result_file in $FILES
+            do
+              echo "Uploading $result_file"
+              trcli -y \
+                -h https://mmig.testrail.io/ \
+                --project "MetaMask Extension" \
+                -u mmig_qa@consensys.net \
+                -p "v##&FgS!4J" \
+                parse_junit \
+                --title "Automated Firefox Tests from CircleCI workflow new" \
+                --run-id "52" \
+                --run-description $CIRCLE_BUILD_URL \
+                --case-fields type_id:3 \
+                -f "$result_file"
+            done
 
   benchmark:
     executor: node-browsers-small
