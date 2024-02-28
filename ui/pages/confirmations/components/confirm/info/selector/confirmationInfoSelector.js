@@ -47,7 +47,11 @@ const contractDeploymentInfoSelector = (state) => {
       label: 'maxFeePerGas',
       type: ConfirmInfoRowType.Text,
       rowProps: {
+        // example here displays gas, gas editing will be handled by value component
+        // when edit icon it clicked it will open gas selection modal and update the gas value
+        // using the id passed from here
         text: currentConfirmation.txParams?.maxFeePerGas,
+        confirmation_id: currentConfirmation.id,
       },
     },
     {
@@ -61,6 +65,7 @@ const contractDeploymentInfoSelector = (state) => {
 };
 
 const simpleSendInfoSelector = (state) => {
+  // these examplex include some state fields to display why state access is requires at this stage.
   const { currentConfirmation } = state.confirm;
   const balance = getSelectedAccountCachedBalance(state);
 
