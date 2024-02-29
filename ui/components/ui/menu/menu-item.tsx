@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { Ref, forwardRef } from 'react';
 import classnames from 'classnames';
 
 import {
@@ -17,7 +16,19 @@ import {
   TextVariant,
 } from '../../../helpers/constants/design-system';
 
-const MenuItem = React.forwardRef(
+interface MenuItemProps {
+  children: React.ReactNode;
+  className?: string;
+  'data-testid'?: string;
+  iconName?: IconName;
+  iconColor?: IconColor;
+  onClick?: () => void;
+  subtitle?: React.ReactNode;
+  disabled?: boolean;
+  showInfoDot?: boolean;
+}
+
+const MenuItem = forwardRef<HTMLButtonElement, MenuItemProps>(
   (
     {
       children,
@@ -30,10 +41,10 @@ const MenuItem = React.forwardRef(
       disabled = false,
       showInfoDot,
     },
-    ref,
+    ref: Ref<HTMLButtonElement>,
   ) => (
     <button
-      className={classnames('menu-item', className)}
+      className={classnames('menu-item', className || '')}
       data-testid={dataTestId}
       onClick={onClick}
       ref={ref}
@@ -50,7 +61,7 @@ const MenuItem = React.forwardRef(
               name={IconName.FullCircle}
               size={IconSize.Xs}
               color={IconColor.primaryDefault}
-              style={{ '--size': '10px' }}
+              style={{ '--size': '10px' } as any}
             />
           }
         >
@@ -72,18 +83,6 @@ const MenuItem = React.forwardRef(
     </button>
   ),
 );
-
-MenuItem.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  'data-testid': PropTypes.string,
-  iconName: PropTypes.string,
-  onClick: PropTypes.func,
-  subtitle: PropTypes.node,
-  disabled: PropTypes.bool,
-  showInfoDot: PropTypes.bool,
-  iconColor: PropTypes.string,
-};
 
 MenuItem.displayName = 'MenuItem';
 
