@@ -3412,7 +3412,7 @@ export default class MetamaskController extends EventEmitter {
       } catch (e) {
         // If the `fetchTokenBalance` call failed, `details` remains undefined, and we
         // fall back to the below `assetsContractController.getTokenStandardAndDetails` call
-        log.warning(`Failed to get token balance. Error: ${e}`);
+        log.warn(`Failed to get token balance. Error: ${e}`);
       }
     }
 
@@ -3452,7 +3452,7 @@ export default class MetamaskController extends EventEmitter {
       } catch (e) {
         // If the `fetchTokenBalance` call failed, `details` remains undefined, and we
         // fall back to the below `assetsContractController.getTokenStandardAndDetails` call
-        log.warning('Failed to get token balance. Error:', e);
+        log.warn('Failed to get token balance. Error:', e);
       }
     }
 
