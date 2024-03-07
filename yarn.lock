@@ -8284,9 +8284,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/core-darwin-arm64@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-darwin-arm64@npm:1.4.1-nightly-20240213.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@swc/core-darwin-x64@npm:1.3.107":
   version: 1.3.107
   resolution: "@swc/core-darwin-x64@npm:1.3.107"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@swc/core-darwin-x64@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-darwin-x64@npm:1.4.1-nightly-20240213.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
@@ -8298,9 +8312,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/core-linux-arm-gnueabihf@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.4.1-nightly-20240213.1"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
 "@swc/core-linux-arm64-gnu@npm:1.3.107":
   version: 1.3.107
   resolution: "@swc/core-linux-arm64-gnu@npm:1.3.107"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-arm64-gnu@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.4.1-nightly-20240213.1"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
@@ -8312,9 +8340,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/core-linux-arm64-musl@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-linux-arm64-musl@npm:1.4.1-nightly-20240213.1"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
 "@swc/core-linux-x64-gnu@npm:1.3.107":
   version: 1.3.107
   resolution: "@swc/core-linux-x64-gnu@npm:1.3.107"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-x64-gnu@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-linux-x64-gnu@npm:1.4.1-nightly-20240213.1"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
@@ -8326,9 +8368,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/core-linux-x64-musl@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-linux-x64-musl@npm:1.4.1-nightly-20240213.1"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
 "@swc/core-win32-arm64-msvc@npm:1.3.107":
   version: 1.3.107
   resolution: "@swc/core-win32-arm64-msvc@npm:1.3.107"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@swc/core-win32-arm64-msvc@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.4.1-nightly-20240213.1"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -8340,6 +8396,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/core-win32-ia32-msvc@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.4.1-nightly-20240213.1"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@swc/core-win32-x64-msvc@npm:1.3.107":
   version: 1.3.107
   resolution: "@swc/core-win32-x64-msvc@npm:1.3.107"
@@ -8347,7 +8410,60 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core@npm:^1.3.107, @swc/core@npm:^1.3.18, @swc/core@npm:^1.3.49":
+"@swc/core-win32-x64-msvc@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core-win32-x64-msvc@npm:1.4.1-nightly-20240213.1"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@swc/core@npm:1.4.1-nightly-20240213.1":
+  version: 1.4.1-nightly-20240213.1
+  resolution: "@swc/core@npm:1.4.1-nightly-20240213.1"
+  dependencies:
+    "@swc/core-darwin-arm64": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-darwin-x64": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-linux-arm-gnueabihf": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-linux-arm64-gnu": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-linux-arm64-musl": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-linux-x64-gnu": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-linux-x64-musl": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-win32-arm64-msvc": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-win32-ia32-msvc": "npm:1.4.1-nightly-20240213.1"
+    "@swc/core-win32-x64-msvc": "npm:1.4.1-nightly-20240213.1"
+    "@swc/counter": "npm:^0.1.2"
+    "@swc/types": "npm:^0.1.5"
+  peerDependencies:
+    "@swc/helpers": ^0.5.0
+  dependenciesMeta:
+    "@swc/core-darwin-arm64":
+      optional: true
+    "@swc/core-darwin-x64":
+      optional: true
+    "@swc/core-linux-arm-gnueabihf":
+      optional: true
+    "@swc/core-linux-arm64-gnu":
+      optional: true
+    "@swc/core-linux-arm64-musl":
+      optional: true
+    "@swc/core-linux-x64-gnu":
+      optional: true
+    "@swc/core-linux-x64-musl":
+      optional: true
+    "@swc/core-win32-arm64-msvc":
+      optional: true
+    "@swc/core-win32-ia32-msvc":
+      optional: true
+    "@swc/core-win32-x64-msvc":
+      optional: true
+  peerDependenciesMeta:
+    "@swc/helpers":
+      optional: true
+  checksum: 4e8570314234b0caf74a4f5ab0f9fb5c65a8bab54b99eddd2da02d5833c6c1219176305611c1e36a362ec27bee3fbb31230a471ee76c1be66ccfad31d50219ad
+  languageName: node
+  linkType: hard
+
+"@swc/core@npm:^1.3.18, @swc/core@npm:^1.3.49":
   version: 1.3.107
   resolution: "@swc/core@npm:1.3.107"
   dependencies:
@@ -8397,6 +8513,13 @@ __metadata:
   version: 0.1.2
   resolution: "@swc/counter@npm:0.1.2"
   checksum: 8427c594f1f0cf44b83885e9c8fe1e370c9db44ae96e07a37c117a6260ee97797d0709483efbcc244e77bac578690215f45b23254c4cd8a70fb25ddbb50bf33e
+  languageName: node
+  linkType: hard
+
+"@swc/counter@npm:^0.1.2":
+  version: 0.1.3
+  resolution: "@swc/counter@npm:0.1.3"
+  checksum: df8f9cfba9904d3d60f511664c70d23bb323b3a0803ec9890f60133954173047ba9bdeabce28cd70ba89ccd3fd6c71c7b0bd58be85f611e1ffbe5d5c18616598
   languageName: node
   linkType: hard
 
@@ -25226,7 +25349,7 @@ __metadata:
     "@storybook/storybook-deployer": "npm:^2.8.16"
     "@storybook/test-runner": "npm:^0.14.1"
     "@storybook/theming": "npm:^7.4.6"
-    "@swc/core": "npm:^1.3.107"
+    "@swc/core": "npm:1.4.1-nightly-20240213.1"
     "@swc/helpers": "npm:^0.5.6"
     "@testing-library/jest-dom": "npm:^5.11.10"
     "@testing-library/react": "npm:^10.4.8"
