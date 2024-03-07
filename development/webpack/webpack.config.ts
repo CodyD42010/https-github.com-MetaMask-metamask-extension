@@ -23,7 +23,6 @@ import {
   type Browser,
   type Manifest,
   generateManifest,
-  mergeEnv,
   collectEntries,
   getLastCommitTimestamp,
   getMinimizers,
@@ -34,6 +33,9 @@ import { parseArgv } from './utils/cli';
 import { type CodeFenceLoaderOptions } from './utils/loaders/codeFenceLoader';
 import { type SwcLoaderOptions } from './utils/loaders/swcLoader';
 import { SelfInjectPlugin } from './utils/plugins/SelfInjectPlugin';
+import { loadEnv } from './utils/config';
+import { setEnvironmentVariables } from '../build/set-environment-variables';
+import { getVersion } from '../lib/get-version';
 
 const { args, cacheKey, features } = parseArgv(process.argv.slice(2));
 
@@ -74,7 +76,7 @@ const isDevelopment = args.env === 'development';
 
 const MANIFEST_VERSION = args.manifest_version;
 const manifestPath = join(context, `manifest/v${MANIFEST_VERSION}/_base.json`);
-const manifest: Manifest = JSON.parse(readFileSync(manifestPath).toString());
+const manifest: Manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const { entry, canBeChunked } = collectEntries(manifest, context);
 
 // removes fenced code blocks from the source
@@ -88,8 +90,8 @@ const codeFenceLoader: RuleSetRule & {
 };
 
 const browsersListPath = join(context, '../.browserslistrc');
-// read .browserslist manually to prevent it from searching for it every time.
-const browsersListQuery = readFileSync(browsersListPath, 'utf-8');
+// read .browserslist now to stop it from searching for the file over and over
+const browsersListQuery = readFileSync(browsersListPath, "utf8");
 
 /**
  * Gets the Speedy Web Compiler (SWC) loader for the given syntax.
@@ -147,52 +149,40 @@ const BROWSER = args.browser[0] as Browser;
 // TODO: make these dynamic. yargs, maybe?
 const NAME = 'MetaMask';
 const DESCRIPTION = `MetaMask ${BROWSER} Extension`;
-// TODO: figure out what build.yml's env vars are doing and then do the merge
-// stuff. Also, fix all this crappy ENV code.
-const ENV = mergeEnv({ ENABLE_SENTRY: args.sentry ? 'true' : undefined });
-const envsStringified = Object.entries(ENV).reduce(
-  (acc: Record<string, string>, [key, val]) => {
-    acc[`${key}`] = JSON.stringify(val);
-    return acc;
+const METAMASK_VERSION = getVersion(args.type, 0) as SemVerVersion;
+const { definitions } = loadEnv(args.type as any);
+setEnvironmentVariables({
+  buildType: args.type,
+  version: METAMASK_VERSION,
+  environment: args.env,
+  variables: {
+    set(key: string | Record<string, unknown>, value?: unknown): void {
+      if (typeof key === 'object') {
+        Object.entries(key).forEach(([k, v]) => definitions.set(k, v));
+      } else {
+        definitions.set(key, value!);
+      }
+    },
+    isDefined(key: string): boolean {
+      return definitions.has(key);
+    },
+    get(key: string): unknown {
+      return definitions.get(key);
+    },
+    getMaybe(key: string): unknown {
+      return definitions.get(key);
+    },
   },
-  {
-    // PPOM_URI is only here because the gulp build process doesn't understand
-    // `import.meta.url`
-    PPOM_URI: 'new URL("@blockaid/ppom_release/ppom_bg.wasm", import.meta.url)',
-  },
-);
-// // this is code to set some of the gulp-build system's ENV variables
-// // it takes an extra 400ms, even after an experiment to make it to read
-// // files synchronously. It is commented out because it is just too slow for
-// // this build process. It needs to be rewritten. It should probably take
-// // about 5ms, including the `require` calls.
-// const { getConfig } = require("./development/build/config");
-// const c = getConfig(config.type, config.env)
-// const { variables, activeBuild } = c;
-
-// const { getVersion } = require("./development/lib/get-version");
-// const { setEnvironmentVariables } = require("./development/build/scripts");
-// setEnvironmentVariables({
-//   buildTarget: config.env === "production" ? "prod" : "dev",
-//   buildType: config.type,
-//   activeBuild: activeBuild,
-//   variables,
-//   version: getVersion(config.type, 0),
-// } as any); // the types are wrong lol
-
-// const ENV = [...c.variables.definitions()].reduce((obj, [key, value]) => {
-//   if (value != null) {
-//     obj[key] = value.toString();
-//   }
-//   return obj;
-// }, {});
-// const envsStringified = Object.entries(ENV).reduce(
-//   (acc: any, [key, val]) => {
-//     acc[`${key}`] = JSON.stringify(val);
-//     return acc;
-//   }
-// ) as any;
-// envsStringified.PPOM_URI = ENV.PPOM_URI = `new URL('@blockaid/ppom_release/ppom_bg.wasm', import.meta.url)`;
+  isDevBuild: isDevelopment,
+  isTestBuild: false,
+  buildName: NAME,
+});
+const envsStringified: Record<string, string> = {};
+definitions.forEach((value, key) => {
+  if (value === null || value === undefined) return;
+  envsStringified[key] = JSON.stringify(value);
+});
+envsStringified.PPOM_URI = `new URL('@blockaid/ppom_release/ppom_bg.wasm', import.meta.url)`;
 
 // #region cache
 const cache = args.cache
@@ -264,14 +254,14 @@ const plugins: WebpackPluginInstance[] = [
         to: 'manifest.json',
         transform: (manifestBytes: Buffer, _path: string) => {
           const baseManifest: Manifest = JSON.parse(
-            manifestBytes.toString('utf-8'),
+            manifestBytes.toString('utf8'),
           );
           const browserManifest = generateManifest(baseManifest, {
             env: args.env,
             browser: BROWSER,
             description: DESCRIPTION,
             name: NAME,
-            version: ENV.METAMASK_VERSION as SemVerVersion,
+            version: METAMASK_VERSION,
           });
 
           if (args.devtool === 'source-map') {
@@ -391,7 +381,7 @@ const config = {
         ? require.resolve('react-devtools')
         : false,
       // remove remote-redux-devtools unless METAMASK_DEBUG is enabled
-      'remote-redux-devtools': ENV.METAMASK_DEBUG
+      'remote-redux-devtools': definitions.get("METAMASK_DEBUG")
         ? require.resolve('remote-redux-devtools')
         : false,
       // #endregion conditionally remove developer tooling

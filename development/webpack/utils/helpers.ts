@@ -57,64 +57,6 @@ export const getMetaMaskVersion = (): string => {
   );
 };
 
-/**
- *
- * @param userEnv
- * @returns Returns `process.env` after checking that it is valid for building.
- * @throws Throws an error if `process.env` is invalid or missing required fields.
- */
-export const mergeEnv = (userEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv => {
-  // TODO: throw this whole function in the trash and import env vars the way
-  // the gulp build system does it.
-  let env: NodeJS.ProcessEnv = {};
-  try {
-    const rawConfig = readFileSync(join(__dirname, '../../../.metamaskrc'));
-    env = require('dotenv').parse(rawConfig);
-  } catch {
-    console.log('No .metamaskrc file found, using default env');
-    env.INFURA_PROJECT_ID = '00000000000000000000000000000000';
-  }
-
-  env.METAMASK_VERSION = getMetaMaskVersion();
-  env.BLOCKAID_FILE_CDN =
-    'static.metafi.codefi.network/api/v1/confirmations/ppom';
-  env.BLOCKAID_PUBLIC_KEY =
-    '066ad3e8af5583385e312c156d238055215d5f25247c1e91055afa756cb98a88';
-  env.SUPPORT_LINK = 'https://support.metamask.io';
-  env.METAMASK_DEBUG;
-
-  // TODO: these should be dynamic somehow
-  env.PHISHING_WARNING_PAGE_URL = 'http://localhost:9999';
-  env.IFRAME_EXECUTION_ENVIRONMENT_URL =
-    'https://execution.consensys.io/0.36.1-flask.1/index.html';
-  env.METAMASK_BUILD_NAME = 'MM Webpack Test';
-  env.METAMASK_BUILD_ICON = 'data:image:./images/icon-64.png';
-  env.METAMASK_BUILD_APP_ID = 'io.metamask';
-  // env.IN_TEST = "0";
-  env.APPLY_LAVAMOAT = false as any as string; // metamask is drunk
-
-  const finalEnv = { ...userEnv, ...env };
-
-  const { INFURA_PROJECT_ID } = finalEnv;
-  // if we don't have an INFURA_PROJECT_ID at build time we should bail!
-  if (!INFURA_PROJECT_ID) {
-    throw new Error(
-      'The `INFURA_PROJECT_ID` environment variable was not supplied at build time.',
-    );
-  }
-
-  // validate INFURA_KEY
-  if (INFURA_PROJECT_ID) {
-    if (!/^[a-f0-9]{32}$/u.test(INFURA_PROJECT_ID)) {
-      throw new Error(
-        'INFURA_PROJECT_ID must be 32 characters long and contain only the characters a-f0-9',
-      );
-    }
-  }
-
-  return env;
-};
-
 export type ManifestOptions = {
   env: 'development' | 'production';
   browser: Browser;
@@ -302,12 +244,12 @@ export function getLastCommitTimestamp(gitDir = join(__dirname, '..', '.git')) {
   const { unzipSync } = require('node:zlib') as typeof zlib;
 
   // read .git/HEAD to get the current branch/commit
-  const ref = readFileSync(join(gitDir, 'HEAD'), 'utf-8').trim();
+  const ref = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
 
   // determine if we're in a detached HEAD state or on a branch
   const oid = ref.startsWith('ref: ')
     ? // HEAD is pointer to a branch; load the commit hash
-      readFileSync(join(gitDir, ref.slice(5)), 'utf-8').trim()
+      readFileSync(join(gitDir, ref.slice(5)), 'utf8').trim()
     : // HEAD is detached; so use the commit hash directly
       ref;
 

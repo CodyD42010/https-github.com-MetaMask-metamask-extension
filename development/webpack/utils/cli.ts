@@ -8,6 +8,7 @@ import type { Options as YargsOptions } from 'yargs';
 import yargs from 'yargs/yargs';
 import parser from 'yargs-parser';
 import { Browsers, type Manifest, uniqueSort, toOrange } from './helpers';
+import { loadBuildTypesConfig } from './config';
 
 const addFeat = 'add-feature' as const;
 const omitFeat = 'omit-feature' as const;
@@ -30,14 +31,6 @@ const envOptions = {
   // checking, without loosing the `const` property of the values, which is
   // necessary for yargs to infer the final types
 } as const satisfies YargsOptionsMap;
-
-// TODO: get these `build-type` types working without having to use `as` here.
-const { loadBuildTypesConfig } = require('../../lib/build-type') as {
-  loadBuildTypesConfig: () => {
-    features: { [x: string]: unknown };
-    buildTypes: { [x: string]: { features: string[] } };
-  };
-};
 
 /**
  * Parses the given args from `argv` and returns whether or not the requested
@@ -63,9 +56,9 @@ function getIsProduction(argv: string[], { env }: typeof envOptions): boolean {
  * @returns An object representing the parsed arguments.
  */
 export const parseArgv = (argv: string[]) => {
-  const { features: allFeatures, buildTypes } = loadBuildTypesConfig();
+  const { features, buildTypes } = loadBuildTypesConfig();
   const allBuildTypeNames = Object.keys(buildTypes);
-  const allFeatureNames = Object.keys(allFeatures);
+  const allFeatureNames = Object.keys(features);
 
   // peek ahead at the args to determine if we're in a production environment,
   // as some defaults are different for production vs development.
