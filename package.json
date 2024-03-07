@@ -9,7 +9,7 @@
   "scripts": {
     "webpack": "tsx ./development/webpack/launch.ts",
     "webpack:clearcache": "rimraf node_modules/.cache/webpack",
-    "postinstall": "npm rebuild node-pty && yarn webpack:clearcache && yarn webpack --no-progress",
+    "postinstall": "npm rebuild node-pty && yarn webpack:clearcache",
     "start": "yarn build:dev dev --apply-lavamoat=false --snow=false",
     "start:mv3": "ENABLE_MV3=true yarn build:dev dev --apply-lavamoat=false",
     "start:flask": "yarn start --build-type flask",
