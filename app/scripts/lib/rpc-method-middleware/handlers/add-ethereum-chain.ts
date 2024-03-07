@@ -1,4 +1,6 @@
 import { ApprovalType } from '@metamask/controller-utils';
+import { Json, JsonRpcParams, JsonRpcRequest, PendingJsonRpcResponse } from '@metamask/utils';
+import { JsonRpcEngineEndCallback, JsonRpcEngineNextCallback } from '@metamask/json-rpc-engine/dist/JsonRpcEngine';
 import { errorCodes, ethErrors } from 'eth-rpc-errors';
 import { omit } from 'lodash';
 import {
@@ -11,6 +13,7 @@ import {
   isSafeChainId,
 } from '../../../../../shared/modules/network.utils';
 import { getValidUrl } from '../../util';
+
 
 const addEthereumChain = {
   methodNames: [MESSAGE_TYPE.ADD_ETHEREUM_CHAIN],
@@ -32,22 +35,22 @@ const addEthereumChain = {
 export default addEthereumChain;
 
 async function addEthereumChainHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest,
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
-    upsertNetworkConfiguration,
-    getCurrentChainId,
-    getCurrentRpcUrl,
-    findNetworkConfigurationBy,
-    setNetworkClientIdForDomain,
-    setActiveNetwork,
-    requestUserApproval,
-    startApprovalFlow,
-    endApprovalFlow,
-    getProviderConfig,
-    hasPermissions,
+    upsertNetworkConfiguration: Promise<string>,
+    getCurrentChainId: () => string,
+    getCurrentRpcUrl: () => string | undefined,
+    findNetworkConfigurationBy: (key: string) => string | undefined,
+    setNetworkClientIdForDomain: () => void,
+    setActiveNetwork: () => void,
+    requestUserApproval: () => void,
+    startApprovalFlow: () => void,
+    endApprovalFlow: () => void,
+    getProviderConfig: () => void,
+    hasPermissions: boolean,
   },
 ) {
   if (!req.params?.[0] || typeof req.params[0] !== 'object') {
@@ -247,7 +250,7 @@ async function addEthereumChainHandler(
       }),
     );
   }
-  let networkConfigurationId;
+  let networkConfigurationId: string;
 
   const { id: approvalFlowId } = await startApprovalFlow();
 
