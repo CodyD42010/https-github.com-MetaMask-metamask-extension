@@ -1,7 +1,10 @@
-const fs = require('fs');
-const { AssertionError } = require('assert');
-const path = require('path');
-const {
+import fs from 'fs';
+
+import { AssertionError } from 'assert';
+import path from 'path';
+import {
+  Struct,
+  Infer,
   object,
   string,
   record,
@@ -17,24 +20,26 @@ const {
   nullable,
   never,
   literal,
-} = require('superstruct');
-const yaml = require('js-yaml');
-const { uniqWith } = require('lodash');
+  StructError,
+} from 'superstruct';
+import yaml from 'js-yaml';
+
+import uniqWith from 'lodash/uniqWith';
 
 const BUILDS_YML_PATH = path.resolve('./builds.yml');
 
-/**
- * @type {import('superstruct').Infer<typeof BuildTypesStruct> | null}
- */
-let cachedBuildTypes = null;
+let cachedBuildTypes: Infer<typeof BuildTypesStruct> | undefined;
 
 /**
  * Ensures that the array item contains only elements that are distinct from each other
  *
- * @template {Struct<any>} Element
- * @type {import('./build-type').Unique<Element>}
+ * @param struct
+ * @param eq
  */
-const unique = (struct, eq) =>
+const unique = <Element extends Struct<any>>(
+  struct: Struct<Infer<Element>[], Infer<Element>>,
+  eq?: (a: Infer<Element>, b: Infer<Element>) => boolean,
+): Struct<Infer<Element>[], Infer<Element>> =>
   refine(struct, 'unique', (value) => {
     if (uniqWith(value, eq).length === value.length) {
       return true;
@@ -53,14 +58,13 @@ const EnvDefinitionStruct = coerce(
   (value) => ({ key: Object.keys(value)[0], value: Object.values(value)[0] }),
 );
 
-const EnvArrayStruct = unique(
-  array(union([string(), EnvDefinitionStruct])),
-  (a, b) => {
-    const keyA = typeof a === 'string' ? a : a.key;
-    const keyB = typeof b === 'string' ? b : b.key;
-    return keyA === keyB;
-  },
-);
+const EnvArrayStruct = unique<
+  Struct<string | Infer<typeof EnvDefinitionStruct>>
+>(array(union([string(), EnvDefinitionStruct])) as any, (a, b) => {
+  const keyA = typeof a === 'string' ? a : a.key;
+  const keyB = typeof b === 'string' ? b : b.key;
+  return keyA === keyB;
+});
 
 const BuildTypeStruct = object({
   features: optional(unique(array(string()))),
@@ -119,7 +123,7 @@ const BuildTypesStruct = refine(
   }),
   'BuildTypes',
   (value) => {
-    if (!Object.keys(value.buildTypes).includes(value.default)) {
+    if (!Object.keys(value.buildTypes).includes(value.default as string)) {
       return `Default build type "${value.default}" does not exist in builds declarations`;
     }
     return true;
@@ -129,10 +133,10 @@ const BuildTypesStruct = refine(
 /**
  * Loads definitions of build type and what they are composed of.
  *
- * @returns {import('superstruct').Infer<typeof BuildTypesStruct>}
+ * @returns
  */
-function loadBuildTypesConfig() {
-  if (cachedBuildTypes !== null) {
+function loadBuildTypesConfig(): Infer<typeof BuildTypesStruct> {
+  if (cachedBuildTypes) {
     return cachedBuildTypes;
   }
   const buildsData = yaml.load(fs.readFileSync(BUILDS_YML_PATH, 'utf8'), {
@@ -153,10 +157,10 @@ function loadBuildTypesConfig() {
 /**
  * Creates a user readable error message about parse failure.
  *
- * @param {import('superstruct').StructError} structError
- * @returns {string}
+ * @param structError
+ * @returns
  */
-function constructFailureMessage(structError) {
+function constructFailureMessage(structError: StructError): string {
   return `Failed to parse builds.yml
   -> ${structError
     .failures()
