@@ -424,6 +424,9 @@ export default class MetamaskController extends EventEmitter {
     });
     ///: END:ONLY_INCLUDE_IF
 
+    this.hasNetworkControllerProviderBeenInitialized = false;
+    this.providerConnectionDetailsQueue = [];
+
     const networkControllerMessenger = this.controllerMessenger.getRestricted({
       name: 'NetworkController',
     });
@@ -470,15 +473,7 @@ export default class MetamaskController extends EventEmitter {
       trackMetaMetricsEvent: (...args) =>
         this.metaMetricsController.trackEvent(...args),
     });
-    this.networkController.initializeProvider();
-    this.provider =
-      this.networkController.getProviderAndBlockTracker().provider;
-    this.blockTracker =
-      this.networkController.getProviderAndBlockTracker().blockTracker;
 
-    // TODO: Delete when ready to remove `networkVersion` from provider object
-    this.deprecatedNetworkId = null;
-    this.updateDeprecatedNetworkId();
     networkControllerMessenger.subscribe(
       'NetworkController:networkDidChange',
       () => this.updateDeprecatedNetworkId(),
@@ -1370,7 +1365,7 @@ export default class MetamaskController extends EventEmitter {
         this.onboardingController.store.getState();
       if (activeControllerConnections > 0 && completedOnboarding) {
         this.triggerNetworkrequests();
-      } else {
+      } else if (completedOnboarding) {
         this.stopNetworkRequests();
       }
     });
@@ -1380,6 +1375,7 @@ export default class MetamaskController extends EventEmitter {
         const { completedOnboarding: prevCompletedOnboarding } = prevState;
         const { completedOnboarding: currCompletedOnboarding } = currState;
         if (!prevCompletedOnboarding && currCompletedOnboarding) {
+          this.initializeNetworkProvider();
           this.triggerNetworkrequests();
         }
       }, this.onboardingController.store.getState()),
@@ -1412,6 +1408,7 @@ export default class MetamaskController extends EventEmitter {
           this.accountsController,
         ),
       assetsContractController: this.assetsContractController,
+      onboardingController: this.onboardingController,
       network: this.networkController,
       tokenList: this.tokenListController,
       trackMetaMetricsEvent: this.metaMetricsController.trackEvent.bind(
@@ -1483,8 +1480,6 @@ export default class MetamaskController extends EventEmitter {
 
     this.txController = new TransactionController(
       {
-        blockTracker: this.blockTracker,
-        cancelMultiplier: 1.1,
         getCurrentNetworkEIP1559Compatibility:
           this.networkController.getEIP1559Compatibility.bind(
             this.networkController,
@@ -1496,11 +1491,18 @@ export default class MetamaskController extends EventEmitter {
         getGasFeeEstimates: this.gasFeeController.fetchGasFeeEstimates.bind(
           this.gasFeeController,
         ),
+        getGlobalProviderAndBlockTracker: () =>
+          this.hasNetworkControllerProviderBeenInitialized
+            ? this.networkController.getProviderAndBlockTracker()
+            : undefined,
         getNetworkClientRegistry:
           this.networkController.getNetworkClientRegistry.bind(
             this.networkController,
           ),
-        getNetworkState: () => this.networkController.state,
+        getNetworkState: () =>
+          this.hasNetworkControllerProviderBeenInitialized
+            ? this.networkController.state
+            : undefined,
         getPermittedAccounts: this.getPermittedAccounts.bind(this),
         getSavedGasFees: () =>
           this.preferencesController.store.getState().advancedGasFee[
@@ -1537,7 +1539,6 @@ export default class MetamaskController extends EventEmitter {
             () => listener(),
           );
         },
-        provider: this.provider,
         hooks: {
           ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
           afterSign: (txMeta, signedEthTx) =>
@@ -1747,12 +1748,11 @@ export default class MetamaskController extends EventEmitter {
           networkControllerMessenger,
           'NetworkController:stateChange',
         ),
-        getNonceLock: this.txController.nonceTracker.getNonceLock.bind(
+        getNonceLock: this.txController.getNonceLock.bind(
           this.txController.nonceTracker,
         ),
         confirmExternalTransaction:
           this.txController.confirmExternalTransaction.bind(this.txController),
-        provider: this.provider,
         trackMetaMetricsEvent: this.metaMetricsController.trackEvent.bind(
           this.metaMetricsController,
         ),
@@ -2142,6 +2142,10 @@ export default class MetamaskController extends EventEmitter {
     this.extension.runtime.onMessageExternal.addListener(onMessageReceived);
     // Fire a ping message to check if other extensions are running
     checkForMultipleVersionsRunning();
+
+    if (this.onboardingController.store.getState().completedOnboarding) {
+      this.initializeNetworkProvider();
+    }
   }
 
   triggerNetworkrequests() {
@@ -2287,6 +2291,62 @@ export default class MetamaskController extends EventEmitter {
     const { currentLocale } = this.preferencesController.store.getState();
 
     return currentLocale;
+  }
+
+  /**
+   * Initializes the provider on the Network Controller. It also ensures the
+   * provider connection to the stream multiplexer is made and runs controllers'
+   * initialization logic that relies on that provider being initialized.
+   */
+  initializeNetworkProvider() {
+    this.networkController.initializeProvider();
+    // TODO: Delete when ready to remove `networkVersion` from provider object
+    this.deprecatedNetworkId = null;
+    this.updateDeprecatedNetworkId();
+    this.provider =
+      this.networkController.getProviderAndBlockTracker().provider;
+    this.blockTracker =
+      this.networkController.getProviderAndBlockTracker().blockTracker;
+
+    this.hasNetworkControllerProviderBeenInitialized = true;
+    this.processProviderConnectionDetailsQueue();
+
+    this.txController.initApprovals();
+
+    this.accountTracker.initialize(this.blockTracker, this.provider);
+    this.accountTracker.updateAccountsAllActiveNetworks();
+
+    this.swapsController.initialize(this.provider);
+
+    this.detectTokensController.restartTokenDetection();
+  }
+
+  /**
+   * Saves provider connection details for setting up trusted or untrusted
+   * communication that needs to be delayed until the provider is initialized in
+   * the Network Controller.
+   *
+   * @param {any} providerConnectionDetails - Object with properties mux,
+   * subStreamName, sender and subjectType.
+   */
+  enqueueProviderConnectionDetails(providerConnectionDetails) {
+    this.providerConnectionDetailsQueue.push(providerConnectionDetails);
+  }
+
+  /**
+   * Sets up the provider connections that have been delayed until the provider
+   * was initialized in the Network Controller.
+   */
+  processProviderConnectionDetailsQueue() {
+    while (this.providerConnectionDetailsQueue.length > 0) {
+      const connectionDetails = this.providerConnectionDetailsQueue.shift();
+
+      this.setupProviderConnection(
+        connectionDetails.mux.createStream(connectionDetails.subStreamName),
+        connectionDetails.sender,
+        connectionDetails.subjectType,
+      );
+    }
   }
 
   /**
@@ -4528,11 +4588,16 @@ export default class MetamaskController extends EventEmitter {
     const mux = setupMultiplex(connectionStream);
 
     // messages between inpage and background
-    this.setupProviderConnection(
-      mux.createStream('metamask-provider'),
+    this.enqueueProviderConnectionDetails({
+      mux,
+      subStreamName: 'metamask-provider',
       sender,
-      _subjectType,
-    );
+      subjectType: _subjectType,
+    });
+
+    if (this.hasNetworkControllerProviderBeenInitialized) {
+      this.processProviderConnectionDetailsQueue();
+    }
 
     // TODO:LegacyProvider: Delete
     if (sender.url) {
@@ -4555,11 +4620,17 @@ export default class MetamaskController extends EventEmitter {
     const mux = setupMultiplex(connectionStream);
     // connect features
     this.setupControllerConnection(mux.createStream('controller'));
-    this.setupProviderConnection(
-      mux.createStream('provider'),
+
+    this.enqueueProviderConnectionDetails({
+      mux,
+      subStreamName: 'provider',
       sender,
-      SubjectType.Internal,
-    );
+      subjectType: SubjectType.Internal,
+    });
+
+    if (this.hasNetworkControllerProviderBeenInitialized) {
+      this.processProviderConnectionDetailsQueue();
+    }
   }
 
   /**

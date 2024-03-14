@@ -20,7 +20,6 @@ import { cloneDeep } from 'lodash';
 import { LOCALHOST_RPC_URL } from '../../../shared/constants/network';
 
 import { SINGLE_CALL_BALANCES_ADDRESSES } from '../constants/contracts';
-import { previousValueComparator } from './util';
 
 /**
  * This module is responsible for tracking any number of accounts and caching their current balances & transaction
@@ -68,9 +67,6 @@ export default class AccountTracker {
       this.store.updateState(initState);
     };
 
-    this.#provider = opts.provider;
-    this.#blockTracker = opts.blockTracker;
-
     this.getCurrentChainId = opts.getCurrentChainId;
     this.getNetworkClientById = opts.getNetworkClientById;
     this.getNetworkIdentifier = opts.getNetworkIdentifier;
@@ -78,26 +74,11 @@ export default class AccountTracker {
     this.onboardingController = opts.onboardingController;
     this.controllerMessenger = opts.controllerMessenger;
 
-    // blockTracker.currentBlock may be null
-    this.#currentBlockNumberByChainId = {
-      [this.getCurrentChainId()]: this.#blockTracker.getCurrentBlock(),
-    };
-    this.#blockTracker.once('latest', (blockNumber) => {
-      this.#currentBlockNumberByChainId[this.getCurrentChainId()] = blockNumber;
-    });
+    this.#provider = opts.provider;
+    this.#blockTracker = opts.blockTracker;
 
     // subscribe to account removal
     opts.onAccountRemoved((address) => this.removeAccounts([address]));
-
-    this.onboardingController.store.subscribe(
-      previousValueComparator(async (prevState, currState) => {
-        const { completedOnboarding: prevCompletedOnboarding } = prevState;
-        const { completedOnboarding: currCompletedOnboarding } = currState;
-        if (!prevCompletedOnboarding && currCompletedOnboarding) {
-          this.updateAccountsAllActiveNetworks();
-        }
-      }, this.onboardingController.store.getState()),
-    );
 
     this.selectedAccount = this.controllerMessenger.call(
       'AccountsController:getSelectedAccount',
@@ -164,6 +145,30 @@ export default class AccountTracker {
       blockTracker: this.#blockTracker,
       identifier: this.getNetworkIdentifier(),
     };
+  }
+
+  /**
+   * Updates the `#currentBlockNumberByChainId` object with the latest block
+   * number.
+   *
+   * This relies on the block tracker and provider being defined which
+   * may not have been the case at the time the Account Tracker Controller was
+   * instantiated.
+   *
+   * @param passedBlockTracker - Reference to the block tracker proxy object
+   * @param passedProvider - Reference to the provider proxy object
+   */
+  initialize(passedBlockTracker, passedProvider) {
+    this.#blockTracker = passedBlockTracker;
+    this.#provider = passedProvider;
+
+    // blockTracker.currentBlock may be null
+    this.#currentBlockNumberByChainId = {
+      [this.getCurrentChainId()]: passedBlockTracker.getCurrentBlock(),
+    };
+    passedBlockTracker.once('latest', (blockNumber) => {
+      this.#currentBlockNumberByChainId[this.getCurrentChainId()] = blockNumber;
+    });
   }
 
   /**
