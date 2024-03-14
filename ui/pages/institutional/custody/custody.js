@@ -56,7 +56,10 @@ import ConfirmConnectCustodianModal from '../confirm-connect-custodian-modal';
 import { findCustodianByEnvName } from '../../../helpers/utils/institutional/find-by-custodian-name';
 import { setSelectedAddress } from '../../../store/actions';
 
+import QRCodeModal from '../../../components/institutional/qr-code-modal/qr-code-modal';
+
 const GK8_DISPLAY_NAME = 'gk8';
+const SATURN_DISPLAY_NAME = 'saturn custody';
 
 const CustodyPage = () => {
   const t = useI18nContext();
@@ -89,9 +92,19 @@ const CustodyPage = () => {
   const connectRequests = useSelector(getInstitutionalConnectRequests, isEqual);
   const [accounts, setAccounts] = useState();
   const address = useSelector(getSelectedAddress);
-  const connectRequest = connectRequests ? connectRequests[0] : undefined;
   const isCheckBoxSelected =
     accounts && Object.keys(selectedAccounts).length === accounts.length;
+
+  const [showQRCodeModal, setShowQRCodeModal] = useState(false);
+
+  // eslint-disable-next-line no-undef
+  const storageItem = localStorage.getItem('tempConnectRequest');
+
+  const tempConnectRequest = JSON.parse(storageItem);
+
+  const connectRequest = connectRequests[0]
+    ? connectRequests[0]
+    : tempConnectRequest;
 
   const custodianButtons = useMemo(() => {
     const custodianItems = [];
@@ -148,7 +161,10 @@ const CustodyPage = () => {
           setSelectedCustodianType(custodian.type);
         } else {
           setMatchedCustodian(custodianByDisplayName);
-          setIsConfirmConnectCustodianModalVisible(true);
+          custodianByDisplayName?.displayName?.toLocaleLowerCase() ===
+          SATURN_DISPLAY_NAME
+            ? setShowQRCodeModal(true)
+            : setIsConfirmConnectCustodianModalVisible(true);
         }
 
         trackEvent({
@@ -618,6 +634,9 @@ const CustodyPage = () => {
             setCurrentJwt('');
             setAddNewTokenClicked(false);
 
+            // eslint-disable-next-line no-undef
+            localStorage.removeItem('tempConnectRequest');
+
             history.push(DEFAULT_ROUTE);
 
             trackEvent({
@@ -699,6 +718,15 @@ const CustodyPage = () => {
           custodianURL={
             matchedCustodian?.onboardingUrl || matchedCustodian?.website
           }
+        />
+      )}
+
+      {showQRCodeModal && (
+        <QRCodeModal
+          onClose={() => {
+            setShowQRCodeModal(false);
+          }}
+          custodianName={selectedCustodianDisplayName}
         />
       )}
     </Box>
