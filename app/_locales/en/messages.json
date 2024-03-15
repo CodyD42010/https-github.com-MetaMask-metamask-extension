@@ -394,9 +394,6 @@
   "allowThisSiteTo": {
     "message": "Allow this site to:"
   },
-  "allowThisSnapTo": {
-    "message": "Allow this snap to:"
-  },
   "allowWithdrawAndSpend": {
     "message": "Allow $1 to withdraw and spend up to the following amount:",
     "description": "The url of the site that requested permission to 'withdraw and spend'"
@@ -4453,6 +4450,10 @@
   "snapInstallationErrorTitle": {
     "message": "Installation failed",
     "description": "Error title used when snap installation fails."
+  },
+  "snapPermissionRequestWarning": {
+    "message": "$1 are requesting the following permissions. Only continue if you trust $2.",
+    "description": "$1 is a Snap name, $2 is the Snap name."
   },
   "snapResultError": {
     "message": "Error"

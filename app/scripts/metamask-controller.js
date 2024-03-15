@@ -5050,6 +5050,10 @@ export default class MetamaskController extends EventEmitter {
             { origin },
             requestedPermissions,
           ),
+        revokePermissions: (revokedPermissions) => {
+          const revokeParams = { [origin]: revokedPermissions };
+          this.permissionController.revokePermissions(revokeParams);
+        },
         getPermissions: this.permissionController.getPermissions.bind(
           this.permissionController,
           origin,
@@ -5067,6 +5071,11 @@ export default class MetamaskController extends EventEmitter {
         getIsLocked: () => {
           return !this.appStateController.isUnlocked();
         },
+        getOriginSnap: this.controllerMessenger.call.bind(
+          this.controllerMessenger,
+          'SnapController:get',
+          origin,
+        ),
         ///: END:ONLY_INCLUDE_IF
         ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
         hasPermission: this.permissionController.hasPermission.bind(
