@@ -138,6 +138,8 @@ export const CHAIN_IDS = {
   SEPOLIA: '0xaa36a7',
   LINEA_GOERLI: '0xe704',
   LINEA_MAINNET: '0xe708',
+  SCROLL: '0x82750',
+  SCROLL_SEPOLIA: '0x8274f',
   AURORA: '0x4e454152',
   MOONBEAM: '0x504',
   MOONBEAM_TESTNET: '0x507',
@@ -236,6 +238,7 @@ export const HARMONY_DISPLAY_NAME = 'Harmony Mainnet Shard 0';
 export const PALM_DISPLAY_NAME = 'Palm';
 export const CELO_DISPLAY_NAME = 'Celo Mainnet';
 export const GNOSIS_DISPLAY_NAME = 'Gnosis';
+export const SCROLL_DISPLAY_NAME = 'Scroll';
 export const ZK_SYNC_ERA_DISPLAY_NAME = 'zkSync Era Mainnet';
 export const BASE_DISPLAY_NAME = 'Base Mainnet';
 export const AURORA_ETH_DISPLAY_NAME = 'Aurora';
@@ -364,6 +367,7 @@ export const OPTIMISM_TOKEN_IMAGE_URL = './images/optimism.svg';
 export const PALM_TOKEN_IMAGE_URL = './images/palm.svg';
 export const CELO_TOKEN_IMAGE_URL = './images/celo.svg';
 export const GNOSIS_TOKEN_IMAGE_URL = './images/gnosis.svg';
+export const SCROLLETH_TOKEN_IMAGE_URL = './images/scroll.svg';
 export const ZK_SYNC_ERA_TOKEN_IMAGE_URL = './images/zk-sync.svg';
 export const BASE_TOKEN_IMAGE_URL = './images/base.svg';
 export const ACALA_TOKEN_IMAGE_URL = './images/acala-network-logo.svg';
@@ -654,6 +658,8 @@ export const CHAIN_ID_TO_NETWORK_IMAGE_URL_MAP = {
   [CHAIN_IDS.PALM]: PALM_TOKEN_IMAGE_URL,
   [CHAIN_IDS.CELO]: CELO_TOKEN_IMAGE_URL,
   [CHAIN_IDS.GNOSIS]: GNOSIS_TOKEN_IMAGE_URL,
+  [CHAIN_IDS.SCROLL]: SCROLLETH_TOKEN_IMAGE_URL,
+  [CHAIN_IDS.SCROLL_SEPOLIA]: SCROLLETH_TOKEN_IMAGE_URL,
   [CHAINLIST_CHAIN_IDS_MAP.ACALA_NETWORK]: ACALA_TOKEN_IMAGE_URL,
   [CHAINLIST_CHAIN_IDS_MAP.ARBITRUM_NOVA]: ARBITRUM_NOVA_IMAGE_URL,
   [CHAINLIST_CHAIN_IDS_MAP.ASTAR]: ASTAR_IMAGE_URL,
@@ -812,6 +818,14 @@ export const ETHERSCAN_SUPPORTED_NETWORKS = {
     domain: 'gnosisscan.io',
     subdomain: `${defaultEtherscanSubdomainPrefix}-gnosis`,
   },
+  [CHAIN_IDS.SCROLL]: {
+    domain: 'scrollscan.com',
+    subdomain: `${defaultEtherscanSubdomainPrefix}`,
+  },
+  [CHAIN_IDS.SCROLL_SEPOLIA]: {
+    domain: 'scrollscan.com',
+    subdomain: `${defaultEtherscanSubdomainPrefix}-sepolia`,
+  },
 };
 
 export const CHAIN_ID_TO_GAS_LIMIT_BUFFER_MAP = {
@@ -851,6 +865,8 @@ export const BUYABLE_CHAINS_MAP: {
     | typeof CHAIN_IDS.FANTOM_TESTNET
     | typeof CHAIN_IDS.MOONBEAM_TESTNET
     | typeof CHAIN_IDS.LINEA_GOERLI
+    | typeof CHAIN_IDS.SCROLL_SEPOLIA
+    | typeof CHAIN_IDS.SCROLL
     | typeof CHAIN_IDS.GOERLI
     | typeof CHAIN_IDS.SEPOLIA
     | typeof CHAIN_IDS.GNOSIS
@@ -990,6 +1006,16 @@ export const FEATURED_RPCS: RPCDefinition[] = [
     rpcPrefs: {
       blockExplorerUrl: 'https://gnosisscan.io',
       imageUrl: GNOSIS_TOKEN_IMAGE_URL,
+    },
+  },
+  {
+    chainId: CHAIN_IDS.SCROLL,
+    nickname: SCROLL_DISPLAY_NAME,
+    rpcUrl: `https://rpc.scroll.io`,
+    ticker: CURRENCY_SYMBOLS.ETH,
+    rpcPrefs: {
+      blockExplorerUrl: 'https://scrollscan.com',
+      imageUrl: SCROLLETH_TOKEN_IMAGE_URL,
     },
   },
   {

@@ -1698,6 +1698,9 @@
   "etherscanViewOn": {
     "message": "View on Etherscan"
   },
+  "executionFee": {
+    "message": "Execution fee"
+  },
   "expandView": {
     "message": "Expand view"
   },
@@ -3307,9 +3310,6 @@
   },
   "operationFailed": {
     "message": "Operation Failed"
-  },
-  "optimismFees": {
-    "message": "Optimism fees"
   },
   "optional": {
     "message": "Optional"

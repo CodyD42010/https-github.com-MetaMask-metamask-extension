@@ -62,6 +62,7 @@ import SnapAccountTransactionLoadingScreen from '../../snap-account-transaction-
 ///: END:ONLY_INCLUDE_IF
 import { isHardwareKeyring } from '../../../helpers/utils/hardware';
 import FeeDetailsComponent from '../components/fee-details-component/fee-details-component';
+import fetchEstimatedL1Fee from '../../../helpers/utils/multiLayerFee/fetchEstimatedL1Fee';
 
 export default class ConfirmTransactionBase extends Component {
   static contextTypes = {
@@ -159,6 +160,7 @@ export default class ConfirmTransactionBase extends Component {
     tokenSymbol: PropTypes.string,
     updateTransaction: PropTypes.func,
     isUsingPaymaster: PropTypes.bool,
+    isMultiLayerFeeNetwork: PropTypes.bool,
     isSigningOrSubmitting: PropTypes.bool,
     isUserOpContractDeployError: PropTypes.bool,
     useMaxValue: PropTypes.bool,
@@ -190,6 +192,9 @@ export default class ConfirmTransactionBase extends Component {
       tryReverseResolveAddress,
       isEthGasPrice,
       setDefaultHomeActiveTabName,
+      hexMinimumTransactionFee,
+      isMultiLayerFeeNetwork,
+      txData,
       hexMaximumTransactionFee,
       useMaxValue,
     } = this.props;
@@ -198,9 +203,23 @@ export default class ConfirmTransactionBase extends Component {
       nextNonce: prevNextNonce,
       toAddress: prevToAddress,
       transactionStatus: prevTxStatus,
+      hexMinimumTransactionFee: prevHexMinimumTransactionFee,
       isEthGasPrice: prevIsEthGasPrice,
       hexMaximumTransactionFee: prevHexMaximumTransactionFee,
     } = prevProps;
+
+    if (
+      isMultiLayerFeeNetwork &&
+      (!this.state.estimatedL1Fees ||
+        prevHexMinimumTransactionFee !== hexMinimumTransactionFee)
+    ) {
+      fetchEstimatedL1Fee(txData?.chainId, txData).then((result) => {
+        this.setState({
+          estimatedL1Fees: result,
+        });
+      });
+    }
+
     const statusUpdated = transactionStatus !== prevTxStatus;
     const txDroppedOrConfirmed =
       transactionStatus === TransactionStatus.dropped ||
@@ -381,6 +400,7 @@ export default class ConfirmTransactionBase extends Component {
       useCurrencyRateCheck,
       tokenSymbol,
       isUsingPaymaster,
+      isMultiLayerFeeNetwork,
     } = this.props;
 
     const { t } = this.context;
@@ -398,6 +418,18 @@ export default class ConfirmTransactionBase extends Component {
     const networkName = NETWORK_TO_NAME_MAP[txData.chainId];
 
     const getTotalAmount = (useMaxFee) => {
+      if (isMultiLayerFeeNetwork) {
+        // TODO: Sort out the best way to have estimateL1Fees in state accessible by various components.
+        const l1Fees = this.state.estimatedL1Fees || '0x00';
+
+        const totalFees = addHexes(
+          l1Fees,
+          useMaxFee ? hexMaximumTransactionFee : hexMinimumTransactionFee,
+        );
+
+        return addHexes(txData.txParams.value, totalFees);
+      }
+
       return addHexes(
         txData.txParams.value,
         useMaxFee ? hexMaximumTransactionFee : hexMinimumTransactionFee,
