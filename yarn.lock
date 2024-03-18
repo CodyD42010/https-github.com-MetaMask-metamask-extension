@@ -4601,7 +4601,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/json-rpc-engine@npm:^7.1.0, @metamask/json-rpc-engine@npm:^7.1.1, @metamask/json-rpc-engine@npm:^7.2.0, @metamask/json-rpc-engine@npm:^7.3.1, @metamask/json-rpc-engine@npm:^7.3.2, @metamask/json-rpc-engine@npm:^7.3.3":
+"@metamask/json-rpc-engine@npm:7.3.3, @metamask/json-rpc-engine@npm:^7.1.0, @metamask/json-rpc-engine@npm:^7.1.1, @metamask/json-rpc-engine@npm:^7.2.0, @metamask/json-rpc-engine@npm:^7.3.1, @metamask/json-rpc-engine@npm:^7.3.2, @metamask/json-rpc-engine@npm:^7.3.3":
   version: 7.3.3
   resolution: "@metamask/json-rpc-engine@npm:7.3.3"
   dependencies:
@@ -23059,16 +23059,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-rpc-engine@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "json-rpc-engine@npm:6.1.0"
-  dependencies:
-    "@metamask/safe-event-emitter": "npm:^2.0.0"
-    eth-rpc-errors: "npm:^4.0.2"
-  checksum: 00d5b5228e90f126dd52176598db6e5611d295d3a3f7be21254c30c1b6555811260ef2ec2df035cd8e583e4b12096259da721e29f4ea2affb615f7dfc960a6a6
-  languageName: node
-  linkType: hard
-
 "json-rpc-middleware-stream@npm:^5.0.0, json-rpc-middleware-stream@npm:^5.0.1":
   version: 5.0.1
   resolution: "json-rpc-middleware-stream@npm:5.0.1"
@@ -25011,6 +25001,7 @@ __metadata:
     "@metamask/forwarder": "npm:^1.1.0"
     "@metamask/gas-fee-controller": "npm:^13.0.0"
     "@metamask/jazzicon": "npm:^2.0.0"
+    "@metamask/json-rpc-engine": "npm:7.3.3"
     "@metamask/keyring-api": "npm:^3.0.0"
     "@metamask/keyring-controller": "npm:^13.0.0"
     "@metamask/logging-controller": "npm:^2.0.2"
@@ -25203,7 +25194,6 @@ __metadata:
     jest-environment-jsdom: "npm:^29.1.2"
     jest-junit: "npm:^14.0.1"
     jsdom: "npm:^16.7.0"
-    json-rpc-engine: "npm:^6.1.0"
     json-rpc-middleware-stream: "npm:^5.0.1"
     koa: "npm:^2.7.0"
     labeled-stream-splicer: "npm:^2.0.2"
