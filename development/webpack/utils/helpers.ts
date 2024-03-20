@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { parse, join, relative, sep } from 'node:path';
 import type zlib from 'node:zlib';
-import type { Chunk, EntryObject, Stats, Configuration } from 'webpack';
+import type { Chunk, EntryObject, Stats } from 'webpack';
 import type TerserPluginType from 'terser-webpack-plugin';
 
 export type Manifest = chrome.runtime.Manifest;
@@ -11,8 +11,9 @@ export type ManifestV3 = chrome.runtime.ManifestV3;
 // HMR (Hot Module Reloading) can't be used until all circular dependencies in
 // the codebase are removed
 // See: https://github.com/MetaMask/metamask-extension/issues/22450
-// TODO: remove this variable when HMR is ready.
-export const __HMR_READY__ = false;
+// TODO: remove this variable when HMR is ready. The env var is for tests and
+// must also be removed everywhere.
+export const __HMR_READY__ = Boolean(process.env.__HMR_READY__) || false;
 
 /**
  * Target browsers
@@ -38,21 +39,10 @@ export const noop = () => undefined;
 /**
  *
  * @returns Returns the current version of MetaMask as specified in package.json
- * @throws Throws an error if the version is not a valid semantic version.
  */
 export const getMetaMaskVersion = (): string => {
   const { version } = require('../../../package.json');
-  // RegEx from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-  if (
-    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/u.test(
-      version,
-    )
-  ) {
-    return version as string;
-  }
-  throw new Error(
-    `Invalid \`version\` found in \`package.json\`. Expected a valid semantic version (https://semver.org/) but got "${version}".`,
-  );
+  return version as string;
 };
 
 /**
@@ -91,6 +81,7 @@ export function collectEntries(manifest: Manifest, appRoot: string) {
 
   function addHtml(filename?: string) {
     if (filename) {
+      assertValidEntryFileName(filename, appRoot);
       entry[parse(filename).name] = join(appRoot, filename);
     }
   }
@@ -106,7 +97,9 @@ export function collectEntries(manifest: Manifest, appRoot: string) {
       }),
     );
   } else {
-    manifest.web_accessible_resources?.forEach(addManifestScript);
+    manifest.web_accessible_resources?.forEach((filename) => {
+      filename.endsWith('.js') && addManifestScript(filename);
+    });
     manifest.background?.scripts?.forEach(addManifestScript);
     addHtml(manifest.background?.page);
   }
@@ -114,7 +107,6 @@ export function collectEntries(manifest: Manifest, appRoot: string) {
   for (const filename of readdirSync(appRoot)) {
     // ignore non-htm/html files
     if (/\.html?$/iu.test(filename)) {
-      assertValidEntryFileName(filename, appRoot);
       addHtml(filename);
     }
   }
@@ -157,9 +149,9 @@ function assertValidEntryFileName(filename: string, appRoot: string) {
   const message = `${error}
   Reason: ${reason}
 
-  Suggested Action${solutions.length === 1 ? '' : 's'}:
+  Suggested Actions:
   ${solutions.map((solution) => ` •  ${solution}`).join('\n')}
-  ${context ? `\n ${context}` : ``}
+  ${`\n ${context}`}
   `;
 
   throw new Error(message);
@@ -230,22 +222,19 @@ export function getLastCommitTimestamp(
   const firstNull = decompressed.indexOf(0);
   const commit = new TextDecoder().decode(decompressed.subarray(firstNull + 1));
   // commits are strictly formatted; use regex to extract the time fields
-  const [, timestamp, offset] = extractAuthorship(commit);
+  const timestamp = extractAuthorTimestamp(commit);
   // convert git timestamp from seconds to milliseconds
-  const msSinceLocalEpoch = parseInt(timestamp, 10) * 1000;
-  const msTimezoneOffset = parseInt(offset, 10) * 60000;
-
-  return msSinceLocalEpoch - msTimezoneOffset;
+  return parseInt(timestamp, 10) * 1000;
 }
 
 /**
- * Extracts the authorship information from a git commit object.
+ * Extracts the authorship timestamp from a well-formed git commit string.
  *
  * @param commit - A well-formed git commit
- * @returns [match, timestamp, offset]
+ * @returns timestamp of the commit
  */
-function extractAuthorship(commit: string): string[] {
-  return commit.match(/^author .* <.*> (.*) (.*)$/mu) as string[];
+function extractAuthorTimestamp(commit: string): string {
+  return (commit.match(/^author .* <.*> (.*) .*$/mu) as string[])[1];
 }
 
 /**
@@ -285,28 +274,34 @@ export const { colors, toGreen, toOrange, toPurple } = ((depth, esc) => {
   };
 })((process.stderr.getColorDepth?.() as 1 | 4 | 8 | 24) || 1, '\u001b');
 
-export type LogStatsConfig = Pick<Configuration, 'mode' | 'stats'>;
-
 /**
- * Logs a summary of build information to `process.stderr`.
+ * Logs a summary of build information to `process.stderr` (webpack logs to
+ * stderr).
  *
- * @param config - If config.stats is `normal`, logs the full stats object to
- * `stderr`, otherwise logs only errors and a completion message, if it
- * completed.
+ * Note: `err` and stats.hasErrors() are different. `err` prevents compilation
+ * from starting, while `stats.hasErrors()` is true if there were errors during
+ * compilation itself.
+ *
  * @param err - If not `undefined`, logs the error to `process.stderr`.
  * @param stats - If not `undefined`, logs the stats to `process.stderr`.
  */
-export function logStats(config: LogStatsConfig, err?: Error, stats?: Stats) {
-  err && console.error(err);
-
-  if (!stats) {
+export function logStats(err?: Error | null, stats?: Stats) {
+  if (err) {
+    console.error(err);
     return;
   }
 
+  if (!stats) {
+    // technically this shouldn't happen, but webpack's TypeScript interface
+    // doesn't enforce that `err` and `stats` are mutually exclusive.
+    return;
+  }
+
+  const { options } = stats.compilation;
   // orange for production builds, purple for development
-  const colorFn = config.mode === 'production' ? toOrange : toPurple;
+  const colorFn = options.mode === 'production' ? toOrange : toPurple;
   stats.compilation.name = colorFn(`🦊 ${stats.compilation.compiler.name}`);
-  if (config.stats === 'normal') {
+  if (options.stats === 'normal') {
     // log everything (computing stats is slow, so we only do it if asked).
     console.error(stats.toString({ colors }));
   } else if (stats.hasErrors() || stats.hasWarnings()) {

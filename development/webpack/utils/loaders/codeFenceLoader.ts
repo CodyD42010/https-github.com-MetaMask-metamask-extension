@@ -32,11 +32,19 @@ const schema: JSONSchema7 = {
 export type CodeFenceLoaderOptions = { features: FeatureLabels };
 
 type Context = LoaderContext<CodeFenceLoaderOptions>;
-function codeFenceLoader(this: Context, content: string, map: string) {
+function codeFenceLoader(this: Context, content: string, map?: string) {
   const options = this.getOptions();
   validate(schema, options, { name: 'codeFenceLoader' });
-  const result = removeFencedCode(this.resourcePath, content, options.features);
-  this.callback(null, result[0], map);
+  try {
+    const result = removeFencedCode(
+      this.resourcePath,
+      content,
+      options.features,
+    );
+    this.callback(null, result[0], map);
+  } catch (error: unknown) {
+    this.callback(error as Error);
+  }
 }
 
 export default codeFenceLoader;

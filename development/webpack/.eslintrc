@@ -1,5 +1,18 @@
 {
   "rules": {
+    "@typescript-eslint/no-shadow": [
+      "error",
+      {
+        "allow": [
+          // so uh, these aren't always globals, ya know.
+          "describe",
+          "it",
+          "test",
+          "afterEach",
+          "beforeEach"
+        ]
+      }
+    ],
     // useful for lazy `require`s (makes start up faster)
     "@typescript-eslint/no-require-imports": "off",
     // useful for modifying properties of `require`d modules (something `import`ed modules don't allow)

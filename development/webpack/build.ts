@@ -46,12 +46,12 @@ export function build(onComplete: () => void = noop) {
     if (watch) {
       // once HMR is ready (__HMR_READY__ variable), this section should be removed.
       compiler.watch(options.watchOptions, (err, stats) => {
-        logStats(options, err ?? undefined, stats);
+        logStats(err ?? undefined, stats);
         console.error('🦊 Watching for changes…');
       });
     } else {
       compiler.run((err, stats) => {
-        logStats(options, err ?? undefined, stats);
+        logStats(err ?? undefined, stats);
         // `onComplete` must be called synchronously _before_ `compiler.close`
         // or the caller might observe output from the `close` command.
         onComplete();

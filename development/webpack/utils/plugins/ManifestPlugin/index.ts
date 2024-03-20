@@ -165,11 +165,9 @@ export class ManifestPlugin<Z extends boolean> {
           mtime,
           zip,
         );
-        reportProgress(
-          0,
-          `${++filesProcessed}/${totalWork} assets zipped for ${browser}`,
-          'manifest.json',
-        );
+
+        const message = `${++filesProcessed}/${totalWork} assets zipped for ${browser}`;
+        reportProgress(0, message, 'manifest.json');
 
         for (const [assetName, asset] of assetsArray) {
           if (errored) return;

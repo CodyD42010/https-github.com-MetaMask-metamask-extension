@@ -9,13 +9,30 @@ import { getMetaMaskVersion } from './helpers';
 const BUILDS_YML_PATH = join(__dirname, '../../../builds.yml');
 
 /**
+ * Coerce `"true"`, `"false"`, and `"null"` to their respective JavaScript values.
+ *
+ * @param value
+ * @returns
+ */
+function coerce(value: string) {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (value === 'null') return null;
+  return value;
+}
+
+/**
  * @param rcFilePath - The path to the rc file.
  * @returns The definitions loaded from the rc file.
  */
 function loadEnv(rcFilePath: string): Map<string, unknown> {
   const definitions = new Map<string, unknown>();
-  const rc = parse(readFileSync(rcFilePath, 'utf8'));
-  Object.entries(rc).forEach(([key, value]) => definitions.set(key, value));
+  try {
+    const rc = parse(readFileSync(rcFilePath, 'utf8'));
+    Object.entries(rc).forEach(([key, value]) =>
+      definitions.set(key, coerce(value)),
+    );
+  } catch {}
   return definitions;
 }
 
@@ -23,12 +40,13 @@ function loadEnv(rcFilePath: string): Map<string, unknown> {
  *
  * @param args
  * @param args.type
+ * @param args.test
  * @param args.env
- * @param buildTypesConfig
+ * @param buildTypes
  * @returns
  */
-export function getVariables({ type, env }: Args, buildTypesConfig: Build) {
-  const variables = loadConfigVars(type, buildTypesConfig);
+export function getVariables({ env, test, type }: Args, buildTypes: Build) {
+  const variables = loadConfigVars(type, buildTypes);
   const version = getMetaMaskVersion();
 
   function set(key: string, value: unknown): void;
@@ -58,8 +76,7 @@ export function getVariables({ type, env }: Args, buildTypesConfig: Build) {
       },
     },
     isDevBuild: env === 'development',
-    // TODO: what are the conditions for an `isTest` build?
-    isTestBuild: false,
+    isTestBuild: test,
     buildName: 'MetaMask',
   });
 

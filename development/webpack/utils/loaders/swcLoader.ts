@@ -140,7 +140,7 @@ type SchemaOptions = { keepDefaultedPropertiesOptional: true };
 export type SwcLoaderOptions = FromSchema<typeof schema, SchemaOptions>;
 
 type Context = LoaderContext<SwcLoaderOptions>;
-export default function swcLoader(this: Context, src: string, srcMap: string) {
+export default function swcLoader(this: Context, src: string, srcMap?: string) {
   const pluginOptions = this.getOptions();
   validate(schema, pluginOptions, { name: 'swcLoader' });
 
@@ -159,7 +159,7 @@ export default function swcLoader(this: Context, src: string, srcMap: string) {
 }
 
 export type SwcConfig = {
-  args: Args;
+  args: Pick<Args, 'watch'>;
   safeVariables: Record<string, string>;
   browsersListQuery: string;
   isDevelopment: boolean;
@@ -194,7 +194,7 @@ export function getSwcLoader(
           },
           optimizer: {
             globals: {
-              envs: swcConfig.safeVariables || {},
+              envs: swcConfig.safeVariables,
             },
           },
         },

@@ -16,7 +16,7 @@ if (isNaN(PPID) || PPID !== process.ppid) {
   );
 }
 
-const { build } = await import('./build.ts')
+const { build } = await import('./build.ts');
 build(() => {
   // stop writing now because the parent process is still listening to these
   // streams and we don't want any more output to be shown to the user.

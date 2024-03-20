@@ -1,5 +1,5 @@
 import { dirname, relative } from 'node:path';
-import { ModuleFilenameHelpers, Compilation } from 'webpack';
+import { ModuleFilenameHelpers, Compilation, sources } from 'webpack';
 import { validate } from 'schema-utils';
 import { schema } from './schema';
 import type { SelfInjectPluginOptions, Source, Compiler } from './types';
@@ -101,13 +101,13 @@ export class SelfInjectPlugin {
    * @param asset
    */
   updateAsset(compilation: Compilation, file: string, asset: Source): Source {
-    const { ConcatSource, RawSource } = compilation.compiler.webpack.sources;
+    const { ConcatSource, RawSource } = sources;
     const { map, source } = asset.sourceAndMap();
 
     let sourceMappingURLComment = '';
     // emit a separate source map file (if this asset already has one)
     if (map /* `map` can be `null`; webpack's types are wrong */) {
-      const { devtool } = compilation.compiler.options;
+      const { devtool } = compilation.options;
       const sourceMapPath = `${file}.map`;
 
       // we're removing the source map from the original webpack asset, since
@@ -116,8 +116,8 @@ export class SelfInjectPlugin {
       const mapSource = new RawSource(JSON.stringify(map));
       compilation.emitAsset(sourceMapPath, mapSource);
 
-      // we must "hide"" the `sourceMappingURL` from the file when `hidden`
-      // source maps are requested by omitting it from the source
+      // we must "hide" the `sourceMappingURL` from the file when `hidden`
+      // source maps are requested by omitting the reference from the source
       if (devtool && !devtool.startsWith('hidden-')) {
         // `sourceMappingURL` needs to be relative to the file so that the
         // browser's dev tools can find it.

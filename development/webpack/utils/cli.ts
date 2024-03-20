@@ -27,8 +27,7 @@ const envOptions = {
     alias: 'e',
     array: false,
     default: 'development' as const,
-    description:
-      'Enables/disables production optimizations and development hints',
+    description: 'Enables/disables production optimizations/development hints',
     choices: ['development', 'production'] as const,
     group: toOrange('Build options:'),
   },
@@ -86,7 +85,7 @@ export function parseArgv(argv: string[], { buildTypes, features }: Build) {
 
   // set up feature flags
   const active = new Set<string>();
-  const defaultFeaturesForBuildType = buildTypes[conf.type]?.features ?? [];
+  const defaultFeaturesForBuildType = buildTypes[conf.type].features ?? [];
   const setActive = (f: string) => omit.includes(f) || active.add(f);
   [defaultFeaturesForBuildType, add].forEach((feat) => feat.forEach(setActive));
 
@@ -202,6 +201,13 @@ function getOptions(
       group: toOrange('Developer assistance:'),
       type: 'boolean',
     },
+    test: {
+      array: false,
+      default: isProduction,
+      description: 'Enables/disables testing mode',
+      group: toOrange('Developer assistance:'),
+      type: 'boolean',
+    },
     zip: {
       alias: 'z',
       array: false,
@@ -307,6 +313,12 @@ function getOptions(
   } as const satisfies YargsOptionsMap;
 }
 
+/**
+ * Returns a string representation of the given arguments and features.
+ *
+ * @param args
+ * @param features
+ */
 export function getDryRunMessage(args: Args, features: Features) {
   return `🦊 Build Config 🦊
 
@@ -323,5 +335,6 @@ Browsers: ${args.browser.join(', ')}
 Devtool: ${args.devtool}
 Build type: ${args.type}
 Features: ${[...features.active].join(', ')}
+Test: ${args.test}
 `;
 }
