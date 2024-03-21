@@ -35,6 +35,23 @@ export class Reader {
   }
 
   /**
+   * Allocates a new buffer of size `bytes` and reads into it without updating
+   * the internal position.
+   *
+   * This is not as efficient as `read` and should be used sparingly.
+   *
+   * @param bytes
+   */
+  peek(bytes: number) {
+    const buffer = Buffer.allocUnsafe(bytes);
+    const bytesRead = readSync(this.fd, buffer, 0, bytes, this.offset);
+    if (bytesRead !== bytes) {
+      throw new Error('out of bounds');
+    }
+    return buffer.subarray(0, bytesRead);
+  }
+
+  /**
    * Updates the internal position by the amount specified in `bytes`.
    *
    * @param bytes
@@ -66,19 +83,5 @@ export class Reader {
    */
   readUInt8(offset: number) {
     return this.seek(offset).read(1).readUInt8(0);
-  }
-
-  /**
-   * Reads to the end of the file, allocating a new buffer for the operation.
-   * This will seek the file to the end; no other read operations will be
-   * possible unless the position is reset by seeking backwards.
-   */
-  readToEnd() {
-    const { size } = fstatSync(this.fd);
-    const remainingSize = size - this.offset;
-    const buffer = Buffer.allocUnsafe(remainingSize);
-    const bytesRead = readSync(this.fd, buffer, 0, remainingSize, this.offset);
-    this.offset += bytesRead;
-    return buffer;
   }
 }

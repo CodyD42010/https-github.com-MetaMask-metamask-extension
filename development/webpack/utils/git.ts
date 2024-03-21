@@ -95,7 +95,11 @@ function searchGitIdx(filename: string, oid: Buffer) {
 function getCommitFromObject(oid: string, gitDir: string) {
   // read the commit object from the file system
   const commitPath = join(gitDir, 'objects', oid.slice(0, 2), oid.slice(2));
-  return readFileSync(commitPath);
+  try {
+    return readFileSync(commitPath);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -133,10 +137,8 @@ function getCommitFromPackFile(
       // if multibyte encoding is used, decode the number
       if (multibyte) {
         let shift = 4;
-        let byte;
-
         // initial read
-        byte = reader.readUInt8(0);
+        let byte = reader.readUInt8(0);
         length |= (byte & 0x7f) << shift;
 
         // continue if the MSB is set, indicating more bytes are part of the number
@@ -149,14 +151,9 @@ function getCommitFromPackFile(
           // accumulate the byte into the length, excluding its most significant bit
           length |= (byte & 0x7f) << shift;
         }
-        if (length === -1) {
-          // this won't happen, but eslint won't shut up about length not being
-          // used.
-          throw new Error('Unsupported length encoding');
-        }
       }
 
-      return reader.readToEnd();
+      return reader.peek(length);
     } finally {
       closeSync(fd);
     }
@@ -220,7 +217,9 @@ export function getCommitTimestamp(
 function getRawCommit(oid: string, gitDir: string): Buffer | null {
   // most commits will be available as loose objects, but if it isn't we'll need
   // to look in the packfiles.
-  return getCommitFromObject(oid, gitDir) || getCommitFromPackFile(oid, gitDir);
+  const commit = getCommitFromObject(oid, gitDir) || getCommitFromPackFile(oid, gitDir);
+  if (commit === null) throw new Error(`commit ${oid} not found`);
+  return commit;
 }
 
 /**
