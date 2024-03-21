@@ -32,7 +32,9 @@ function loadEnv(rcFilePath: string): Map<string, unknown> {
     Object.entries(rc).forEach(([key, value]) =>
       definitions.set(key, coerce(value)),
     );
-  } catch {}
+  } catch {
+    // ignore
+  }
   return definitions;
 }
 

@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import { describe, it, afterEach, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
-import { execSync } from 'node:child_process';
 import {
   version,
   type Chunk,
@@ -232,20 +231,6 @@ describe('./utils/helpers.ts', () => {
       () => helpers.collectEntries(manifest, ''),
       /Error: Invalid Entrypoint Filename Detected/u,
     );
-  });
-
-  it('should get the latest commit hash', () => {
-    const gitHash = execSync('git rev-parse HEAD').toString().trim();
-    const commitHash = helpers.getLastCommitHash();
-    assert.strictEqual(commitHash, gitHash);
-  });
-
-  it('should get getLastCommitTimestamp', () => {
-    const gitTimestamp =
-      parseInt(execSync('git log -1 --format=%at').toString().trim(), 10) *
-      1000;
-    const timestamp = helpers.getLastCommitTimestamp();
-    assert.strictEqual(timestamp, gitTimestamp);
   });
 
   describe('logStats', () => {

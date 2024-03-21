@@ -22,8 +22,6 @@ import { SelfInjectPlugin } from './utils/plugins/SelfInjectPlugin';
 import {
   type Manifest,
   collectEntries,
-  getLastCommitTimestamp,
-  getLastCommitHash,
   getMinimizers,
   NODE_MODULES_RE,
   __HMR_READY__,
@@ -33,6 +31,7 @@ import { getCodeFenceLoader } from './utils/loaders/codeFenceLoader';
 import { getSwcLoader } from './utils/loaders/swcLoader';
 import { getBuildTypes, getVariables } from './utils/config';
 import { ManifestPlugin } from './utils/plugins/ManifestPlugin';
+import { getLastCommitHash, getCommitTimestamp } from './utils/git';
 
 const buildTypes = getBuildTypes();
 const { args, cacheKey, features } = parseArgv(argv.slice(2), buildTypes);
@@ -98,6 +97,7 @@ const cache = args.cache
 // #endregion cache
 
 // #region plugins
+const commitHash = isDevelopment ? getLastCommitHash() : null;
 const plugins: WebpackPluginInstance[] = [
   new SelfInjectPlugin({ test: /^scripts\/inpage\.js$/u }),
   // HtmlBundlerPlugin treats HTML files as entry points
@@ -115,21 +115,25 @@ const plugins: WebpackPluginInstance[] = [
   new ManifestPlugin({
     web_accessible_resources: webAccessibleResources,
     manifest_version: MANIFEST_VERSION,
-    description: isDevelopment
-      ? `${args.env} build from git id: ${getLastCommitHash().substring(0, 8)}`
+    description: commitHash
+      ? `${args.env} build from git id: ${commitHash.substring(0, 8)}`
       : null,
     version: variables.get('METAMASK_VERSION') as string,
     browsers: args.browser,
     zip: args.zip,
-    zipOptions: {
-      outFilePath: `../../builds/metamask-[browser]-${variables.get(
-        'METAMASK_VERSION',
-      )}.zip`, // relative to output.path
-      mtime: getLastCommitTimestamp(),
-      excludeExtensions: ['.map'],
-      // `level: 9` is the highest; it may increase build time by ~5% over level 1
-      level: 9,
-    },
+    ...(args.zip
+      ? {
+          zipOptions: {
+            outFilePath: `../../builds/metamask-[browser]-${variables.get(
+              'METAMASK_VERSION',
+            )}.zip`, // relative to output.path
+            mtime: getCommitTimestamp(commitHash),
+            excludeExtensions: ['.map'],
+            // `level: 9` is the highest; it may increase build time by ~5% over level 1
+            level: 9,
+          },
+        }
+      : {}),
   }),
   // use ProvidePlugin to polyfill *global* node variables
   new ProvidePlugin({

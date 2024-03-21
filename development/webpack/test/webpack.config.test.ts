@@ -2,9 +2,10 @@ import fs from 'node:fs';
 import { describe, it, afterEach, before, after, mock } from 'node:test';
 import assert from 'node:assert';
 import process from 'node:process';
-import { type Configuration, webpack } from 'webpack';
-import { getLastCommitHash, noop } from '../utils/helpers';
 import { resolve } from 'node:path';
+import { type Configuration, webpack } from 'webpack';
+import { noop } from '../utils/helpers';
+import { getLastCommitHash } from '../utils/git';
 
 function getWebpackInstance(config: Configuration) {
   // webpack logs a warning if we pass config.watch to it without a callback

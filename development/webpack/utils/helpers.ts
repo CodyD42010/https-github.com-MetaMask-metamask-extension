@@ -1,6 +1,5 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { parse, join, relative, sep } from 'node:path';
-import type zlib from 'node:zlib';
 import type { Chunk, EntryObject, Stats } from 'webpack';
 import type TerserPluginType from 'terser-webpack-plugin';
 
@@ -155,86 +154,6 @@ function assertValidEntryFileName(filename: string, appRoot: string) {
   `;
 
   throw new Error(message);
-}
-
-/**
- * Retrieves the commit hash of the last commit on the current Git branch.
- *
- * Does not require git and is faster than shelling out to git.
- *
- * @param gitDir - The path to the `.git` directory of the repository. Defaults
- * to the `.git` directory in the root of the project.
- * @returns Millisecond precision timestamp in UTC of the last commit on the
- * current branch. If the branch is detached or has no commits, it will throw an
- * error.
- * @throws Throws an error if the current branch is detached or has no commits.
- * May also throw if the Git repository is malformed (or not found).
- */
-export function getLastCommitHash(gitDir = join(__dirname, '../../../.git')) {
-  // read .git/HEAD to get the current branch/commit
-  const ref = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
-
-  // determine if we're in a detached HEAD state or on a branch
-  const oid = ref.startsWith('ref: ')
-    ? // HEAD is pointer to a branch; load the commit hash
-      readFileSync(join(gitDir, ref.slice(5)), 'utf8').trim()
-    : // HEAD is detached; so use the commit hash directly
-      ref;
-
-  return oid;
-}
-
-/**
- * Retrieves the timestamp of the last commit in UTC for the current Git branch.
- *
- * The author timestamp is used for its consistency across different
- * repositories and its inclusion in the Git commit hash calculation. This makes
- * it a stable choice for reproducible builds.
- *
- * Does not require git and is faster than shelling out to git.
- *
- * @param gitDir - The path to the `.git` directory of the repository. Defaults
- * to the `.git` directory in the root of the project.
- * @returns Millisecond precision timestamp in UTC of the last commit on the
- * current branch. If the branch is detached or has no commits, it will throw an
- * error.
- * @throws Throws an error if the current branch is detached or has no commits.
- * May also throw if the Git repository is malformed (or not found).
- */
-export function getLastCommitTimestamp(
-  gitDir = join(__dirname, '../../../.git'),
-) {
-  // Note: this function is synchronous because it's faster this way
-
-  // use `unzipSync` from zlib since git uses zlib-wrapped DEFLATE.
-  // loaded in this way to avoid requiring it when this function isn't used.
-  const { unzipSync } = require('node:zlib') as typeof zlib;
-
-  const oid = getLastCommitHash(gitDir);
-
-  // read the commit object from the file system
-  const commitPath = join(gitDir, 'objects', oid.slice(0, 2), oid.slice(2));
-  const rawCommit = readFileSync(commitPath);
-  // it's compressed with zlib DEFLATE, so we need to decompress it
-  const decompressed = unzipSync(rawCommit);
-  // the commit object is a text file with a header and a body, we just want the
-  // body, which is after the first null byte
-  const firstNull = decompressed.indexOf(0);
-  const commit = new TextDecoder().decode(decompressed.subarray(firstNull + 1));
-  // commits are strictly formatted; use regex to extract the time fields
-  const timestamp = extractAuthorTimestamp(commit);
-  // convert git timestamp from seconds to milliseconds
-  return parseInt(timestamp, 10) * 1000;
-}
-
-/**
- * Extracts the authorship timestamp from a well-formed git commit string.
- *
- * @param commit - A well-formed git commit
- * @returns timestamp of the commit
- */
-function extractAuthorTimestamp(commit: string): string {
-  return (commit.match(/^author .* <.*> (.*) .*$/mu) as string[])[1];
 }
 
 /**
