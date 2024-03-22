@@ -1412,7 +1412,6 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - .nyc_output
             - coverage
 
   test-unit-jest-development:
