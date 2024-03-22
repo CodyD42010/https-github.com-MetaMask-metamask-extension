@@ -25,14 +25,12 @@ describe('./utils/helpers.ts', () => {
   });
 
   it('should return all entries listed in the manifest and file system for manifest_version 2', () => {
-    const originalReaddirSync = fs.readdirSync;
     const otherHtmlEntries = ['one.html', 'two.html'];
     const appRoot = '<app-root>';
-    mock.method(fs, 'readdirSync', (path: any, options: any) => {
+    mock.method(fs, 'readdirSync', (path: any) => {
       if (path === appRoot) {
         return [...otherHtmlEntries, 'three.not-html'];
       }
-      return originalReaddirSync.call(fs, path, options);
     });
 
     const manifest = {
@@ -108,14 +106,12 @@ describe('./utils/helpers.ts', () => {
   });
 
   it('should return all entries listed in the manifest and file system for manifest_version 3', () => {
-    const originalReaddirSync = fs.readdirSync;
     const otherHtmlEntries = ['one.html', 'two.html'];
     const appRoot = '<app-root>';
-    mock.method(fs, 'readdirSync', (path: any, options: any) => {
+    mock.method(fs, 'readdirSync', (path: any) => {
       if (path === appRoot) {
         return [...otherHtmlEntries, 'three.not-html'];
       }
-      return originalReaddirSync.call(fs, path, options);
     });
 
     const manifest = {
@@ -242,7 +238,7 @@ describe('./utils/helpers.ts', () => {
     ) => {
       return {
         hash: 'test-hash',
-        toJson: mock.fn(() => ({})),
+        toJson: null as any,
         endTime: 1000,
         startTime: 0,
         hasErrors: mock.fn(() => hasError),
