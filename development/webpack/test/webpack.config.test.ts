@@ -125,6 +125,7 @@ ${Object.entries(env)
         '--stats',
         '--no-progress',
         '--no-cache',
+        '--zip',
         ...removeUnsupportedFeatures,
       ],
       {
@@ -165,6 +166,8 @@ ${Object.entries(env)
     );
     assert.deepStrictEqual(manifestPlugin.options.web_accessible_resources, []);
     assert.deepStrictEqual(manifestPlugin.options.description, null);
+    assert.deepStrictEqual(manifestPlugin.options.zip, true);
+    assert(manifestPlugin.options.zipOptions, 'Zip options should be present');
 
     const progressPlugin = instance.options.plugins.find(
       (plugin: any) => plugin.constructor.name === 'ProgressPlugin',
