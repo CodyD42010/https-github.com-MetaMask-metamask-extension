@@ -1,4 +1,4 @@
-import { fstatSync, readSync } from 'node:fs';
+import { readSync } from 'node:fs';
 
 export class Reader {
   private fd: number;
@@ -22,14 +22,9 @@ export class Reader {
    * Reads `bytes` from the file and returns a Buffer of the read bytes.
    *
    * @param bytes
-   * @throws Throws an error if the bytes read is less than the bytes requested
-   * or if maxReadSize is less than the bytes requested.
    */
   read(bytes: number) {
     const bytesRead = readSync(this.fd, this.buffer, 0, bytes, this.offset);
-    if (bytesRead !== bytes) {
-      throw new Error('out of bounds');
-    }
     this.offset += bytesRead;
     return this.buffer.subarray(0, bytesRead);
   }
@@ -45,9 +40,6 @@ export class Reader {
   peek(bytes: number) {
     const buffer = Buffer.allocUnsafe(bytes);
     const bytesRead = readSync(this.fd, buffer, 0, bytes, this.offset);
-    if (bytesRead !== bytes) {
-      throw new Error('out of bounds');
-    }
     return buffer.subarray(0, bytesRead);
   }
 
@@ -66,8 +58,6 @@ export class Reader {
    *
    * @param offset - The offset to read from relative to the current read
    * position.
-   * @throws Throws an error if the bytes read is less than 4 or maxReadSize
-   * is less than 4.
    */
   readUInt32BE(offset: number) {
     return this.seek(offset).read(4).readUInt32BE(0);
@@ -78,8 +68,6 @@ export class Reader {
    *
    * @param offset - The offset to read from relative to the current read
    * position.
-   * @throws Throws an error if the bytes read is less than 1 or maxReadSize
-   * is less than 1.
    */
   readUInt8(offset: number) {
     return this.seek(offset).read(1).readUInt8(0);

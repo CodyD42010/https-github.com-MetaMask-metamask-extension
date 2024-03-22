@@ -137,19 +137,20 @@ function getCommitFromPackFile(
       // if multibyte encoding is used, decode the number
       if (multibyte) {
         let shift = 4;
-        // initial read
-        let byte = reader.readUInt8(0);
-        length |= (byte & 0x7f) << shift;
+        let byte: number;
 
-        // continue if the MSB is set, indicating more bytes are part of the number
-        while (byte & 0x80) {
-          // Move to the next group of 7 bits
-          shift += 7;
-
-          // read the next byte
+        for (; ; shift += 7) {
+          // Read the next byte
           byte = reader.readUInt8(0);
-          // accumulate the byte into the length, excluding its most significant bit
+
+          // Accumulate the byte into the length, excluding its most significant bit
           length |= (byte & 0x7f) << shift;
+
+          // Check if the MSB is set, indicating more bytes are part of the number
+          // If not, break out of the loop
+          if (!(byte & 0x80)) {
+            break;
+          }
         }
       }
 
@@ -217,9 +218,7 @@ export function getCommitTimestamp(
 function getRawCommit(oid: string, gitDir: string): Buffer | null {
   // most commits will be available as loose objects, but if it isn't we'll need
   // to look in the packfiles.
-  const commit = getCommitFromObject(oid, gitDir) || getCommitFromPackFile(oid, gitDir);
-  if (commit === null) throw new Error(`commit ${oid} not found`);
-  return commit;
+  return getCommitFromObject(oid, gitDir) || getCommitFromPackFile(oid, gitDir);
 }
 
 /**
