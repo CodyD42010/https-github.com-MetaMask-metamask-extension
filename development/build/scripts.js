@@ -55,7 +55,7 @@ const {
 
 // map dist files to bag of needed native APIs against LM scuttling
 const scuttlingConfigBase = {
-  'sentry-install.js': {
+  'scripts/sentry-install.js': {
     // globals sentry need to function
     window: '',
     navigator: '',
@@ -93,8 +93,8 @@ const mv3ScuttlingConfig = { ...scuttlingConfigBase };
 
 const standardScuttlingConfig = {
   ...scuttlingConfigBase,
-  'sentry-install.js': {
-    ...scuttlingConfigBase['sentry-install.js'],
+  'scripts/sentry-install.js': {
+    ...scuttlingConfigBase['scripts/sentry-install.js'],
     document: '',
   },
 };
@@ -281,7 +281,7 @@ function createScriptTasks({
       browserPlatforms,
       buildTarget,
       buildType,
-      destFilepath: `${label}.js`,
+      destFilepath: `scripts/${label}.js`,
       entryFilepath: `./app/scripts/${label}.js`,
       ignoredFiles,
       label,
@@ -305,7 +305,7 @@ function createScriptTasks({
       browserPlatforms,
       buildTarget,
       buildType,
-      destFilepath: `${label}.js`,
+      destFilepath: `scripts/${label}.js`,
       entryFilepath: `./app/scripts/${label}.js`,
       ignoredFiles,
       label,
@@ -457,9 +457,9 @@ async function createManifestV3AppInitializationBundle({
   // Code below is used to set statsMode to true when testing in MV3
   // This is used to capture module initialisation stats using lavamoat.
   if (isTestBuild(buildTarget)) {
-    const content = readFileSync('./dist/chrome/runtime-lavamoat.js', 'utf8');
+    const content = readFileSync('./dist/chrome/scripts/runtime-lavamoat.js', 'utf8');
     const fileOutput = content.replace('statsMode = false', 'statsMode = true');
-    writeFileSync('./dist/chrome/runtime-lavamoat.js', fileOutput);
+    writeFileSync('./dist/chrome/scripts/runtime-lavamoat.js', fileOutput);
   }
 
   console.log(`Bundle end: service worker app-init.js`);
@@ -606,7 +606,7 @@ function createFactoredBuild({
       // add lavamoat policy loader file to packer output
       moduleGroupPackerStream.push(
         new Vinyl({
-          path: 'policy-load.js',
+          path: 'scripts/policy-load.js',
           contents: lavapack.makePolicyLoaderStream(lavamoatOpts),
         }),
       );
@@ -1108,18 +1108,18 @@ function renderJavaScriptLoader({
   );
 
   const securityScripts = applyLavaMoat
-    ? ['./runtime-lavamoat.js', './lockdown-more.js', './policy-load.js']
+    ? ['./scripts/runtime-lavamoat.js', './scripts/lockdown-more.js', './scripts/policy-load.js']
     : [
-        './lockdown-install.js',
-        './lockdown-run.js',
-        './lockdown-more.js',
-        './runtime-cjs.js',
+        './scripts/lockdown-install.js',
+        './scripts/lockdown-run.js',
+        './scripts/lockdown-more.js',
+        './scripts/runtime-cjs.js',
       ];
 
   const requiredScripts = [
-    './snow.js',
-    './use-snow.js',
-    './sentry-install.js',
+    './scripts/snow.js',
+    './scripts/use-snow.js',
+    './scripts/sentry-install.js',
     ...securityScripts,
     ...jsBundles,
   ];

@@ -120,6 +120,15 @@ const plugins: WebpackPluginInstance[] = [
       : null,
     version: variables.get('METAMASK_VERSION') as string,
     browsers: args.browser,
+    transform: args.lockdown
+      ? undefined
+      : (manifest) => {
+          // remove lockdown scripts from content_scripts
+          const keep = ['scripts/contentscript.js', 'scripts/inpage.js'];
+          const mainScripts = manifest.content_scripts![0];
+          mainScripts.js = mainScripts.js?.filter((js) => keep.includes(js));
+          return manifest;
+        },
     zip: args.zip,
     ...(args.zip
       ? {
@@ -196,7 +205,7 @@ const config = {
     publicPath: '',
     // disabling pathinfo makes reading the bundle harder, but reduces build
     // time by 500ms+
-    pathinfo: false,
+    pathinfo: false
   },
   resolve: {
     // Disable symlinks for performance; saves about .5 seconds off full build

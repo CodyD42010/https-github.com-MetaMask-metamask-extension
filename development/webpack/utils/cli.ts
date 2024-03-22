@@ -287,6 +287,15 @@ function getOptions(
       group: toOrange('Security:'),
       type: 'boolean',
     },
+    lockdown: {
+      alias: 'k',
+      array: false,
+      default: isProduction,
+      defaultDescription: prodDefaultDesc,
+      description: 'Enable/disable runtime hardening (also see --snow)',
+      group: toOrange('Security:'),
+      type: 'boolean',
+    },
     snow: {
       alias: 's',
       array: false,
@@ -330,6 +339,7 @@ Progress: ${args.progress}
 Zip: ${args.zip}
 Snow: ${args.snow}
 LavaMoat: ${args.lavamoat}
+Lockdown: ${args.lockdown}
 Manifest version: ${args.manifest_version}
 Browsers: ${args.browser.join(', ')}
 Devtool: ${args.devtool}

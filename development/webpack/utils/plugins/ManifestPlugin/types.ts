@@ -1,4 +1,4 @@
-import { Browser } from '../../helpers';
+import type { Browser, Manifest } from '../../helpers';
 
 export type BaseManifestPluginOptions<Zip extends boolean> = {
   /**
@@ -44,6 +44,15 @@ export type BaseManifestPluginOptions<Zip extends boolean> = {
    * The description should be suitable for both the browser's Extensions page, e.g., chrome://extensions, and extension web stores. You can specify locale-specific strings for this field.
    */
   description: string | null;
+
+  /**
+   * Function to transform the manifest file.
+   *
+   * @param manifest
+   * @param browser
+   * @returns
+   */
+  transform?: (manifest: Manifest, browser: Browser) => Manifest;
 
   /**
    * Whether or not to zip the individual browser builds.

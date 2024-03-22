@@ -1,9 +1,9 @@
-import type { JSONSchema7 } from 'schema-utils/declarations/validate';
 import { Browsers } from '../../helpers';
+import { ExtendedJSONSchema } from 'json-schema-to-ts';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
-export const schema: JSONSchema7 = {
+export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   required: ['browsers', 'description', 'manifest_version', 'version', 'zip'],
@@ -42,6 +42,11 @@ export const schema: JSONSchema7 = {
       items: {
         type: 'string',
       },
+    },
+    transform: {
+      description: 'Function to transform the manifest file.',
+      instanceof: 'Function',
+      tsType: '((manifest: Manifest, browser: Browser) => Manifest)',
     },
     zip: {
       description: 'Whether or not to zip the individual browser builds.',
@@ -102,4 +107,4 @@ export const schema: JSONSchema7 = {
   then: {
     required: ['zipOptions'],
   },
-};
+} satisfies ExtendedJSONSchema<Record<'instanceof' | 'tsType', string>>;;

@@ -155,46 +155,46 @@ function getCopyTargets(
       src: shouldIncludeSnow
         ? `./node_modules/@lavamoat/snow/snow.prod.js`
         : EMPTY_JS_FILE,
-      dest: `snow.js`,
+      dest: `scripts/snow.js`,
     },
     {
       src: shouldIncludeSnow ? `./app/scripts/use-snow.js` : EMPTY_JS_FILE,
-      dest: `use-snow.js`,
+      dest: `scripts/use-snow.js`,
     },
     {
       src: shouldIncludeLockdown
         ? getPathInsideNodeModules('ses', 'dist/lockdown.umd.min.js')
         : EMPTY_JS_FILE,
-      dest: `lockdown-install.js`,
+      dest: `scripts/lockdown-install.js`,
     },
     {
       src: './app/scripts/init-globals.js',
-      dest: 'init-globals.js',
+      dest: 'scripts/init-globals.js',
     },
     {
       src: './app/scripts/load-app.js',
-      dest: 'load-app.js',
+      dest: 'scripts/load-app.js',
     },
     {
       src: shouldIncludeLockdown
         ? `./app/scripts/lockdown-run.js`
         : EMPTY_JS_FILE,
-      dest: `lockdown-run.js`,
+      dest: `scripts/lockdown-run.js`,
     },
     {
       src: shouldIncludeLockdown
         ? `./app/scripts/lockdown-more.js`
         : EMPTY_JS_FILE,
-      dest: `lockdown-more.js`,
+      dest: `scripts/lockdown-more.js`,
     },
     {
       src: getPathInsideNodeModules('@lavamoat/lavapack', 'src/runtime-cjs.js'),
-      dest: `runtime-cjs.js`,
+      dest: `scripts/runtime-cjs.js`,
       pattern: '',
     },
     {
       src: getPathInsideNodeModules('@lavamoat/lavapack', 'src/runtime.js'),
-      dest: `runtime-lavamoat.js`,
+      dest: `scripts/runtime-lavamoat.js`,
       pattern: '',
     },
     {
@@ -217,7 +217,7 @@ function getCopyTargets(
     {
       src: './development',
       pattern: '/chromereload.js',
-      dest: ``,
+      dest: `scripts/`,
     },
     // empty files to suppress missing file errors
     {
@@ -235,7 +235,7 @@ function getCopyTargets(
     // empty files to suppress missing file errors
     {
       src: EMPTY_JS_FILE,
-      dest: `chromereload.js`,
+      dest: `scripts/chromereload.js`,
     },
   ];
 

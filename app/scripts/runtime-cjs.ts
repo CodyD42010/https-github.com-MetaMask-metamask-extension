@@ -1,4 +1,4 @@
-// curently only used in webpack build.
+// currently only used in webpack build.
 
 import '@lavamoat/lavapack/src/runtime-cjs';
 

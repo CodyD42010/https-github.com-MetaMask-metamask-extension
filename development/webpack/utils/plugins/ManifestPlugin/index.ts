@@ -66,7 +66,9 @@ function addAssetToZip(
  * assets into browser-specific directories and optionally zips them.
  *
  * TODO: it'd be great if the logic to find entry points was also in this plugin
- * instead of in helpers.ts.
+ * instead of in helpers.ts. Moving that here would allow us to utilize the
+ * this.options.transform function to modify the manifest before collecting the
+ * entry points.
  */
 export class ManifestPlugin<Z extends boolean> {
   /**
@@ -300,6 +302,14 @@ export class ManifestPlugin<Z extends boolean> {
           ];
         }
       }
+
+      // allow the user to transform the manifest. Use a copy of the manifest
+      // so modifications for one browser don't affect other browsers.
+      browserManifest =
+        this.options.transform?.(
+          JSON.parse(JSON.stringify(browserManifest)),
+          browser,
+        ) || browserManifest;
 
       // Add the manifest file to the assets
       const source = new RawSource(JSON.stringify(browserManifest, null, 2));
