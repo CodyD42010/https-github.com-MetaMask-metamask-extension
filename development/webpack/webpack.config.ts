@@ -122,12 +122,14 @@ const plugins: WebpackPluginInstance[] = [
     browsers: args.browser,
     transform: args.lockdown
       ? undefined
-      : (manifest) => {
+      : (browserManifest) => {
           // remove lockdown scripts from content_scripts
-          const keep = ['scripts/contentscript.js', 'scripts/inpage.js'];
-          const mainScripts = manifest.content_scripts![0];
-          mainScripts.js = mainScripts.js?.filter((js) => keep.includes(js));
-          return manifest;
+          const mainScripts = browserManifest.content_scripts?.[0];
+          if (mainScripts) {
+            const keep = ['scripts/contentscript.js', 'scripts/inpage.js'];
+            mainScripts.js = mainScripts.js?.filter((js) => keep.includes(js));
+          }
+          return browserManifest;
         },
     zip: args.zip,
     ...(args.zip
@@ -205,7 +207,7 @@ const config = {
     publicPath: '',
     // disabling pathinfo makes reading the bundle harder, but reduces build
     // time by 500ms+
-    pathinfo: false
+    pathinfo: false,
   },
   resolve: {
     // Disable symlinks for performance; saves about .5 seconds off full build
@@ -356,7 +358,7 @@ const config = {
     // platform is responsible for loading them and splitting these files
     // would require updating the manifest to include the other chunks.
     runtimeChunk: {
-      name: (chunk: Chunk) => (canBeChunked(chunk) ? `runtime` : false),
+      name: (chunk: Chunk) => (canBeChunked(chunk) ? 'runtime' : false),
     },
     splitChunks: {
       // Impose a 4MB JS file size limit due to Firefox limitations

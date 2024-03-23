@@ -6,7 +6,7 @@ import * as git from '../utils/git';
 describe('git', () => {
   const mocks = ['loose', 'pack', 'ref'];
   mocks.forEach((mock) => {
-    const gitDir = join(__dirname, `./mocks/git/${mock}`);
+    const gitDir = join(__dirname, `./fixtures/git/${mock}`);
     it('should get the latest commit hash', () => {
       const gitHash = '82f8d685e4619bd93dd86b6942ebdb344e3861c5';
       const commitHash = git.getLastCommitHash(gitDir);
@@ -33,7 +33,7 @@ describe('git', () => {
   });
 
   it('should throw if there is no HEAD file', () => {
-    const gitDir = join(__dirname, `./mocks/git/doesnt-exist`);
+    const gitDir = join(__dirname, `./fixtures/git/doesnt-exist`);
     assert.throws(
       () => git.getCommitTimestamp(null, gitDir),
       /ENOENT: no such file or directory/u,
@@ -45,7 +45,7 @@ describe('git', () => {
   });
 
   it('should throw if there are no commits', () => {
-    const gitDir = join(__dirname, `./mocks/git/no-commit`);
+    const gitDir = join(__dirname, `./fixtures/git/no-commit`);
     assert.throws(
       () => git.getCommitTimestamp(null, gitDir),
       /ENOENT: no such file or directory/u,

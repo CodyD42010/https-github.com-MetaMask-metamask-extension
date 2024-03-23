@@ -4,12 +4,12 @@ export type BaseManifestPluginOptions<Zip extends boolean> = {
   /**
    * The browsers to build for.
    */
-  browsers: [Browser, ...Browser[]];
+  browsers: readonly [Browser, ...Browser[]];
 
   /**
    * An array of strings specifying the paths of additional web-accessible resources.
    */
-  web_accessible_resources?: string[];
+  web_accessible_resources?: readonly string[];
 
   /**
    * An integer specifying the version of the manifest file format your package requires

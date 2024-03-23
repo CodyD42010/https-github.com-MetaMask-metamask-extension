@@ -457,7 +457,10 @@ async function createManifestV3AppInitializationBundle({
   // Code below is used to set statsMode to true when testing in MV3
   // This is used to capture module initialisation stats using lavamoat.
   if (isTestBuild(buildTarget)) {
-    const content = readFileSync('./dist/chrome/scripts/runtime-lavamoat.js', 'utf8');
+    const content = readFileSync(
+      './dist/chrome/scripts/runtime-lavamoat.js',
+      'utf8',
+    );
     const fileOutput = content.replace('statsMode = false', 'statsMode = true');
     writeFileSync('./dist/chrome/scripts/runtime-lavamoat.js', fileOutput);
   }
@@ -1108,7 +1111,11 @@ function renderJavaScriptLoader({
   );
 
   const securityScripts = applyLavaMoat
-    ? ['./scripts/runtime-lavamoat.js', './scripts/lockdown-more.js', './scripts/policy-load.js']
+    ? [
+        './scripts/runtime-lavamoat.js',
+        './scripts/lockdown-more.js',
+        './scripts/policy-load.js',
+      ]
     : [
         './scripts/lockdown-install.js',
         './scripts/lockdown-run.js',

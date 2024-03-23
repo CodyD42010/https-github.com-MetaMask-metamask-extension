@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { type Configuration, webpack } from 'webpack';
 import { noop } from '../utils/helpers';
 import { getLastCommitHash } from '../utils/git';
+import { ManifestPlugin } from '../utils/plugins/ManifestPlugin';
 
 function getWebpackInstance(config: Configuration) {
   // webpack logs a warning if we pass config.watch to it without a callback
@@ -73,33 +74,62 @@ ${Object.entries(env)
   it('should have the correct defaults', () => {
     const config: Configuration = getWebpackConfig();
     // check that options are valid
-    const instance: any = webpack(config);
-    assert.strictEqual(instance.options.name, 'MetaMask – development');
-    assert.strictEqual(instance.options.mode, 'development');
-    assert.strictEqual(instance.options.cache.type, 'filesystem');
-    assert.strictEqual(instance.options.devtool, 'source-map');
-    assert.strictEqual(instance.options.stats.preset, 'none');
+    const { options } = webpack(config);
+    assert.strictEqual(options.name, 'MetaMask – development');
+    assert.strictEqual(options.mode, 'development');
+    assert(options.cache);
+    assert.strictEqual(options.cache.type, 'filesystem');
+    assert.strictEqual(options.devtool, 'source-map');
+    assert.strictEqual((options.stats as any).preset, 'none');
+    assert(options.resolve.fallback);
     assert.strictEqual(
-      typeof instance.options.resolve.fallback['react-devtools'],
+      typeof (options.resolve.fallback as any)['react-devtools'],
       'string',
     );
     assert.strictEqual(
-      typeof instance.options.resolve.fallback['remote-redux-devtools'],
+      typeof (options.resolve.fallback as any)['remote-redux-devtools'],
       'string',
     );
-    assert.strictEqual(instance.options.optimization.minimize, false);
-    assert.strictEqual(instance.options.optimization.sideEffects, false);
-    assert.strictEqual(instance.options.optimization.providedExports, false);
-    assert.strictEqual(
-      instance.options.optimization.removeAvailableModules,
-      false,
-    );
-    assert.strictEqual(instance.options.optimization.usedExports, false);
-    assert.strictEqual(instance.options.watch, false);
+    assert.strictEqual(options.optimization.minimize, false);
+    assert.strictEqual(options.optimization.sideEffects, false);
+    assert.strictEqual(options.optimization.providedExports, false);
+    assert.strictEqual(options.optimization.removeAvailableModules, false);
+    assert.strictEqual(options.optimization.usedExports, false);
+    assert.strictEqual(options.watch, false);
 
-    const manifestPlugin = instance.options.plugins.find(
-      (plugin: any) => plugin.constructor.name === 'ManifestPlugin',
+    const runtimeChunk = options.optimization.runtimeChunk as
+      | {
+          name?: (chunk: { name?: string }) => string | false;
+        }
+      | undefined;
+    assert(runtimeChunk);
+    assert(runtimeChunk.name);
+    assert(typeof runtimeChunk.name, 'function');
+    assert.strictEqual(
+      runtimeChunk.name({ name: 'snow.prod' }),
+      false,
+      'snow.prod should not be chunked',
     );
+    assert.strictEqual(
+      runtimeChunk.name({ name: 'use-snow' }),
+      false,
+      'use-snow should not be chunked',
+    );
+    assert.strictEqual(
+      runtimeChunk.name({ name: '< random >' }),
+      'runtime',
+      'other names should be chunked',
+    );
+    assert.strictEqual(
+      runtimeChunk.name({}),
+      'runtime',
+      'chunks without a name name should be chunked',
+    );
+
+    const manifestPlugin = options.plugins.find(
+      (plugin: any) => plugin.constructor.name === 'ManifestPlugin',
+    ) as ManifestPlugin<boolean> | undefined | null;
+    assert(manifestPlugin, 'Manifest plugin should be present');
     assert.deepStrictEqual(manifestPlugin.options.web_accessible_resources, [
       'scripts/inpage.js.map',
       'scripts/contentscript.js.map',
@@ -108,8 +138,38 @@ ${Object.entries(env)
       manifestPlugin.options.description,
       `development build from git id: ${getLastCommitHash().substring(0, 8)}`,
     );
+    assert(manifestPlugin.options.transform);
+    assert.deepStrictEqual(
+      manifestPlugin.options.transform(
+        {
+          manifest_version: 3,
+          name: 'name',
+          version: '1.2.3',
+          content_scripts: [
+            {
+              js: [
+                'ignored',
+                'scripts/contentscript.js',
+                'scripts/inpage.js',
+                'ignored',
+              ],
+            },
+          ],
+        },
+        'brave',
+      ),
+      {
+        content_scripts: [
+          {
+            js: ['scripts/contentscript.js', 'scripts/inpage.js'],
+          },
+        ],
+      },
+    );
+    assert.strictEqual(manifestPlugin.options.zip, false);
+    assert.strictEqual((manifestPlugin.options as any).zipOptions, undefined);
 
-    const progressPlugin = instance.options.plugins.find(
+    const progressPlugin = options.plugins.find(
       (plugin: any) => plugin.constructor.name === 'ProgressPlugin',
     );
     assert(progressPlugin, 'Progress plugin should present');
@@ -168,6 +228,7 @@ ${Object.entries(env)
     assert.deepStrictEqual(manifestPlugin.options.description, null);
     assert.deepStrictEqual(manifestPlugin.options.zip, true);
     assert(manifestPlugin.options.zipOptions, 'Zip options should be present');
+    assert.strictEqual(manifestPlugin.options.transform, undefined);
 
     const progressPlugin = instance.options.plugins.find(
       (plugin: any) => plugin.constructor.name === 'ProgressPlugin',

@@ -1,5 +1,5 @@
-import { Browsers } from '../../helpers';
 import { ExtendedJSONSchema } from 'json-schema-to-ts';
+import { Browsers } from '../../helpers';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -107,4 +107,4 @@ export const schema = {
   then: {
     required: ['zipOptions'],
   },
-} satisfies ExtendedJSONSchema<Record<'instanceof' | 'tsType', string>>;;
+} satisfies ExtendedJSONSchema<Record<'instanceof' | 'tsType', string>>;

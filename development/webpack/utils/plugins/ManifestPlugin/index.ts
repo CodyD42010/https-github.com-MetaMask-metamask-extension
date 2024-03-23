@@ -1,4 +1,5 @@
 import { extname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import {
   sources,
   ProgressPlugin,
@@ -138,9 +139,9 @@ export class ManifestPlugin<Z extends boolean> {
     // Zipping they process will likely run out of memory
     for (const browser of browsers) {
       const manifest = this.manifests.get(browser) as sources.Source;
-      // since Zipping is async, an past chunk could cause an error after
-      // we've started processing additional chunks. We'll use this errored
-      // flag to short circuit the rest of the processing if that happens.
+      // since Zipping is async, a past chunk could cause an error after we've
+      // started processing additional chunks. We'll use this errored flag to
+      // short-circuit the rest of the processing if that happens.
 
       const source = await new Promise<sources.Source>((resolve, reject) => {
         let errored = false;
@@ -255,7 +256,7 @@ export class ManifestPlugin<Z extends boolean> {
     );
     // Load the base manifest
     const basePath = join(manifestPath, `_base.json`);
-    const baseManifest: Manifest = require(basePath);
+    const baseManifest: Manifest = JSON.parse(readFileSync(basePath, 'utf8'));
 
     const description = this.options.description
       ? `${baseManifest.description} – ${this.options.description}`
@@ -270,7 +271,7 @@ export class ManifestPlugin<Z extends boolean> {
         // merge browser-specific overrides into the base manifest
         browserManifest = {
           ...browserManifest,
-          ...require(browserManifestPath),
+          ...JSON.parse(readFileSync(browserManifestPath, 'utf8')),
         };
       } catch {
         // ignore if the file doesn't exist, as some browsers might not need overrides
@@ -292,13 +293,13 @@ export class ManifestPlugin<Z extends boolean> {
             // add a new <all_urls> resource
             browserManifest.web_accessible_resources.push({
               matches: ['<all_urls>'],
-              resources,
+              resources: [...resources],
             });
           }
         } else {
           browserManifest.web_accessible_resources = [
-            ...resources,
             ...(browserManifest.web_accessible_resources || []),
+            ...resources,
           ];
         }
       }

@@ -1,56 +1,9 @@
-import { describe, it, mock } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { Compiler, sources, Chunk } from 'webpack';
 import { SelfInjectPlugin } from '../utils/plugins/SelfInjectPlugin';
-import { generateCases, type Combination } from './helpers';
+import { generateCases, type Combination, mockWebpack } from './helpers';
 
 describe('SelfInjectPlugin', () => {
-  function mockWebpack(
-    name: string,
-    source: string,
-    map: string | null,
-    devtool: 'source-map' | 'hidden-source-map' | false,
-  ) {
-    const webpackSource = map
-      ? new sources.SourceMapSource(source, name, map)
-      : new sources.RawSource(source);
-    const compilation = {
-      emitAsset: mock.fn(),
-      options: {
-        devtool,
-      },
-      chunks: new Set([
-        {
-          files: new Set([name]),
-        } as Chunk,
-      ]),
-      updateAsset: mock.fn((_: any, fn: any) => {
-        return fn(webpackSource);
-      }),
-      hooks: {
-        processAssets: {
-          tap(_: any, fn: any) {
-            fn();
-          },
-        },
-      } as any,
-    } as const;
-    const compiler = {
-      hooks: {
-        compilation: {
-          tap(_: any, fn: any) {
-            fn(compilation);
-          },
-        },
-      },
-      webpack: {
-        sources,
-      },
-    } as Compiler;
-
-    return { compiler, compilation };
-  }
-
   const matrix = {
     test: [/\.js$/u, /\.ts$/u] as const,
     filename: ['file.js', 'file.ts'],
@@ -76,9 +29,9 @@ describe('SelfInjectPlugin', () => {
       map ? 'available' : 'missing'
     }, and devtool is ${devtool}`, () => {
       const { compiler, compilation } = mockWebpack(
-        filename,
-        source,
-        map,
+        [filename],
+        [source],
+        [map],
         devtool,
       );
 
