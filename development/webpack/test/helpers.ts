@@ -2,7 +2,6 @@ import { mock } from 'node:test';
 import {
   type Compiler,
   type Chunk,
-  type Compilation,
   type WebpackOptionsNormalized,
   sources,
 } from 'webpack';
@@ -90,8 +89,8 @@ export function mockWebpack(
           done();
         },
       },
-    } as any,
-  } as unknown as Compilation;
+    },
+  };
   const compiler = {
     hooks: {
       compilation: {

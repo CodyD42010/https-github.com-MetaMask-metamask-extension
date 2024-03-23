@@ -159,6 +159,9 @@ ${Object.entries(env)
         'brave',
       ),
       {
+        manifest_version: 3,
+        name: 'name',
+        version: '1.2.3',
         content_scripts: [
           {
             js: ['scripts/contentscript.js', 'scripts/inpage.js'],
