@@ -1204,8 +1204,8 @@ function renderHtmlFile({
     // compilation of html files, which the gulp-based process doesn't support.
     .replace('./scripts/load/background.ts', './load-background.js')
     .replace(
-      '<script src="./load-background.js"></script>',
-      '<script src="./load-background.js"></script>\n    <script src="./chromereload.js"></script>',
+      '<script src="./load-background.js" defer></script>',
+      '<script src="./load-background.js" defer></script>\n    <script src="./scripts/chromereload.js" defer></script>',
     )
     .replace('./scripts/load/ui.ts', './load-app.js')
     .replace('../ui/css/index.scss', './index.css')
