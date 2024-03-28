@@ -225,7 +225,7 @@ export const SENTRY_BACKGROUND_STATE = {
       useNativeCurrencyAsPrimaryCurrency: true,
       petnamesEnabled: true,
     },
-    disableExternalServices: true,
+    disableExternalServices: false,
     selectedAddress: false,
     snapRegistryList: false,
     theme: true,
