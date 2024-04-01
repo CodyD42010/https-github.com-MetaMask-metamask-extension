@@ -32,7 +32,7 @@ function Jazzicon({
 
   useEffect(() => {
     if (!container.current) {
-      return;
+      return () => {};
     }
 
     const imageNode = iconFactory.iconForAddress(
@@ -48,7 +48,6 @@ function Jazzicon({
       while (container.current?.firstChild) {
         container.current.firstChild.remove();
       }
-      return;
     };
   }, [address, diameter, tokenList]);
 
