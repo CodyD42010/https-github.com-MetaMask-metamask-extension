@@ -32,7 +32,7 @@ function Jazzicon({
 
   useEffect(() => {
     if (!container.current) {
-      return () => {};
+      return () => undefined;
     }
 
     const imageNode = iconFactory.iconForAddress(
