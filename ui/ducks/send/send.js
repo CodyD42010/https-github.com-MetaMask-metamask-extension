@@ -2048,6 +2048,25 @@ export function updateGasPrice(gasPrice) {
   };
 }
 
+export function updateSendQuote(isComputingSendGasLimit = true) {
+  return async (dispatch, getState) => {
+    const state = getState();
+
+    const draftTransaction =
+      state[name].draftTransactions[state[name].currentTransactionUUID];
+
+    const isSwapAndSend =
+      draftTransaction?.sendAsset?.details?.address !==
+      draftTransaction?.receiveAsset?.details?.address;
+
+    if (isSwapAndSend) {
+      await dispatch(fetchSwapAndSendQuotes());
+    } else if (isComputingSendGasLimit) {
+      await dispatch(computeEstimatedGasLimit());
+    }
+  };
+}
+
 /**
  * Updates the recipient in state based on the input provided, and then will
  * recompute gas limit when sending a TOKEN asset type. Changing the recipient
@@ -2078,8 +2097,7 @@ export function updateRecipient({ address, nickname }) {
         nickname: nickname || nicknameFromAddressBookEntryOrAccountName,
       }),
     );
-    await dispatch(fetchSwapAndSendQuotes());
-    await dispatch(computeEstimatedGasLimit());
+    await dispatch(updateSendQuote());
   };
 }
 
@@ -2197,8 +2215,7 @@ export function updateSendAmount(amount) {
       await dispatch(actions.updateAmountMode(AMOUNT_MODES.INPUT));
     }
 
-    await dispatch(fetchSwapAndSendQuotes());
-    await dispatch(computeEstimatedGasLimit());
+    await dispatch(updateSendQuote());
   };
 }
 
@@ -2348,11 +2365,12 @@ export function updateSendAsset(
       await dispatch(
         actions.updateAsset({ asset, initialAssetSet, isReceived }),
       );
-      await dispatch(fetchSwapAndSendQuotes());
     }
-    if (initialAssetSet === false && !skipComputeEstimatedGasLimit) {
-      await dispatch(computeEstimatedGasLimit());
-    }
+    await dispatch(
+      updateSendQuote(
+        initialAssetSet === false && !skipComputeEstimatedGasLimit,
+      ),
+    );
   };
 }
 
@@ -2377,10 +2395,10 @@ export function updateSendHexData(hexData) {
     const state = getState();
     const draftTransaction =
       state[name].draftTransactions[state[name].currentTransactionUUID];
-    await dispatch(fetchSwapAndSendQuotes());
-    if (draftTransaction.sendAsset.type === AssetType.native) {
-      await dispatch(computeEstimatedGasLimit());
-    }
+
+    await dispatch(
+      updateSendQuote(draftTransaction.sendAsset.type === AssetType.native),
+    );
   };
 }
 
@@ -2580,8 +2598,8 @@ export function toggleSendMaxMode() {
       await dispatch(actions.updateAmountToMax());
       await dispatch(addHistoryEntry(`sendFlow - user toggled max mode on`));
     }
-    await dispatch(fetchSwapAndSendQuotes());
-    await dispatch(computeEstimatedGasLimit());
+
+    await dispatch(updateSendQuote());
   };
 }
 
