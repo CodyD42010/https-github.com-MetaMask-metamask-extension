@@ -144,7 +144,7 @@ async function requestEthereumAccountsHandler<
   // If no accounts, request the accounts permission
   try {
     await requestAccountsPermission();
-  } catch (err) {
+  } catch (err: unknown) {
     res.error = err;
     return end();
   }
@@ -156,7 +156,7 @@ async function requestEthereumAccountsHandler<
     res.result = accounts;
     const permissionsForOrigin =
       getPermissionsForOrigin(origin)?.eth_accounts.caveats;
-    const numberOfConnectedAccounts = permissionsForOrigin
+    const numberOfConnectedAccounts: number = permissionsForOrigin
       ? permissionsForOrigin[0].value.length
       : 0;
     sendMetrics({
