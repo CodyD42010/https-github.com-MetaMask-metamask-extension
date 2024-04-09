@@ -1,6 +1,18 @@
 import { ApprovalType } from '@metamask/controller-utils';
 import { errorCodes, ethErrors } from 'eth-rpc-errors';
 import { omit } from 'lodash';
+import type {
+  JsonRpcEngineCallbackError,
+  JsonRpcEngineNextCallback,
+  JsonRpcEngineEndCallback,
+} from '@metamask/json-rpc-engine';
+import type {
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+  JsonRpcParams,
+  Hex,
+} from '@metamask/utils';
+import { ProviderConfig } from '@metamask/network-controller';
 import {
   MESSAGE_TYPE,
   UNKNOWN_TICKER_SYMBOL,
@@ -11,6 +23,45 @@ import {
   isSafeChainId,
 } from '../../../../../shared/modules/network.utils';
 import { getValidUrl } from '../../util';
+import {
+  EndApprovalFlow,
+  FindNetworkConfigurationBy,
+  GetCurrentChainId,
+  GetCurrentRpcUrl,
+  GetProviderConfig,
+  HandlerWrapper,
+  HasPermission,
+  RequestUserApproval,
+  SetActiveNetwork,
+  SetNetworkClientIdForDomain,
+  StartApprovalFlow,
+  UpsertNetworkConfiguration,
+} from './handlers-helper';
+
+type AddEthereumChainOptions = {
+  upsertNetworkConfiguration: UpsertNetworkConfiguration;
+  getCurrentChainId: GetCurrentChainId;
+  getCurrentRpcUrl: GetCurrentRpcUrl;
+  findNetworkConfigurationBy: FindNetworkConfigurationBy;
+  setNetworkClientIdForDomain: SetNetworkClientIdForDomain;
+  setActiveNetwork: SetActiveNetwork;
+  requestUserApproval: RequestUserApproval;
+  startApprovalFlow: StartApprovalFlow;
+  endApprovalFlow: EndApprovalFlow;
+  getProviderConfig: GetProviderConfig;
+  hasPermissions: HasPermission;
+};
+
+type AddEthereumChainConstraint<Params extends JsonRpcParams = JsonRpcParams> =
+  {
+    implementation: (
+      req: JsonRpcRequest<Params>,
+      res: PendingJsonRpcResponse<null>,
+      _next: JsonRpcEngineNextCallback,
+      end: JsonRpcEngineEndCallback,
+      options: AddEthereumChainOptions,
+    ) => void;
+  } & HandlerWrapper;
 
 const addEthereumChain = {
   methodNames: [MESSAGE_TYPE.ADD_ETHEREUM_CHAIN],
@@ -28,14 +79,16 @@ const addEthereumChain = {
     getProviderConfig: true,
     hasPermissions: true,
   },
-};
+} satisfies AddEthereumChainConstraint;
 export default addEthereumChain;
 
-async function addEthereumChainHandler(
-  req,
-  res,
-  _next,
-  end,
+async function addEthereumChainHandler<
+  Params extends JsonRpcParams = JsonRpcParams,
+>(
+  req: JsonRpcRequest<Params>,
+  res: PendingJsonRpcResponse<null>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     upsertNetworkConfiguration,
     getCurrentChainId,
@@ -48,8 +101,8 @@ async function addEthereumChainHandler(
     endApprovalFlow,
     getProviderConfig,
     hasPermissions,
-  },
-) {
+  }: AddEthereumChainOptions,
+): Promise<void> {
   if (!req.params?.[0] || typeof req.params[0] !== 'object') {
     return end(
       ethErrors.rpc.invalidParams({
@@ -70,7 +123,7 @@ async function addEthereumChainHandler(
     rpcUrls,
   } = req.params[0];
 
-  const otherKeys = Object.keys(
+  const otherKeys: string[] = Object.keys(
     omit(req.params[0], [
       'chainId',
       'chainName',
@@ -89,8 +142,8 @@ async function addEthereumChainHandler(
     );
   }
 
-  function isLocalhostOrHttps(urlString) {
-    const url = getValidUrl(urlString);
+  function isLocalhostOrHttps(urlString: string): boolean {
+    const url: URL | null = getValidUrl(urlString);
 
     return (
       url !== null &&
@@ -100,11 +153,11 @@ async function addEthereumChainHandler(
     );
   }
 
-  const firstValidRPCUrl = Array.isArray(rpcUrls)
+  const firstValidRPCUrl: string | null = Array.isArray(rpcUrls)
     ? rpcUrls.find((rpcUrl) => isLocalhostOrHttps(rpcUrl))
     : null;
 
-  const firstValidBlockExplorerUrl =
+  const firstValidBlockExplorerUrl: string | null =
     blockExplorerUrls !== null && Array.isArray(blockExplorerUrls)
       ? blockExplorerUrls.find((blockExplorerUrl) =>
           isLocalhostOrHttps(blockExplorerUrl),
@@ -127,7 +180,8 @@ async function addEthereumChainHandler(
     );
   }
 
-  const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
+  const _chainId: Hex = (typeof chainId === 'string' &&
+    chainId.toLowerCase()) as Hex;
 
   if (!isPrefixedFormattedHexString(_chainId)) {
     return end(
@@ -145,7 +199,9 @@ async function addEthereumChainHandler(
     );
   }
 
-  const existingNetwork = findNetworkConfigurationBy({ chainId: _chainId });
+  const existingNetwork: ProviderConfig | null = findNetworkConfigurationBy({
+    chainId: _chainId,
+  });
 
   // if the request is to add a network that is already added and configured
   // with the same RPC gateway we shouldn't try to add it again.
@@ -153,8 +209,8 @@ async function addEthereumChainHandler(
     // If the network already exists, the request is considered successful
     res.result = null;
 
-    const currentChainId = getCurrentChainId();
-    const currentRpcUrl = getCurrentRpcUrl();
+    const currentChainId: Hex = getCurrentChainId();
+    const currentRpcUrl: string | undefined = getCurrentRpcUrl();
 
     // If the current chainId and rpcUrl matches that of the incoming request
     // We don't need to proceed further.
@@ -174,9 +230,9 @@ async function addEthereumChainHandler(
         },
       });
 
-      await setActiveNetwork(existingNetwork.id);
+      await setActiveNetwork(existingNetwork.id as string);
       res.result = null;
-    } catch (error) {
+    } catch (error: any) {
       // For the purposes of this method, it does not matter if the user
       // declines to switch the selected network. However, other errors indicate
       // that something is wrong.
@@ -194,7 +250,7 @@ async function addEthereumChainHandler(
       }),
     );
   }
-  const _chainName =
+  const _chainName: string =
     chainName.length > 100 ? chainName.substring(0, 100) : chainName;
 
   if (nativeCurrency !== null) {
@@ -222,7 +278,7 @@ async function addEthereumChainHandler(
     }
   }
 
-  const ticker = nativeCurrency?.symbol || UNKNOWN_TICKER_SYMBOL;
+  const ticker: string = nativeCurrency?.symbol || UNKNOWN_TICKER_SYMBOL;
 
   if (
     ticker !== UNKNOWN_TICKER_SYMBOL &&
@@ -247,7 +303,7 @@ async function addEthereumChainHandler(
       }),
     );
   }
-  let networkConfigurationId;
+  let networkConfigurationId: string;
 
   const { id: approvalFlowId } = await startApprovalFlow();
 
@@ -267,7 +323,7 @@ async function addEthereumChainHandler(
     networkConfigurationId = await upsertNetworkConfiguration(
       {
         chainId: _chainId,
-        rpcPrefs: { blockExplorerUrl: firstValidBlockExplorerUrl },
+        rpcPrefs: { blockExplorerUrl: firstValidBlockExplorerUrl as string },
         nickname: _chainName,
         rpcUrl: firstValidRPCUrl,
         ticker,
@@ -277,9 +333,9 @@ async function addEthereumChainHandler(
 
     // Once the network has been added, the requested is considered successful
     res.result = null;
-  } catch (error) {
+  } catch (error: unknown) {
     endApprovalFlow({ id: approvalFlowId });
-    return end(error);
+    return end(error as JsonRpcEngineCallbackError);
   }
 
   // Ask the user to switch the network
@@ -301,7 +357,7 @@ async function addEthereumChainHandler(
     if (hasPermissions(req.origin)) {
       setNetworkClientIdForDomain(req.origin, networkConfigurationId);
     }
-  } catch (error) {
+  } catch (error: any) {
     // For the purposes of this method, it does not matter if the user
     // declines to switch the selected network. However, other errors indicate
     // that something is wrong.
@@ -316,8 +372,8 @@ async function addEthereumChainHandler(
 
   try {
     await setActiveNetwork(networkConfigurationId);
-  } catch (error) {
-    return end(error);
+  } catch (error: unknown) {
+    return end(error as JsonRpcEngineCallbackError);
   }
 
   return end();
