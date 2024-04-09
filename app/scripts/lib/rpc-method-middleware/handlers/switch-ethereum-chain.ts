@@ -1,6 +1,18 @@
 import { ethErrors } from 'eth-rpc-errors';
 import { omit } from 'lodash';
-import { ApprovalType } from '@metamask/controller-utils';
+import { ApprovalType, InfuraNetworkType } from '@metamask/controller-utils';
+import {
+  Hex,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import {
+  JsonRpcEngineCallbackError,
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import { ProviderConfig } from '@metamask/network-controller';
 import { MESSAGE_TYPE } from '../../../../../shared/constants/app';
 import {
   CHAIN_ID_TO_TYPE_MAP,
@@ -13,6 +25,55 @@ import {
   isPrefixedFormattedHexString,
   isSafeChainId,
 } from '../../../../../shared/modules/network.utils';
+import {
+  ExistingNetworkChainIds,
+  FindNetworkClientIdByChainId,
+  FindNetworkConfigurationBy,
+  GetCurrentChainId,
+  GetNetworkConfigurations,
+  GetProviderConfig,
+  HandlerWrapper,
+  HasPermission,
+  RequestUserApproval,
+  SetActiveNetwork,
+  SetNetworkClientIdForDomain,
+  SetProviderType,
+} from './handlers-helper';
+
+type SwitchEthereumChainOptions = {
+  getCurrentChainId: GetCurrentChainId;
+  findNetworkConfigurationBy: FindNetworkConfigurationBy;
+  findNetworkClientIdByChainId: FindNetworkClientIdByChainId;
+  setNetworkClientIdForDomain: SetNetworkClientIdForDomain;
+  setProviderType: SetProviderType;
+  setActiveNetwork: SetActiveNetwork;
+  requestUserApproval: RequestUserApproval;
+  getNetworkConfigurations: GetNetworkConfigurations;
+  getProviderConfig: GetProviderConfig;
+  hasPermissions: HasPermission;
+};
+
+type SwitchEthereumChainConstraints<
+  Params extends JsonRpcParams = JsonRpcParams,
+> = {
+  implementation: (
+    _req: JsonRpcRequest<Params>,
+    res: PendingJsonRpcResponse<null>,
+    _next: JsonRpcEngineNextCallback,
+    end: JsonRpcEngineEndCallback,
+    {
+      getCurrentChainId,
+      findNetworkConfigurationBy,
+      findNetworkClientIdByChainId,
+      setNetworkClientIdForDomain,
+      setProviderType,
+      setActiveNetwork,
+      requestUserApproval,
+      getProviderConfig,
+      hasPermissions,
+    }: SwitchEthereumChainOptions,
+  ) => Promise<void>;
+} & HandlerWrapper;
 
 const switchEthereumChain = {
   methodNames: [MESSAGE_TYPE.SWITCH_ETHEREUM_CHAIN],
@@ -29,11 +90,14 @@ const switchEthereumChain = {
     getProviderConfig: true,
     hasPermissions: true,
   },
-};
+} satisfies SwitchEthereumChainConstraints;
 
 export default switchEthereumChain;
 
-function findExistingNetwork(chainId, findNetworkConfigurationBy) {
+function findExistingNetwork(
+  chainId: ExistingNetworkChainIds,
+  findNetworkConfigurationBy: FindNetworkConfigurationBy,
+): ProviderConfig | null {
   if (
     Object.values(BUILT_IN_INFURA_NETWORKS)
       .map(({ chainId: id }) => id)
@@ -51,11 +115,13 @@ function findExistingNetwork(chainId, findNetworkConfigurationBy) {
   return findNetworkConfigurationBy({ chainId });
 }
 
-async function switchEthereumChainHandler(
-  req,
-  res,
-  _next,
-  end,
+async function switchEthereumChainHandler<
+  Params extends JsonRpcParams = JsonRpcParams,
+>(
+  req: JsonRpcRequest<Params>,
+  res: PendingJsonRpcResponse<null>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getCurrentChainId,
     findNetworkConfigurationBy,
@@ -66,8 +132,8 @@ async function switchEthereumChainHandler(
     requestUserApproval,
     getProviderConfig,
     hasPermissions,
-  },
-) {
+  }: SwitchEthereumChainOptions,
+): Promise<void> {
   if (!req.params?.[0] || typeof req.params[0] !== 'object') {
     return end(
       ethErrors.rpc.invalidParams({
@@ -82,7 +148,7 @@ async function switchEthereumChainHandler(
 
   const { chainId } = req.params[0];
 
-  const otherKeys = Object.keys(omit(req.params[0], ['chainId']));
+  const otherKeys: string[] = Object.keys(omit(req.params[0], ['chainId']));
 
   if (otherKeys.length > 0) {
     return end(
@@ -92,7 +158,8 @@ async function switchEthereumChainHandler(
     );
   }
 
-  const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
+  const _chainId = (typeof chainId === 'string' &&
+    chainId.toLowerCase()) as ExistingNetworkChainIds;
 
   if (!isPrefixedFormattedHexString(_chainId)) {
     return end(
@@ -110,7 +177,7 @@ async function switchEthereumChainHandler(
     );
   }
 
-  const requestData = {
+  const requestData: Record<string, ProviderConfig | null> = {
     toNetworkConfiguration: findExistingNetwork(
       _chainId,
       findNetworkConfigurationBy,
@@ -120,11 +187,11 @@ async function switchEthereumChainHandler(
   requestData.fromNetworkConfiguration = getProviderConfig();
 
   if (requestData.toNetworkConfiguration) {
-    const currentChainId = getCurrentChainId();
+    const currentChainId: Hex = getCurrentChainId();
 
     // we might want to change all this so that it displays the network you are switching from -> to (in a way that is domain - specific)
 
-    const networkClientId = findNetworkClientIdByChainId(_chainId);
+    const networkClientId: string = findNetworkClientIdByChainId(_chainId);
 
     if (currentChainId === _chainId) {
       if (hasPermissions(req.origin)) {
@@ -135,17 +202,17 @@ async function switchEthereumChainHandler(
     }
 
     try {
-      const approvedRequestData = await requestUserApproval({
+      const approvedRequestData = (await requestUserApproval({
         origin,
         type: ApprovalType.SwitchEthereumChain,
         requestData,
-      });
+      })) as Record<string, string>;
       if (
         Object.values(BUILT_IN_INFURA_NETWORKS)
           .map(({ chainId: id }) => id)
           .includes(_chainId)
       ) {
-        await setProviderType(approvedRequestData.type);
+        await setProviderType(approvedRequestData.type as InfuraNetworkType);
       } else {
         await setActiveNetwork(approvedRequestData.id);
       }
@@ -153,8 +220,8 @@ async function switchEthereumChainHandler(
         setNetworkClientIdForDomain(req.origin, networkClientId);
       }
       res.result = null;
-    } catch (error) {
-      return end(error);
+    } catch (error: unknown) {
+      return end(error as JsonRpcEngineCallbackError);
     }
     return end();
   }
