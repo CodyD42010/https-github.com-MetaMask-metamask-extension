@@ -2,11 +2,13 @@ import { ethErrors } from 'eth-rpc-errors';
 import { omit } from 'lodash';
 import { ApprovalType, InfuraNetworkType } from '@metamask/controller-utils';
 import {
+  Hex,
   JsonRpcParams,
   JsonRpcRequest,
   PendingJsonRpcResponse,
 } from '@metamask/utils';
 import {
+  JsonRpcEngineCallbackError,
   JsonRpcEngineEndCallback,
   JsonRpcEngineNextCallback,
 } from '@metamask/json-rpc-engine';
@@ -95,7 +97,7 @@ export default switchEthereumChain;
 function findExistingNetwork(
   chainId: ExistingNetworkChainIds,
   findNetworkConfigurationBy: FindNetworkConfigurationBy,
-) {
+): ProviderConfig | null {
   if (
     Object.values(BUILT_IN_INFURA_NETWORKS)
       .map(({ chainId: id }) => id)
@@ -131,7 +133,7 @@ async function switchEthereumChainHandler<
     getProviderConfig,
     hasPermissions,
   }: SwitchEthereumChainOptions,
-) {
+): Promise<void> {
   if (!req.params?.[0] || typeof req.params[0] !== 'object') {
     return end(
       ethErrors.rpc.invalidParams({
@@ -146,7 +148,7 @@ async function switchEthereumChainHandler<
 
   const { chainId } = req.params[0];
 
-  const otherKeys = Object.keys(omit(req.params[0], ['chainId']));
+  const otherKeys: string[] = Object.keys(omit(req.params[0], ['chainId']));
 
   if (otherKeys.length > 0) {
     return end(
@@ -185,11 +187,11 @@ async function switchEthereumChainHandler<
   requestData.fromNetworkConfiguration = getProviderConfig();
 
   if (requestData.toNetworkConfiguration) {
-    const currentChainId = getCurrentChainId();
+    const currentChainId: Hex = getCurrentChainId();
 
     // we might want to change all this so that it displays the network you are switching from -> to (in a way that is domain - specific)
 
-    const networkClientId = findNetworkClientIdByChainId(_chainId);
+    const networkClientId: string = findNetworkClientIdByChainId(_chainId);
 
     if (currentChainId === _chainId) {
       if (hasPermissions(req.origin)) {
@@ -219,7 +221,7 @@ async function switchEthereumChainHandler<
       }
       res.result = null;
     } catch (error: unknown) {
-      return end(error as any);
+      return end(error as JsonRpcEngineCallbackError);
     }
     return end();
   }
