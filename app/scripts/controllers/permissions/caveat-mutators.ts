@@ -23,8 +23,14 @@ export const CaveatMutatorFactories = {
  * @param {string[]} existingAccounts - The account address array from the
  * account permissions.
  */
-function removeAccount(targetAccount, existingAccounts) {
-  const checkSumTargetAccount = toChecksumAddress(targetAccount);
+function removeAccount(
+  targetAccount: string,
+  existingAccounts: string[],
+): {
+  operation: CaveatMutatorOperation;
+  value?: string[];
+} {
+  const checkSumTargetAccount: string = toChecksumAddress(targetAccount);
   const newAccounts = existingAccounts.filter(
     (address) => toChecksumAddress(address) !== checkSumTargetAccount,
   );
