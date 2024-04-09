@@ -2981,9 +2981,6 @@ export default class MetamaskController extends EventEmitter {
       verifyPassword: this.verifyPassword.bind(this),
 
       // network management
-      setProviderType: (type) => {
-        return this.networkController.setProviderType(type);
-      },
       setActiveNetwork: (networkConfigurationId) => {
         return this.networkController.setActiveNetwork(networkConfigurationId);
       },
@@ -5036,9 +5033,6 @@ export default class MetamaskController extends EventEmitter {
           this.preferencesController,
         ),
         getProviderConfig: () => this.networkController.state.providerConfig,
-        setProviderType: (type) => {
-          return this.networkController.setProviderType(type);
-        },
 
         // Web3 shim-related
         getWeb3ShimUsageState: this.alertController.getWeb3ShimUsageState.bind(
