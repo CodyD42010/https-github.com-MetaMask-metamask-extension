@@ -173,7 +173,7 @@
       "useNativeCurrencyAsPrimaryCurrency": true,
       "petnamesEnabled": true
     },
-    "disableExternalServices": "boolean",
+    "useExternalServices": "boolean",
     "ipfsGateway": "string",
     "isIpfsGatewayEnabled": "boolean",
     "useAddressBarEnsResolution": true,
