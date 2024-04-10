@@ -3467,12 +3467,12 @@ export function setIpfsGateway(
   };
 }
 
-export function setUseExternalServices(
+export function toggleExternalServices(
   val: boolean,
 ): ThunkAction<void, MetaMaskReduxState, unknown, AnyAction> {
   return (dispatch: MetaMaskReduxDispatch) => {
-    log.debug(`background.setUseExternalServices`);
-    callBackgroundMethod('setUseExternalServices', [val], (err) => {
+    log.debug(`background.toggleExternalServices`);
+    callBackgroundMethod('toggleExternalServices', [val], (err) => {
       if (err) {
         dispatch(displayWarning(err));
       }
