@@ -2,19 +2,19 @@ import browser from 'webextension-polyfill';
 import log from 'loglevel';
 import { captureException } from '@sentry/browser';
 import { checkForLastError } from '../browser-runtime.utils';
-import {
-  type IntermediaryStateType,
-  Storage,
-  MetaMaskStorageStructure,
-  EmptyState,
-} from './Storage';
 import type Migrator from '../../../app/scripts/lib/migrator';
+import {
+  type EmptyState,
+  type IntermediaryStateType,
+  type MetaMaskStorageStructure,
+  BaseStorage,
+} from './Storage';
 
 /**
  * Returns whether or not the given object contains no keys
  *
- * @param {object} obj - The object to check
- * @returns {boolean}
+ * @param obj - The object to check
+ * @returns
  */
 function isEmpty(
   obj: MetaMaskStorageStructure | EmptyState,
@@ -26,11 +26,15 @@ function isEmpty(
  * An implementation of the MetaMask Extension Storage system that uses the
  * browser.storage.local API to persist and retrieve state.
  */
-export class ExtensionStore extends Storage {
+export class ExtensionStore extends BaseStorage {
   isSupported: boolean;
+
   stateCorruptionDetected: boolean;
+
   dataPersistenceFailing: boolean;
+
   mostRecentRetrievedState: MetaMaskStorageStructure | null;
+
   migrator: Migrator;
 
   constructor({ migrator }: { migrator: Migrator }) {
@@ -152,7 +156,7 @@ export class ExtensionStore extends Storage {
    * Returns all of the keys currently saved
    *
    * @private
-   * @returns {object} the key-value map from local storage
+   * @returns the key-value map from local storage
    */
   #get(): Promise<MetaMaskStorageStructure> {
     const { local } = browser.storage;
@@ -176,8 +180,12 @@ export class ExtensionStore extends Storage {
   /**
    * Sets the key in local state
    *
-   * @param {object} obj - The key to set
-   * @returns {Promise<void>}
+   * @param obj - The key to set
+   * @param obj.data - The MetaMask State tree
+   * @param obj.meta - The metadata object
+   * @param obj.meta.version - The version of the state tree determined by the
+   * migration
+   * @returns a promise resolving to undefined.
    * @private
    */
   #set(obj: {

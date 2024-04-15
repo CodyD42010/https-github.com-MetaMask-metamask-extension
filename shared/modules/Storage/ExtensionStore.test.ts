@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
-import { ExtensionStore } from './ExtensionStore';
 import Migrator from '../../../app/scripts/lib/migrator';
+import { ExtensionStore } from './ExtensionStore';
 import { IntermediaryStateType } from './Storage';
 
 jest.mock('webextension-polyfill', () => ({
