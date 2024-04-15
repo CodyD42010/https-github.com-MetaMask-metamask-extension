@@ -67,7 +67,7 @@ export default class ReadOnlyNetworkStore extends BaseStorage {
 
   async isFirstTimeInstall(): Promise<boolean> {
     const result = this.#state;
-    if (result === null) {
+    if (result === null && this.hasStateExisted === false) {
       return true;
     }
     return false;
