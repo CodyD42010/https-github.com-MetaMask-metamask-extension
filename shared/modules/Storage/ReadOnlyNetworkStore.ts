@@ -1,8 +1,8 @@
 import log from 'loglevel';
-import getFetchWithTimeout from '../fetch-with-timeout';
 import { isErrorWithMessage } from '@metamask/utils';
-import { type IntermediaryStateType, Storage } from './Storage';
+import getFetchWithTimeout from '../fetch-with-timeout';
 import type Migrator from '../../../app/scripts/lib/migrator';
+import { type IntermediaryStateType, BaseStorage } from './Storage';
 
 const fetchWithTimeout = getFetchWithTimeout();
 
@@ -13,14 +13,21 @@ const FIXTURE_SERVER_URL = `http://${FIXTURE_SERVER_HOST}:${FIXTURE_SERVER_PORT}
 /**
  * A read-only network-based storage wrapper
  */
-export default class ReadOnlyNetworkStore extends Storage {
+export default class ReadOnlyNetworkStore extends BaseStorage {
   #initialized: boolean;
+
   #promiseToInitialize?: Promise<void>;
+
   #state: IntermediaryStateType | null;
+
   mostRecentRetrievedState: IntermediaryStateType | null;
+
   stateCorruptionDetected: boolean;
+
   dataPersistenceFailing: boolean;
+
   migrator: Migrator;
+
   firstTimeInstall: boolean;
 
   constructor({ migrator }: { migrator: Migrator }) {
