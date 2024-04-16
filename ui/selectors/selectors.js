@@ -39,6 +39,7 @@ import {
   OPTIMISM_DISPLAY_NAME,
   BASE_DISPLAY_NAME,
   ZK_SYNC_ERA_DISPLAY_NAME,
+  MODE_DISPLAY_NAME,
   CHAIN_ID_TOKEN_IMAGE_MAP,
   LINEA_SEPOLIA_TOKEN_IMAGE_URL,
   LINEA_SEPOLIA_DISPLAY_NAME,
@@ -2047,6 +2048,13 @@ export function getIsBase(state) {
   );
 }
 
+export function getIsMode(state) {
+  return (
+    getCurrentChainId(state) === CHAIN_IDS.MODE ||
+    getCurrentChainId(state) === CHAIN_IDS.MODE_TESTNET
+  );
+}
+
 export function getIsOpbnb(state) {
   return (
     getCurrentChainId(state) === CHAIN_IDS.OPBNB ||
@@ -2055,7 +2063,12 @@ export function getIsOpbnb(state) {
 }
 
 export function getIsOpStack(state) {
-  return getIsOptimism(state) || getIsBase(state) || getIsOpbnb(state);
+  return (
+    getIsOptimism(state) ||
+    getIsBase(state) ||
+    getIsOpbnb(state) ||
+    getIsMode(state)
+  );
 }
 
 export function getIsMultiLayerFeeNetwork(state) {
@@ -2119,6 +2132,8 @@ export const getTokenDetectionSupportNetworkByChainId = (state) => {
       return BASE_DISPLAY_NAME;
     case CHAIN_IDS.ZKSYNC_ERA:
       return ZK_SYNC_ERA_DISPLAY_NAME;
+    case CHAIN_IDS.MODE:
+      return MODE_DISPLAY_NAME;
     default:
       return '';
   }
@@ -2144,6 +2159,7 @@ export function getIsDynamicTokenListAvailable(state) {
     CHAIN_IDS.ARBITRUM,
     CHAIN_IDS.OPTIMISM,
     CHAIN_IDS.BASE,
+    CHAIN_IDS.MODE,
     CHAIN_IDS.ZKSYNC_ERA,
   ].includes(chainId);
 }
