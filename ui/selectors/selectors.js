@@ -2034,6 +2034,10 @@ export function getIsBase(state) {
   );
 }
 
+export function getIsZora(state) {
+  return getCurrentChainId(state) === CHAIN_IDS.ZORA;
+}
+
 export function getIsOpbnb(state) {
   return (
     getCurrentChainId(state) === CHAIN_IDS.OPBNB ||
@@ -2042,7 +2046,12 @@ export function getIsOpbnb(state) {
 }
 
 export function getIsOpStack(state) {
-  return getIsOptimism(state) || getIsBase(state) || getIsOpbnb(state);
+  return (
+    getIsOptimism(state) ||
+    getIsBase(state) ||
+    getIsOpbnb(state) ||
+    getIsZora(state)
+  );
 }
 
 export function getIsMultiLayerFeeNetwork(state) {
