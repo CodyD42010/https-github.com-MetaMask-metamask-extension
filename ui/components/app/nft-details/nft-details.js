@@ -52,7 +52,6 @@ import {
 } from '../../../../shared/constants/transaction';
 import { ButtonIcon, IconName, Text } from '../../component-library';
 import Tooltip from '../../ui/tooltip';
-import { decWEIToDecETH } from '../../../../shared/modules/conversion.utils';
 import { NftItem } from '../../multichain/nft-item';
 import { MetaMetricsEventName } from '../../../../shared/constants/metametrics';
 import { MetaMetricsContext } from '../../../contexts/metametrics';
@@ -69,6 +68,7 @@ export default function NftDetails({ nft }) {
     isCurrentlyOwned,
     lastSale,
   } = nft;
+  console.log('🚀 ~ NftDetails ~ nft:', nft);
   const t = useI18nContext();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -93,7 +93,7 @@ export default function NftDetails({ nft }) {
   const isImageHosted = image?.startsWith('https:');
 
   const formattedTimestamp = formatDate(
-    new Date(lastSale?.event_timestamp).getTime(),
+    new Date(lastSale?.timestamp).getTime(),
     'M/d/y',
   );
 
@@ -324,9 +324,8 @@ export default function NftDetails({ nft }) {
                     overflowWrap={OverflowWrap.BreakWord}
                     marginBottom={4}
                   >
-                    {`${Number(decWEIToDecETH(lastSale.total_price))} ${
-                      lastSale.payment_token.symbol
-                    }`}
+                    {lastSale?.price?.amount?.decimal}{' '}
+                    {lastSale?.price?.currency?.symbol}
                   </Text>
                 </Box>
               </Box>
@@ -411,10 +410,15 @@ NftDetails.propTypes = {
       profile_img_url: PropTypes.string,
     }),
     lastSale: PropTypes.shape({
-      event_timestamp: PropTypes.string,
-      total_price: PropTypes.string,
-      payment_token: PropTypes.shape({
-        symbol: PropTypes.string,
+      timestamp: PropTypes.string,
+      price: PropTypes.shape({
+        amount: PropTypes.shape({
+          native: PropTypes.string,
+          decimal: PropTypes.string,
+        }),
+        currency: PropTypes.shape({
+          symbol: PropTypes.string,
+        }),
       }),
     }),
   }),
