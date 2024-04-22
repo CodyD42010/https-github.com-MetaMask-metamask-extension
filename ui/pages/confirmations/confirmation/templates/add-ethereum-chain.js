@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors';
+import { providerErrors } from '@metamask/rpc-errors';
 import React from 'react';
 import {
   DEPRECATED_NETWORKS,
@@ -445,7 +445,7 @@ function getValues(pendingApproval, t, actions, history, data) {
     onCancel: () =>
       actions.rejectPendingApproval(
         pendingApproval.id,
-        ethErrors.provider.userRejectedRequest().serialize(),
+        providerErrors.userRejectedRequest().serialize(),
       ),
     networkDisplay: !originIsMetaMask,
   };

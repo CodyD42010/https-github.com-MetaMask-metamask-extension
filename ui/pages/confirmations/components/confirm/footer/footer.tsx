@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ethErrors, serializeError } from 'eth-rpc-errors';
+import { providerErrors, serializeError } from '@metamask/rpc-errors';
 
 import {
   Button,
@@ -48,7 +48,7 @@ const Footer = () => {
     dispatch(
       rejectPendingApproval(
         currentConfirmation.id,
-        serializeError(ethErrors.provider.userRejectedRequest()),
+        serializeError(providerErrors.userRejectedRequest()),
       ),
     );
   }, [currentConfirmation]);
