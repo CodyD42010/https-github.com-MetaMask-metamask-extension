@@ -40,6 +40,8 @@ import {
   getIsBridgeChain,
   getIsBuyableChain,
   getMetaMetricsId,
+  getTokenPercentChange1d,
+  getTokenPriceChange1d,
   ///: END:ONLY_INCLUDE_IF
 } from '../../../selectors';
 ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
@@ -67,6 +69,7 @@ import { getPortfolioUrl } from '../../../helpers/utils/portfolio';
 import { useIsOriginalNativeTokenSymbol } from '../../../hooks/useIsOriginalNativeTokenSymbol';
 import { getProviderConfig } from '../../../ducks/metamask/metamask';
 import { showPrimaryCurrency } from '../../../../shared/modules/currency-display.utils';
+import { PercentageChange } from '../../multichain/token-list-item/price';
 import WalletOverview from './wallet-overview';
 
 const EthOverview = ({ className, showAddress }) => {
@@ -95,6 +98,14 @@ const EthOverview = ({ className, showAddress }) => {
     type,
     rpcUrl,
   );
+
+  const tokenPercentChange1d = useSelector(getTokenPercentChange1d);
+  const tokenPriceChange1d = useSelector(getTokenPriceChange1d);
+
+  const contractPercentChange1d = tokenPercentChange1d?.[chainId] ?? '';
+  const contractPriceChange1d = tokenPriceChange1d?.[chainId] ?? '';
+
+  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
   const account = useSelector(getSelectedInternalAccount);
   const isSwapsChain = useSelector(getIsSwapsChain);
@@ -246,6 +257,11 @@ const EthOverview = ({ className, showAddress }) => {
                 hideTitle
               />
             )}
+            <PercentageChange
+              value={contractPercentChange1d[ZERO_ADDRESS]}
+              valueChange={contractPriceChange1d[ZERO_ADDRESS]}
+              includeNumber
+            />
           </div>
         </Tooltip>
       }
