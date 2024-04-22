@@ -27,7 +27,7 @@ type Request = {
   slippage: Address; // slippage as a percentage; e.g. '1.0' for 1%
 };
 
-type Quote = {
+export type Quote = {
   gasParams: {
     maxGas: number;
   };
@@ -156,6 +156,8 @@ export async function getSwapAndSendQuotes(
     cacheOptions: { cacheRefreshTime: 0, timeout: SECOND * 15 },
     functionName: 'getSwapAndSendQuotes',
   });
+
+  // TODO: validate recipient and tokens against request
 
   const newQuotes = tradesResponse.reduce(
     (aggIdTradeMap: Record<string, Quote>, quote: Quote) => {
