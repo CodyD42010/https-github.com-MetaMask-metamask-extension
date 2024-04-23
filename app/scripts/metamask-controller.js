@@ -213,6 +213,12 @@ import { STATIC_MAINNET_TOKEN_LIST } from '../../shared/constants/tokens';
 import { getTokenValueParam } from '../../shared/lib/metamask-controller-utils';
 import { isManifestV3 } from '../../shared/modules/mv3.utils';
 import { convertNetworkId } from '../../shared/modules/network.utils';
+import { getCurrentNetwork } from '../../ui/selectors';
+import {
+  FALLBACK_LOCALE,
+  fetchLocale,
+  getMessage,
+} from '../../shared/modules/i18n';
 import {
   getIsSmartTransaction,
   getFeatureFlagsByChainId,
@@ -5879,12 +5885,65 @@ export default class MetamaskController extends EventEmitter {
     this.permissionLogController.updateAccountsHistory(origin, newAccounts);
   }
 
+  async _getLocalizedString(key, args = []) {
+    const locale = this.getLocale();
+    const [routeLocale] = locale.split('-');
+
+    if (!this.localeMessages) {
+      try {
+        this.localeMessages = await fetchLocale(routeLocale);
+        this.englishLocaleMessages = await fetchLocale(FALLBACK_LOCALE);
+      } catch (e) {
+        this.localeMessages = {};
+        this.englishLocaleMessages = {};
+      }
+    }
+
+    const message = getMessage(
+      locale,
+      this.localeMessages[key]
+        ? this.localeMessages
+        : this.englishLocaleMessages,
+      key,
+      args,
+    );
+
+    return message;
+  }
+
+  _sanitizeString(str = '') {
+    return str.replace(/<|>/giu, '');
+  }
+
   async _notifyChainChange() {
     if (this.preferencesController.getUseRequestQueue()) {
-      this.notifyAllConnections(async (origin) => ({
-        method: NOTIFICATION_NAMES.chainChanged,
-        params: await this.getProviderNetworkState(origin),
-      }));
+      this.notifyAllConnections(async (origin) => {
+        const params = await this.getProviderNetworkState(origin);
+
+        const { networkConfigurations, providerConfig } =
+          this.networkController.state;
+
+        const state = { metamask: { networkConfigurations, providerConfig } };
+        const { nickname } = getCurrentNetwork(state);
+
+        const { host } = new URL(origin);
+
+        // Removes anything bug letters from a string
+        const sanitizedNickname = this._sanitizeString(nickname);
+
+        const message = await this._getLocalizedString('switchedChainToast', [
+          `<strong>${sanitizedNickname}</strong>`,
+          `<strong>${host}</strong>`,
+        ]);
+
+        return {
+          method: NOTIFICATION_NAMES.chainChanged,
+          params: {
+            ...params,
+            message,
+          },
+        };
+      });
     } else {
       this.notifyAllConnections({
         method: NOTIFICATION_NAMES.chainChanged,
