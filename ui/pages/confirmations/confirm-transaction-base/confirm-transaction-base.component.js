@@ -493,7 +493,6 @@ export default class ConfirmTransactionBase extends Component {
       <SimulationDetails
         simulationData={simulationData}
         transactionId={txData.id}
-        enableMetrics
       />
     );
 

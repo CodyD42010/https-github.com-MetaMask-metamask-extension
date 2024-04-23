@@ -18,14 +18,12 @@ import {
 } from '../../../../../shared/constants/metametrics';
 import { calculateTotalFiat } from './fiat-display';
 import { BalanceChange } from './types';
-import { useLoadingTime } from './useLoadingTime';
 
 export type UseSimulationMetricsProps = {
   balanceChanges: BalanceChange[];
-  loading: boolean;
+  loadingTime?: number;
   simulationData?: SimulationData;
   transactionId: string;
-  enableMetrics: boolean;
 };
 
 export enum SimulationResponseType {
@@ -56,17 +54,10 @@ export enum PetnameType {
 
 export function useSimulationMetrics({
   balanceChanges,
-  loading,
+  loadingTime,
   simulationData,
   transactionId,
-  enableMetrics,
 }: UseSimulationMetricsProps) {
-  const { loadingTime, setLoadingComplete } = useLoadingTime();
-
-  if (!loading) {
-    setLoadingComplete();
-  }
-
   const displayNameRequests: UseDisplayNameRequest[] = balanceChanges.map(
     ({ asset }) => ({
       value: asset.address ?? '',
@@ -122,12 +113,10 @@ export function useSimulationMetrics({
 
   const params = { properties, sensitiveProperties };
 
-  const shouldSkipMetrics =
-    !enableMetrics ||
-    [
-      SimulationErrorCode.ChainNotSupported,
-      SimulationErrorCode.Disabled,
-    ].includes(simulationData?.error?.code as SimulationErrorCode);
+  const shouldSkipMetrics = [
+    SimulationErrorCode.ChainNotSupported,
+    SimulationErrorCode.Disabled,
+  ].includes(simulationData?.error?.code as SimulationErrorCode);
 
   useEffect(() => {
     if (shouldSkipMetrics) {
