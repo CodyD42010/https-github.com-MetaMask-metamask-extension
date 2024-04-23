@@ -23,7 +23,10 @@ import {
   infuraProjectId,
 } from '../../../../../shared/constants/network';
 import fetchWithCache from '../../../../../shared/lib/fetch-with-cache';
-import { decimalToHex } from '../../../../../shared/modules/conversion.utils';
+import {
+  decimalToHex,
+  hexToDecimal,
+} from '../../../../../shared/modules/conversion.utils';
 import {
   isPrefixedFormattedHexString,
   isSafeChainId,
@@ -620,7 +623,7 @@ const NetworksForm = ({
           category: MetaMetricsEventCategory.Network,
           properties: {
             block_explorer_url: blockExplorerUrl,
-            chain_id: prefixedChainId,
+            chain_id: hexToDecimal(prefixedChainId),
             network_name: networkName,
             source_connection_method:
               MetaMetricsNetworkEventSource.CustomNetworkForm,

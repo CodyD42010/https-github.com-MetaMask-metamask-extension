@@ -21,6 +21,7 @@ import useRamps, {
 } from '../../../hooks/experiences/useRamps';
 import { ORIGIN_METAMASK } from '../../../../shared/constants/app';
 import { getCurrentLocale } from '../../../ducks/locale/locale';
+import { hexToDecimal } from '../../../../shared/modules/conversion.utils';
 
 const darkenGradient =
   'linear-gradient(rgba(0, 0, 0, 0.12),rgba(0, 0, 0, 0.12))';
@@ -76,7 +77,7 @@ export const RampsCard = ({ variant }) => {
       event: MetaMetricsEventName.EmptyBuyBannerDisplayed,
       category: MetaMetricsEventCategory.Navigation,
       properties: {
-        chain_id: chainId,
+        chain_id: hexToDecimal(chainId),
         locale: currentLocale,
         network: nickname,
         referrer: ORIGIN_METAMASK,
@@ -92,7 +93,7 @@ export const RampsCard = ({ variant }) => {
       properties: {
         location: `${variant} tab`,
         text: `Buy ${symbol}`,
-        chain_id: chainId,
+        chain_id: hexToDecimal(chainId),
         token_symbol: symbol,
       },
     });

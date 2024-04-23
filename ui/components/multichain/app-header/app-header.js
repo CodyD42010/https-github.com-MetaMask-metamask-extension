@@ -68,6 +68,7 @@ import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 import { MINUTE } from '../../../../shared/constants/time';
 import { shortenAddress } from '../../../helpers/utils/util';
 import { toChecksumHexAddress } from '../../../../shared/modules/hexstring-utils';
+import { hexToDecimal } from '../../../../shared/modules/conversion.utils';
 
 export const AppHeader = ({ location }) => {
   const trackEvent = useContext(MetaMetricsContext);
@@ -150,7 +151,7 @@ export const AppHeader = ({ location }) => {
       category: MetaMetricsEventCategory.Navigation,
       properties: {
         location: 'App header',
-        chain_id: chainId,
+        chain_id: hexToDecimal(chainId),
       },
     });
   }, [chainId, dispatch, trackEvent]);
