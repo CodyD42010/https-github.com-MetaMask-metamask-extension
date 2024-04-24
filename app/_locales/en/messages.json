@@ -2267,6 +2267,9 @@
   "interactingWith": {
     "message": "Interacting with"
   },
+  "interactingWithTransactionDescription": {
+    "message": "This is the contract you're interacting with. Protect yourself from scammers by  verifying the details."
+  },
   "introducingSmartTransactions": {
     "message": "Introducing Smart Transactions"
   },
@@ -2614,6 +2617,12 @@
   },
   "metamaskVersion": {
     "message": "MetaMask Version"
+  },
+  "methodData": {
+    "message": "Method"
+  },
+  "methodDataTransactionDescription": {
+    "message": "This is the specific action that will be taken. This data can be faked, so be sure you trust the site on the other end."
   },
   "methodNotSupported": {
     "message": "Not supported with this account."
@@ -3938,6 +3947,9 @@
   },
   "requestFromInfo": {
     "message": "This is the site asking for your signature."
+  },
+  "requestFromTransactionDescription": {
+    "message": "This is the site asking for your confirmation."
   },
   "requestMayNotBeSafe": {
     "message": "Request may not be safe"
