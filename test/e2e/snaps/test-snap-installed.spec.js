@@ -112,7 +112,7 @@ describe('Test Snap Installed', function () {
           version: '2.2.0',
           category: 'Snaps',
           locale: 'en',
-          chain_id: '0x539',
+          chain_id: '1337',
           environment_type: 'background',
         });
 
