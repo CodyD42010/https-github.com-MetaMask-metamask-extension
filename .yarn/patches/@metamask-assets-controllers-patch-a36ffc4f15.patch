@@ -1,0 +1,2252 @@
+diff --git a/dist/TokenRatesController.d.ts b/dist/TokenRatesController.d.ts
+index 8f35b5b871fd9cf3c7aac8cf8c07d4461acec2bc..789fe41eb200cf439b485666286e6ab020b9af4c 100644
+--- a/dist/TokenRatesController.d.ts
++++ b/dist/TokenRatesController.d.ts
+@@ -1,10 +1,14 @@
+-import type { BaseConfig, BaseState } from '@metamask/base-controller';
+-import type { NetworkClientId, NetworkController, NetworkState } from '@metamask/network-controller';
+-import { StaticIntervalPollingControllerV1 } from '@metamask/polling-controller';
+-import type { PreferencesState } from '@metamask/preferences-controller';
+-import { type Hex } from '@metamask/utils';
+-import type { AbstractTokenPricesService } from './token-prices-service/abstract-token-prices-service';
+-import type { TokensState } from './TokensController';
++import type { BaseConfig, BaseState } from "@metamask/base-controller";
++import type {
++  NetworkClientId,
++  NetworkController,
++  NetworkState,
++} from "@metamask/network-controller";
++import { StaticIntervalPollingControllerV1 } from "@metamask/polling-controller";
++import type { PreferencesState } from "@metamask/preferences-controller";
++import { type Hex } from "@metamask/utils";
++import type { AbstractTokenPricesService } from "./token-prices-service/abstract-token-prices-service";
++import type { TokensState } from "./TokensController";
+ /**
+  * @type Token
+  *
+@@ -15,14 +19,14 @@ import type { TokensState } from './TokensController';
+  * @property image - Image of the token, url or bit32 image
+  */
+ export interface Token {
+-    address: string;
+-    decimals: number;
+-    symbol: string;
+-    aggregators?: string[];
+-    image?: string;
+-    balanceError?: unknown;
+-    isERC721?: boolean;
+-    name?: string;
++  address: string;
++  decimals: number;
++  symbol: string;
++  aggregators?: string[];
++  image?: string;
++  balanceError?: unknown;
++  isERC721?: boolean;
++  name?: string;
+ }
+ /**
+  * @type TokenRatesConfig
+@@ -35,25 +39,30 @@ export interface Token {
+  * @property threshold - Threshold to invalidate the supportedChains
+  */
+ export interface TokenRatesConfig extends BaseConfig {
+-    interval: number;
+-    nativeCurrency: string;
+-    chainId: Hex;
+-    selectedAddress: string;
+-    allTokens: {
+-        [chainId: Hex]: {
+-            [key: string]: Token[];
+-        };
++  interval: number;
++  nativeCurrency: string;
++  chainId: Hex;
++  selectedAddress: string;
++  allTokens: {
++    [chainId: Hex]: {
++      [key: string]: Token[];
+     };
+-    allDetectedTokens: {
+-        [chainId: Hex]: {
+-            [key: string]: Token[];
+-        };
++  };
++  allDetectedTokens: {
++    [chainId: Hex]: {
++      [key: string]: Token[];
+     };
+-    threshold: number;
++  };
++  threshold: number;
+ }
+ export interface ContractExchangeRates {
+-    [address: string]: number | undefined;
++  [address: string]: number | undefined;
+ }
++export type ContractInformations = {
++  contractExchangeRates: ContractExchangeRates;
++  contractPercentChange1d: ContractExchangeRates;
++  priceChange1d: ContractExchangeRates;
++};
+ /**
+  * @type TokenRatesState
+  *
+@@ -62,80 +71,111 @@ export interface ContractExchangeRates {
+  * @property contractExchangeRatesByChainId - Hash of token contract addresses to exchange rates keyed by chain ID and native currency (ticker)
+  */
+ export interface TokenRatesState extends BaseState {
+-    contractExchangeRates: ContractExchangeRates;
+-    contractExchangeRatesByChainId: Record<Hex, Record<string, ContractExchangeRates>>;
++  contractExchangeRates: ContractExchangeRates;
++  contractExchangeRatesByChainId: Record<
++    Hex,
++    Record<string, ContractExchangeRates>
++  >;
++  contractPercentChange1d: Record<Hex, ContractExchangeRates>;
++  priceChange1d: Record<Hex, ContractExchangeRates>;
+ }
+ /**
+  * Controller that passively polls on a set interval for token-to-fiat exchange rates
+  * for tokens stored in the TokensController
+  */
+-export declare class TokenRatesController extends StaticIntervalPollingControllerV1<TokenRatesConfig, TokenRatesState> {
+-    #private;
+-    private handle?;
+-    /**
+-     * Name of this controller used during composition
+-     */
+-    name: string;
+-    private readonly getNetworkClientById;
+-    /**
+-     * Creates a TokenRatesController instance.
+-     *
+-     * @param options - The controller options.
+-     * @param options.interval - The polling interval in ms
+-     * @param options.threshold - The duration in ms before metadata fetched from CoinGecko is considered stale
+-     * @param options.getNetworkClientById - Gets the network client with the given id from the NetworkController.
+-     * @param options.chainId - The chain ID of the current network.
+-     * @param options.ticker - The ticker for the current network.
+-     * @param options.selectedAddress - The current selected address.
+-     * @param options.onPreferencesStateChange - Allows subscribing to preference controller state changes.
+-     * @param options.onTokensStateChange - Allows subscribing to token controller state changes.
+-     * @param options.onNetworkStateChange - Allows subscribing to network state changes.
+-     * @param options.tokenPricesService - An object in charge of retrieving token prices.
+-     * @param config - Initial options used to configure this controller.
+-     * @param state - Initial state to set on this controller.
+-     */
+-    constructor({ interval, threshold, getNetworkClientById, chainId: initialChainId, ticker: initialTicker, selectedAddress: initialSelectedAddress, onPreferencesStateChange, onTokensStateChange, onNetworkStateChange, tokenPricesService, }: {
+-        interval?: number;
+-        threshold?: number;
+-        getNetworkClientById: NetworkController['getNetworkClientById'];
+-        chainId: Hex;
+-        ticker: string;
+-        selectedAddress: string;
+-        onPreferencesStateChange: (listener: (preferencesState: PreferencesState) => void) => void;
+-        onTokensStateChange: (listener: (tokensState: TokensState) => void) => void;
+-        onNetworkStateChange: (listener: (networkState: NetworkState) => void) => void;
+-        tokenPricesService: AbstractTokenPricesService;
+-    }, config?: Partial<TokenRatesConfig>, state?: Partial<TokenRatesState>);
+-    /**
+-     * Start (or restart) polling.
+-     */
+-    start(): Promise<void>;
+-    /**
+-     * Stop polling.
+-     */
+-    stop(): void;
+-    /**
+-     * Updates exchange rates for all tokens.
+-     */
+-    updateExchangeRates(): Promise<void>;
+-    /**
+-     * Updates exchange rates for all tokens.
+-     *
+-     * @param options - The options to fetch exchange rates.
+-     * @param options.chainId - The chain ID.
+-     * @param options.nativeCurrency - The ticker for the chain.
+-     */
+-    updateExchangeRatesByChainId({ chainId, nativeCurrency, }: {
+-        chainId: Hex;
+-        nativeCurrency: string;
+-    }): Promise<void>;
+-    /**
+-     * Updates token rates for the given networkClientId
+-     *
+-     * @param networkClientId - The network client ID used to get a ticker value.
+-     * @returns The controller state.
+-     */
+-    _executePoll(networkClientId: NetworkClientId): Promise<void>;
++export declare class TokenRatesController extends StaticIntervalPollingControllerV1<
++  TokenRatesConfig,
++  TokenRatesState
++> {
++  #private;
++  private handle?;
++  /**
++   * Name of this controller used during composition
++   */
++  name: string;
++  private readonly getNetworkClientById;
++  /**
++   * Creates a TokenRatesController instance.
++   *
++   * @param options - The controller options.
++   * @param options.interval - The polling interval in ms
++   * @param options.threshold - The duration in ms before metadata fetched from CoinGecko is considered stale
++   * @param options.getNetworkClientById - Gets the network client with the given id from the NetworkController.
++   * @param options.chainId - The chain ID of the current network.
++   * @param options.ticker - The ticker for the current network.
++   * @param options.selectedAddress - The current selected address.
++   * @param options.onPreferencesStateChange - Allows subscribing to preference controller state changes.
++   * @param options.onTokensStateChange - Allows subscribing to token controller state changes.
++   * @param options.onNetworkStateChange - Allows subscribing to network state changes.
++   * @param options.tokenPricesService - An object in charge of retrieving token prices.
++   * @param config - Initial options used to configure this controller.
++   * @param state - Initial state to set on this controller.
++   */
++  constructor(
++    {
++      interval,
++      threshold,
++      getNetworkClientById,
++      chainId: initialChainId,
++      ticker: initialTicker,
++      selectedAddress: initialSelectedAddress,
++      onPreferencesStateChange,
++      onTokensStateChange,
++      onNetworkStateChange,
++      tokenPricesService,
++    }: {
++      interval?: number;
++      threshold?: number;
++      getNetworkClientById: NetworkController["getNetworkClientById"];
++      chainId: Hex;
++      ticker: string;
++      selectedAddress: string;
++      onPreferencesStateChange: (
++        listener: (preferencesState: PreferencesState) => void
++      ) => void;
++      onTokensStateChange: (
++        listener: (tokensState: TokensState) => void
++      ) => void;
++      onNetworkStateChange: (
++        listener: (networkState: NetworkState) => void
++      ) => void;
++      tokenPricesService: AbstractTokenPricesService;
++    },
++    config?: Partial<TokenRatesConfig>,
++    state?: Partial<TokenRatesState>
++  );
++  /**
++   * Start (or restart) polling.
++   */
++  start(): Promise<void>;
++  /**
++   * Stop polling.
++   */
++  stop(): void;
++  /**
++   * Updates exchange rates for all tokens.
++   */
++  updateExchangeRates(): Promise<void>;
++  /**
++   * Updates exchange rates for all tokens.
++   *
++   * @param options - The options to fetch exchange rates.
++   * @param options.chainId - The chain ID.
++   * @param options.nativeCurrency - The ticker for the chain.
++   */
++  updateExchangeRatesByChainId({
++    chainId,
++    nativeCurrency,
++  }: {
++    chainId: Hex;
++    nativeCurrency: string;
++  }): Promise<void>;
++  /**
++   * Updates token rates for the given networkClientId
++   *
++   * @param networkClientId - The network client ID used to get a ticker value.
++   * @returns The controller state.
++   */
++  _executePoll(networkClientId: NetworkClientId): Promise<void>;
+ }
+ export default TokenRatesController;
+-//# sourceMappingURL=TokenRatesController.d.ts.map
+\ No newline at end of file
+diff --git a/dist/TokenRatesController.js b/dist/TokenRatesController.js
+index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa122e5e8d 100644
+--- a/dist/TokenRatesController.js
++++ b/dist/TokenRatesController.js
+@@ -1,25 +1,58 @@
+ "use strict";
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+-    return new (P || (P = Promise))(function (resolve, reject) {
+-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+-    });
+-};
+-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
++var __classPrivateFieldSet =
++  (this && this.__classPrivateFieldSet) ||
++  function (receiver, state, value, kind, f) {
+     if (kind === "m") throw new TypeError("Private method is not writable");
+-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+-};
+-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+-};
+-var _TokenRatesController_instances, _TokenRatesController_pollState, _TokenRatesController_tokenPricesService, _TokenRatesController_inProcessExchangeRateUpdates, _TokenRatesController_getTokenAddresses, _TokenRatesController_stopPoll, _TokenRatesController_poll, _TokenRatesController_fetchAndMapExchangeRates, _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency, _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency;
++    if (kind === "a" && !f)
++      throw new TypeError("Private accessor was defined without a setter");
++    if (
++      typeof state === "function"
++        ? receiver !== state || !f
++        : !state.has(receiver)
++    )
++      throw new TypeError(
++        "Cannot write private member to an object whose class did not declare it"
++      );
++    return (
++      kind === "a"
++        ? f.call(receiver, value)
++        : f
++        ? (f.value = value)
++        : state.set(receiver, value),
++      value
++    );
++  };
++var __classPrivateFieldGet =
++  (this && this.__classPrivateFieldGet) ||
++  function (receiver, state, kind, f) {
++    if (kind === "a" && !f)
++      throw new TypeError("Private accessor was defined without a getter");
++    if (
++      typeof state === "function"
++        ? receiver !== state || !f
++        : !state.has(receiver)
++    )
++      throw new TypeError(
++        "Cannot read private member from an object whose class did not declare it"
++      );
++    return kind === "m"
++      ? f
++      : kind === "a"
++      ? f.call(receiver)
++      : f
++      ? f.value
++      : state.get(receiver);
++  };
++var _TokenRatesController_instances,
++  _TokenRatesController_pollState,
++  _TokenRatesController_tokenPricesService,
++  _TokenRatesController_inProcessExchangeRateUpdates,
++  _TokenRatesController_getTokenAddresses,
++  _TokenRatesController_stopPoll,
++  _TokenRatesController_poll,
++  _TokenRatesController_fetchAndMapExchangeRates,
++  _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency,
++  _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency;
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.TokenRatesController = void 0;
+ const controller_utils_1 = require("@metamask/controller-utils");
+@@ -30,8 +63,8 @@ const assetsUtil_1 = require("./assetsUtil");
+ const crypto_compare_1 = require("./crypto-compare");
+ var PollState;
+ (function (PollState) {
+-    PollState["Active"] = "Active";
+-    PollState["Inactive"] = "Inactive";
++  PollState["Active"] = "Active";
++  PollState["Inactive"] = "Inactive";
+ })(PollState || (PollState = {}));
+ /**
+  * Uses the CryptoCompare API to fetch the exchange rate between one currency
+@@ -44,286 +77,602 @@ var PollState;
+  * @returns The exchange rate between `fromCurrency` to `toCurrency` if one
+  * exists, or null if one does not.
+  */
+-function getCurrencyConversionRate({ from, to, }) {
+-    return __awaiter(this, void 0, void 0, function* () {
+-        const includeUSDRate = false;
+-        try {
+-            const result = yield (0, crypto_compare_1.fetchExchangeRate)(to, from, includeUSDRate);
+-            return result.conversionRate;
+-        }
+-        catch (error) {
+-            if (error instanceof Error &&
+-                error.message.includes('market does not exist for this coin pair')) {
+-                return null;
+-            }
+-            throw error;
+-        }
+-    });
++async function getCurrencyConversionRate({ from, to }) {
++  const includeUSDRate = false;
++  try {
++    const result = await (0, crypto_compare_1.fetchExchangeRate)(
++      to,
++      from,
++      includeUSDRate
++    );
++    return result.conversionRate;
++  } catch (error) {
++    if (
++      error instanceof Error &&
++      error.message.includes("market does not exist for this coin pair")
++    ) {
++      return null;
++    }
++    throw error;
++  }
+ }
+ /**
+  * Controller that passively polls on a set interval for token-to-fiat exchange rates
+  * for tokens stored in the TokensController
+  */
+ class TokenRatesController extends polling_controller_1.StaticIntervalPollingControllerV1 {
++  /**
++   * Creates a TokenRatesController instance.
++   *
++   * @param options - The controller options.
++   * @param options.interval - The polling interval in ms
++   * @param options.threshold - The duration in ms before metadata fetched from CoinGecko is considered stale
++   * @param options.getNetworkClientById - Gets the network client with the given id from the NetworkController.
++   * @param options.chainId - The chain ID of the current network.
++   * @param options.ticker - The ticker for the current network.
++   * @param options.selectedAddress - The current selected address.
++   * @param options.onPreferencesStateChange - Allows subscribing to preference controller state changes.
++   * @param options.onTokensStateChange - Allows subscribing to token controller state changes.
++   * @param options.onNetworkStateChange - Allows subscribing to network state changes.
++   * @param options.tokenPricesService - An object in charge of retrieving token prices.
++   * @param config - Initial options used to configure this controller.
++   * @param state - Initial state to set on this controller.
++   */
++  constructor(
++    {
++      interval = 3 * 60 * 1000,
++      threshold = 6 * 60 * 60 * 1000,
++      getNetworkClientById,
++      chainId: initialChainId,
++      ticker: initialTicker,
++      selectedAddress: initialSelectedAddress,
++      onPreferencesStateChange,
++      onTokensStateChange,
++      onNetworkStateChange,
++      tokenPricesService,
++    },
++    config,
++    state
++  ) {
++    super(config, state);
++    _TokenRatesController_instances.add(this);
++    _TokenRatesController_pollState.set(this, PollState.Inactive);
++    _TokenRatesController_tokenPricesService.set(this, void 0);
++    _TokenRatesController_inProcessExchangeRateUpdates.set(this, {});
+     /**
+-     * Creates a TokenRatesController instance.
+-     *
+-     * @param options - The controller options.
+-     * @param options.interval - The polling interval in ms
+-     * @param options.threshold - The duration in ms before metadata fetched from CoinGecko is considered stale
+-     * @param options.getNetworkClientById - Gets the network client with the given id from the NetworkController.
+-     * @param options.chainId - The chain ID of the current network.
+-     * @param options.ticker - The ticker for the current network.
+-     * @param options.selectedAddress - The current selected address.
+-     * @param options.onPreferencesStateChange - Allows subscribing to preference controller state changes.
+-     * @param options.onTokensStateChange - Allows subscribing to token controller state changes.
+-     * @param options.onNetworkStateChange - Allows subscribing to network state changes.
+-     * @param options.tokenPricesService - An object in charge of retrieving token prices.
+-     * @param config - Initial options used to configure this controller.
+-     * @param state - Initial state to set on this controller.
++     * Name of this controller used during composition
+      */
+-    constructor({ interval = 3 * 60 * 1000, threshold = 6 * 60 * 60 * 1000, getNetworkClientById, chainId: initialChainId, ticker: initialTicker, selectedAddress: initialSelectedAddress, onPreferencesStateChange, onTokensStateChange, onNetworkStateChange, tokenPricesService, }, config, state) {
+-        super(config, state);
+-        _TokenRatesController_instances.add(this);
+-        _TokenRatesController_pollState.set(this, PollState.Inactive);
+-        _TokenRatesController_tokenPricesService.set(this, void 0);
+-        _TokenRatesController_inProcessExchangeRateUpdates.set(this, {});
+-        /**
+-         * Name of this controller used during composition
+-         */
+-        this.name = 'TokenRatesController';
+-        this.defaultConfig = {
+-            interval,
+-            threshold,
+-            disabled: false,
+-            nativeCurrency: initialTicker,
+-            chainId: initialChainId,
+-            selectedAddress: initialSelectedAddress,
+-            allTokens: {},
+-            allDetectedTokens: {},
+-        };
+-        this.defaultState = {
+-            contractExchangeRates: {},
+-            contractExchangeRatesByChainId: {},
+-        };
+-        this.initialize();
+-        this.setIntervalLength(interval);
+-        this.getNetworkClientById = getNetworkClientById;
+-        __classPrivateFieldSet(this, _TokenRatesController_tokenPricesService, tokenPricesService, "f");
+-        if (config === null || config === void 0 ? void 0 : config.disabled) {
+-            this.configure({ disabled: true }, false, false);
++    this.name = "TokenRatesController";
++    this.defaultConfig = {
++      interval,
++      threshold,
++      disabled: false,
++      nativeCurrency: initialTicker,
++      chainId: initialChainId,
++      selectedAddress: initialSelectedAddress,
++      allTokens: {}, // TODO: initialize these correctly, maybe as part of BaseControllerV2 migration
++      allDetectedTokens: {},
++    };
++    this.defaultState = {
++      contractExchangeRates: {},
++      contractExchangeRatesByChainId: {},
++      contractPercentChange1d: {},
++      priceChange1d: {},
++    };
++    this.initialize();
++    this.setIntervalLength(interval);
++    this.getNetworkClientById = getNetworkClientById;
++    __classPrivateFieldSet(
++      this,
++      _TokenRatesController_tokenPricesService,
++      tokenPricesService,
++      "f"
++    );
++    if (config?.disabled) {
++      this.configure({ disabled: true }, false, false);
++    }
++    onPreferencesStateChange(async ({ selectedAddress }) => {
++      if (this.config.selectedAddress !== selectedAddress) {
++        this.configure({ selectedAddress });
++        if (
++          __classPrivateFieldGet(this, _TokenRatesController_pollState, "f") ===
++          PollState.Active
++        ) {
++          await this.updateExchangeRates();
++        }
++      }
++    });
++    onTokensStateChange(async ({ allTokens, allDetectedTokens }) => {
++      const previousTokenAddresses = __classPrivateFieldGet(
++        this,
++        _TokenRatesController_instances,
++        "m",
++        _TokenRatesController_getTokenAddresses
++      ).call(this, this.config.chainId);
++      this.configure({ allTokens, allDetectedTokens });
++      const newTokenAddresses = __classPrivateFieldGet(
++        this,
++        _TokenRatesController_instances,
++        "m",
++        _TokenRatesController_getTokenAddresses
++      ).call(this, this.config.chainId);
++      if (
++        !(0, lodash_1.isEqual)(previousTokenAddresses, newTokenAddresses) &&
++        __classPrivateFieldGet(this, _TokenRatesController_pollState, "f") ===
++          PollState.Active
++      ) {
++        await this.updateExchangeRates();
++      }
++    });
++    onNetworkStateChange(async ({ providerConfig }) => {
++      const { chainId, ticker } = providerConfig;
++      if (
++        this.config.chainId !== chainId ||
++        this.config.nativeCurrency !== ticker
++      ) {
++        this.update({ contractExchangeRates: {} });
++        this.configure({ chainId, nativeCurrency: ticker });
++        if (
++          __classPrivateFieldGet(this, _TokenRatesController_pollState, "f") ===
++          PollState.Active
++        ) {
++          await this.updateExchangeRates();
+         }
+-        onPreferencesStateChange(({ selectedAddress }) => __awaiter(this, void 0, void 0, function* () {
+-            if (this.config.selectedAddress !== selectedAddress) {
+-                this.configure({ selectedAddress });
+-                if (__classPrivateFieldGet(this, _TokenRatesController_pollState, "f") === PollState.Active) {
+-                    yield this.updateExchangeRates();
+-                }
+-            }
+-        }));
+-        onTokensStateChange(({ allTokens, allDetectedTokens }) => __awaiter(this, void 0, void 0, function* () {
+-            const previousTokenAddresses = __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_getTokenAddresses).call(this, this.config.chainId);
+-            this.configure({ allTokens, allDetectedTokens });
+-            const newTokenAddresses = __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_getTokenAddresses).call(this, this.config.chainId);
+-            if (!(0, lodash_1.isEqual)(previousTokenAddresses, newTokenAddresses) &&
+-                __classPrivateFieldGet(this, _TokenRatesController_pollState, "f") === PollState.Active) {
+-                yield this.updateExchangeRates();
+-            }
+-        }));
+-        onNetworkStateChange(({ providerConfig }) => __awaiter(this, void 0, void 0, function* () {
+-            const { chainId, ticker } = providerConfig;
+-            if (this.config.chainId !== chainId ||
+-                this.config.nativeCurrency !== ticker) {
+-                this.update({ contractExchangeRates: {} });
+-                this.configure({ chainId, nativeCurrency: ticker });
+-                if (__classPrivateFieldGet(this, _TokenRatesController_pollState, "f") === PollState.Active) {
+-                    yield this.updateExchangeRates();
+-                }
+-            }
+-        }));
++      }
++    });
++  }
++  /**
++   * Start (or restart) polling.
++   */
++  async start() {
++    __classPrivateFieldGet(
++      this,
++      _TokenRatesController_instances,
++      "m",
++      _TokenRatesController_stopPoll
++    ).call(this);
++    __classPrivateFieldSet(
++      this,
++      _TokenRatesController_pollState,
++      PollState.Active,
++      "f"
++    );
++    await __classPrivateFieldGet(
++      this,
++      _TokenRatesController_instances,
++      "m",
++      _TokenRatesController_poll
++    ).call(this);
++  }
++  /**
++   * Stop polling.
++   */
++  stop() {
++    __classPrivateFieldGet(
++      this,
++      _TokenRatesController_instances,
++      "m",
++      _TokenRatesController_stopPoll
++    ).call(this);
++    __classPrivateFieldSet(
++      this,
++      _TokenRatesController_pollState,
++      PollState.Inactive,
++      "f"
++    );
++  }
++  /**
++   * Updates exchange rates for all tokens.
++   */
++  async updateExchangeRates() {
++    const { chainId, nativeCurrency } = this.config;
++    await this.updateExchangeRatesByChainId({
++      chainId,
++      nativeCurrency,
++    });
++  }
++  /**
++   * Updates exchange rates for all tokens.
++   *
++   * @param options - The options to fetch exchange rates.
++   * @param options.chainId - The chain ID.
++   * @param options.nativeCurrency - The ticker for the chain.
++   */
++  async updateExchangeRatesByChainId({ chainId, nativeCurrency }) {
++    if (this.disabled) {
++      return;
+     }
+-    /**
+-     * Start (or restart) polling.
+-     */
+-    start() {
+-        return __awaiter(this, void 0, void 0, function* () {
+-            __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_stopPoll).call(this);
+-            __classPrivateFieldSet(this, _TokenRatesController_pollState, PollState.Active, "f");
+-            yield __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_poll).call(this);
+-        });
++    const tokenAddresses = __classPrivateFieldGet(
++      this,
++      _TokenRatesController_instances,
++      "m",
++      _TokenRatesController_getTokenAddresses
++    ).call(this, chainId);
++    const updateKey = `${chainId}:${nativeCurrency}`;
++    if (
++      updateKey in
++      __classPrivateFieldGet(
++        this,
++        _TokenRatesController_inProcessExchangeRateUpdates,
++        "f"
++      )
++    ) {
++      // This prevents redundant updates
++      // This promise is resolved after the in-progress update has finished,
++      // and state has been updated.
++      await __classPrivateFieldGet(
++        this,
++        _TokenRatesController_inProcessExchangeRateUpdates,
++        "f"
++      )[updateKey];
++      return;
+     }
+-    /**
+-     * Stop polling.
+-     */
+-    stop() {
+-        __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_stopPoll).call(this);
+-        __classPrivateFieldSet(this, _TokenRatesController_pollState, PollState.Inactive, "f");
++    const {
++      promise: inProgressUpdate,
++      resolve: updateSucceeded,
++      reject: updateFailed,
++    } = (0, utils_1.createDeferredPromise)({
++      suppressUnhandledRejection: true,
++    });
++    __classPrivateFieldGet(
++      this,
++      _TokenRatesController_inProcessExchangeRateUpdates,
++      "f"
++    )[updateKey] = inProgressUpdate;
++    try {
++      const contractInformations = await __classPrivateFieldGet(
++        this,
++        _TokenRatesController_instances,
++        "m",
++        _TokenRatesController_fetchAndMapExchangeRates
++      ).call(this, {
++        tokenAddresses,
++        chainId,
++        nativeCurrency,
++      });
++      const newContractExchangeRates =
++        contractInformations.contractExchangeRates;
++      const newContractPercentChange1d = {
++        [chainId]: {
++          ...(contractInformations?.contractPercentChange1d ?? {}),
++        },
++      };
++      const newPriceChange1d = {
++        [chainId]: {
++          ...(contractInformations?.priceChange1d ?? {}),
++        },
++      };
++      const existingContractExchangeRates = this.state.contractExchangeRates;
++      const updatedContractExchangeRates =
++        chainId === this.config.chainId &&
++        nativeCurrency === this.config.nativeCurrency
++          ? newContractExchangeRates
++          : existingContractExchangeRates;
++      const existingContractExchangeRatesForChainId =
++        this.state.contractExchangeRatesByChainId[chainId] ?? {};
++      const updatedContractExchangeRatesForChainId = {
++        ...this.state.contractExchangeRatesByChainId,
++        [chainId]: {
++          ...existingContractExchangeRatesForChainId,
++          [nativeCurrency]: {
++            ...existingContractExchangeRatesForChainId[nativeCurrency],
++            ...newContractExchangeRates,
++          },
++        },
++      };
++      this.update({
++        contractExchangeRates: updatedContractExchangeRates,
++        contractExchangeRatesByChainId: updatedContractExchangeRatesForChainId,
++        contractPercentChange1d: newContractPercentChange1d,
++        priceChange1d: newPriceChange1d,
++      });
++      updateSucceeded();
++    } catch (error) {
++      updateFailed(error);
++      throw error;
++    } finally {
++      delete __classPrivateFieldGet(
++        this,
++        _TokenRatesController_inProcessExchangeRateUpdates,
++        "f"
++      )[updateKey];
++    }
++  }
++  /**
++   * Updates token rates for the given networkClientId
++   *
++   * @param networkClientId - The network client ID used to get a ticker value.
++   * @returns The controller state.
++   */
++  async _executePoll(networkClientId) {
++    const networkClient = this.getNetworkClientById(networkClientId);
++    await this.updateExchangeRatesByChainId({
++      chainId: networkClient.configuration.chainId,
++      nativeCurrency: networkClient.configuration.ticker,
++    });
++  }
++}
++exports.TokenRatesController = TokenRatesController;
++(_TokenRatesController_pollState = new WeakMap()),
++  (_TokenRatesController_tokenPricesService = new WeakMap()),
++  (_TokenRatesController_inProcessExchangeRateUpdates = new WeakMap()),
++  (_TokenRatesController_instances = new WeakSet()),
++  (_TokenRatesController_getTokenAddresses =
++    function _TokenRatesController_getTokenAddresses(chainId) {
++      const { allTokens, allDetectedTokens } = this.config;
++      const tokens = allTokens[chainId]?.[this.config.selectedAddress] || [];
++      const detectedTokens =
++        allDetectedTokens[chainId]?.[this.config.selectedAddress] || [];
++      return [
++        ...new Set(
++          [...tokens, ...detectedTokens].map((token) =>
++            (0, controller_utils_1.toHex)(
++              (0, controller_utils_1.toChecksumHexAddress)(token.address)
++            )
++          )
++        ),
++      ].sort();
++    }),
++  (_TokenRatesController_stopPoll = function _TokenRatesController_stopPoll() {
++    if (this.handle) {
++      clearTimeout(this.handle);
+     }
++  }),
++  (_TokenRatesController_poll =
+     /**
+-     * Updates exchange rates for all tokens.
++     * Poll for exchange rate updates.
+      */
+-    updateExchangeRates() {
+-        return __awaiter(this, void 0, void 0, function* () {
+-            const { chainId, nativeCurrency } = this.config;
+-            yield this.updateExchangeRatesByChainId({
+-                chainId,
+-                nativeCurrency,
+-            });
+-        });
+-    }
++    async function _TokenRatesController_poll() {
++      await (0, controller_utils_1.safelyExecute)(() =>
++        this.updateExchangeRates()
++      );
++      // Poll using recursive `setTimeout` instead of `setInterval` so that
++      // requests don't stack if they take longer than the polling interval
++      this.handle = setTimeout(() => {
++        __classPrivateFieldGet(
++          this,
++          _TokenRatesController_instances,
++          "m",
++          _TokenRatesController_poll
++        ).call(this);
++      }, this.config.interval);
++    }),
++  (_TokenRatesController_fetchAndMapExchangeRates =
+     /**
+-     * Updates exchange rates for all tokens.
++     * Uses the token prices service to retrieve exchange rates for tokens in a
++     * particular currency.
++     *
++     * If the price API does not support the given chain ID, returns an empty
++     * object.
+      *
+-     * @param options - The options to fetch exchange rates.
+-     * @param options.chainId - The chain ID.
+-     * @param options.nativeCurrency - The ticker for the chain.
++     * If the price API does not support the given currency, retrieves exchange
++     * rates in a known currency instead, then converts those rates using the
++     * exchange rate between the known currency and desired currency.
++     *
++     * @param args - The arguments to this function.
++     * @param args.tokenAddresses - Addresses for tokens.
++     * @param args.chainId - The EIP-155 ID of the chain where the tokens live.
++     * @param args.nativeCurrency - The native currency in which to request
++     * exchange rates.
++     * @returns A map from token address to its exchange rate in the native
++     * currency, or an empty map if no exchange rates can be obtained for the
++     * chain ID.
+      */
+-    updateExchangeRatesByChainId({ chainId, nativeCurrency, }) {
+-        var _a;
+-        return __awaiter(this, void 0, void 0, function* () {
+-            if (this.disabled) {
+-                return;
+-            }
+-            const tokenAddresses = __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_getTokenAddresses).call(this, chainId);
+-            if (tokenAddresses.length === 0) {
+-                return;
+-            }
+-            const updateKey = `${chainId}:${nativeCurrency}`;
+-            if (updateKey in __classPrivateFieldGet(this, _TokenRatesController_inProcessExchangeRateUpdates, "f")) {
+-                // This prevents redundant updates
+-                // This promise is resolved after the in-progress update has finished,
+-                // and state has been updated.
+-                yield __classPrivateFieldGet(this, _TokenRatesController_inProcessExchangeRateUpdates, "f")[updateKey];
+-                return;
+-            }
+-            const { promise: inProgressUpdate, resolve: updateSucceeded, reject: updateFailed, } = (0, utils_1.createDeferredPromise)({ suppressUnhandledRejection: true });
+-            __classPrivateFieldGet(this, _TokenRatesController_inProcessExchangeRateUpdates, "f")[updateKey] = inProgressUpdate;
+-            try {
+-                const newContractExchangeRates = yield __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_fetchAndMapExchangeRates).call(this, {
+-                    tokenAddresses,
+-                    chainId,
+-                    nativeCurrency,
+-                });
+-                const existingContractExchangeRates = this.state.contractExchangeRates;
+-                const updatedContractExchangeRates = chainId === this.config.chainId &&
+-                    nativeCurrency === this.config.nativeCurrency
+-                    ? newContractExchangeRates
+-                    : existingContractExchangeRates;
+-                const existingContractExchangeRatesForChainId = (_a = this.state.contractExchangeRatesByChainId[chainId]) !== null && _a !== void 0 ? _a : {};
+-                const updatedContractExchangeRatesForChainId = Object.assign(Object.assign({}, this.state.contractExchangeRatesByChainId), { [chainId]: Object.assign(Object.assign({}, existingContractExchangeRatesForChainId), { [nativeCurrency]: Object.assign(Object.assign({}, existingContractExchangeRatesForChainId[nativeCurrency]), newContractExchangeRates) }) });
+-                this.update({
+-                    contractExchangeRates: updatedContractExchangeRates,
+-                    contractExchangeRatesByChainId: updatedContractExchangeRatesForChainId,
+-                });
+-                updateSucceeded();
+-            }
+-            catch (error) {
+-                updateFailed(error);
+-                throw error;
+-            }
+-            finally {
+-                delete __classPrivateFieldGet(this, _TokenRatesController_inProcessExchangeRateUpdates, "f")[updateKey];
+-            }
++    async function _TokenRatesController_fetchAndMapExchangeRates({
++      tokenAddresses,
++      chainId,
++      nativeCurrency,
++    }) {
++      if (
++        !__classPrivateFieldGet(
++          this,
++          _TokenRatesController_tokenPricesService,
++          "f"
++        ).validateChainIdSupported(chainId)
++      ) {
++        return tokenAddresses.reduce(
++          (obj, tokenAddress) => {
++            return {
++              contractExchangeRates: {
++                ...obj.contractExchangeRates,
++                [tokenAddress]: undefined,
++              },
++              contractPercentChange1d: {
++                ...obj.contractPercentChange1d,
++                [tokenAddress]: undefined,
++              },
++              priceChange1d: {
++                ...obj.priceChange1d,
++                [tokenAddress]: undefined,
++              },
++            };
++          },
++          {
++            contractExchangeRates: {},
++            contractPercentChange1d: {},
++            priceChange1d: {},
++          }
++        );
++      }
++      if (
++        __classPrivateFieldGet(
++          this,
++          _TokenRatesController_tokenPricesService,
++          "f"
++        ).validateCurrencySupported(nativeCurrency)
++      ) {
++        return await __classPrivateFieldGet(
++          this,
++          _TokenRatesController_instances,
++          "m",
++          _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency
++        ).call(this, {
++          tokenAddresses,
++          chainId,
++          nativeCurrency,
+         });
+-    }
++      }
++      return await __classPrivateFieldGet(
++        this,
++        _TokenRatesController_instances,
++        "m",
++        _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency
++      ).call(this, {
++        tokenAddresses,
++        nativeCurrency,
++      });
++    }),
++  (_TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency =
+     /**
+-     * Updates token rates for the given networkClientId
++     * Retrieves prices in the given currency for the given tokens on the given
++     * chain. Ensures that token addresses are checksum addresses.
+      *
+-     * @param networkClientId - The network client ID used to get a ticker value.
+-     * @returns The controller state.
++     * @param args - The arguments to this function.
++     * @param args.tokenAddresses - Addresses for tokens.
++     * @param args.chainId - The EIP-155 ID of the chain where the tokens live.
++     * @param args.nativeCurrency - The native currency in which to request
++     * prices.
++     * @returns A map of the token addresses (as checksums) to their prices in the
++     * native currency.
+      */
+-    _executePoll(networkClientId) {
+-        return __awaiter(this, void 0, void 0, function* () {
+-            const networkClient = this.getNetworkClientById(networkClientId);
+-            yield this.updateExchangeRatesByChainId({
+-                chainId: networkClient.configuration.chainId,
+-                nativeCurrency: networkClient.configuration.ticker,
+-            });
+-        });
+-    }
+-}
+-exports.TokenRatesController = TokenRatesController;
+-_TokenRatesController_pollState = new WeakMap(), _TokenRatesController_tokenPricesService = new WeakMap(), _TokenRatesController_inProcessExchangeRateUpdates = new WeakMap(), _TokenRatesController_instances = new WeakSet(), _TokenRatesController_getTokenAddresses = function _TokenRatesController_getTokenAddresses(chainId) {
+-    var _a, _b;
+-    const { allTokens, allDetectedTokens } = this.config;
+-    const tokens = ((_a = allTokens[chainId]) === null || _a === void 0 ? void 0 : _a[this.config.selectedAddress]) || [];
+-    const detectedTokens = ((_b = allDetectedTokens[chainId]) === null || _b === void 0 ? void 0 : _b[this.config.selectedAddress]) || [];
+-    return [
+-        ...new Set([...tokens, ...detectedTokens].map((token) => (0, controller_utils_1.toHex)((0, controller_utils_1.toChecksumHexAddress)(token.address)))),
+-    ].sort();
+-}, _TokenRatesController_stopPoll = function _TokenRatesController_stopPoll() {
+-    if (this.handle) {
+-        clearTimeout(this.handle);
+-    }
+-}, _TokenRatesController_poll = function _TokenRatesController_poll() {
+-    return __awaiter(this, void 0, void 0, function* () {
+-        yield (0, controller_utils_1.safelyExecute)(() => this.updateExchangeRates());
+-        // Poll using recursive `setTimeout` instead of `setInterval` so that
+-        // requests don't stack if they take longer than the polling interval
+-        this.handle = setTimeout(() => {
+-            __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_poll).call(this);
+-        }, this.config.interval);
+-    });
+-}, _TokenRatesController_fetchAndMapExchangeRates = function _TokenRatesController_fetchAndMapExchangeRates({ tokenAddresses, chainId, nativeCurrency, }) {
+-    return __awaiter(this, void 0, void 0, function* () {
+-        if (!__classPrivateFieldGet(this, _TokenRatesController_tokenPricesService, "f").validateChainIdSupported(chainId)) {
+-            return tokenAddresses.reduce((obj, tokenAddress) => {
+-                return Object.assign(Object.assign({}, obj), { [tokenAddress]: undefined });
+-            }, {});
+-        }
+-        if (__classPrivateFieldGet(this, _TokenRatesController_tokenPricesService, "f").validateCurrencySupported(nativeCurrency)) {
+-            return yield __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency).call(this, {
+-                tokenAddresses,
+-                chainId,
+-                nativeCurrency,
++    async function _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency({
++      tokenAddresses,
++      chainId,
++      nativeCurrency,
++    }) {
++      let contractNativeInformations;
++      const tokenPricesByTokenAddress = await (0,
++      assetsUtil_1.reduceInBatchesSerially)({
++        values: [...tokenAddresses].sort(),
++        batchSize: assetsUtil_1.TOKEN_PRICES_BATCH_SIZE,
++        eachBatch: async (allTokenPricesByTokenAddress, batch) => {
++          const tokenPricesByTokenAddressForBatch =
++            await __classPrivateFieldGet(
++              this,
++              _TokenRatesController_tokenPricesService,
++              "f"
++            ).fetchTokenPrices({
++              tokenAddresses: batch,
++              chainId,
++              currency: nativeCurrency,
+             });
+-        }
+-        return yield __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency).call(this, {
+-            tokenAddresses,
+-            nativeCurrency,
++          return {
++            ...allTokenPricesByTokenAddress,
++            ...tokenPricesByTokenAddressForBatch,
++          };
++        },
++        initialResult: {},
++      });
++      contractNativeInformations = tokenPricesByTokenAddress;
++      // fetch for native token
++      if (tokenAddresses.length === 0) {
++        const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
++        const contractNativeInformationsNative = await __classPrivateFieldGet(
++          this,
++          _TokenRatesController_instances,
++          "m",
++          _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency
++        ).call(this, {
++          tokenAddresses: [ZERO_ADDRESS],
++          chainId: this.config.chainId,
++          nativeCurrency: controller_utils_1.FALL_BACK_VS_CURRENCY,
+         });
+-    });
+-}, _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency = function _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency({ tokenAddresses, chainId, nativeCurrency, }) {
+-    return __awaiter(this, void 0, void 0, function* () {
+-        const tokenPricesByTokenAddress = yield (0, assetsUtil_1.reduceInBatchesSerially)({
+-            values: [...tokenAddresses].sort(),
+-            batchSize: assetsUtil_1.TOKEN_PRICES_BATCH_SIZE,
+-            eachBatch: (allTokenPricesByTokenAddress, batch) => __awaiter(this, void 0, void 0, function* () {
+-                const tokenPricesByTokenAddressForBatch = yield __classPrivateFieldGet(this, _TokenRatesController_tokenPricesService, "f").fetchTokenPrices({
+-                    tokenAddresses: batch,
+-                    chainId,
+-                    currency: nativeCurrency,
+-                });
+-                return Object.assign(Object.assign({}, allTokenPricesByTokenAddress), tokenPricesByTokenAddressForBatch);
+-            }),
+-            initialResult: {},
+-        });
+-        return Object.entries(tokenPricesByTokenAddress).reduce((obj, [tokenAddress, tokenPrice]) => {
+-            return Object.assign(Object.assign({}, obj), { [tokenAddress]: tokenPrice === null || tokenPrice === void 0 ? void 0 : tokenPrice.value });
+-        }, {});
+-    });
+-}, _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency = function _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency({ tokenAddresses, nativeCurrency, }) {
+-    return __awaiter(this, void 0, void 0, function* () {
+-        const [contractExchangeRates, fallbackCurrencyToNativeCurrencyConversionRate,] = yield Promise.all([
+-            __classPrivateFieldGet(this, _TokenRatesController_instances, "m", _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency).call(this, {
+-                tokenAddresses,
+-                chainId: this.config.chainId,
+-                nativeCurrency: controller_utils_1.FALL_BACK_VS_CURRENCY,
+-            }),
+-            getCurrencyConversionRate({
+-                from: controller_utils_1.FALL_BACK_VS_CURRENCY,
+-                to: nativeCurrency,
+-            }),
+-        ]);
+-        if (fallbackCurrencyToNativeCurrencyConversionRate === null) {
+-            return {};
++        contractNativeInformations = {
++          [ZERO_ADDRESS]: {
++            currency: nativeCurrency,
++            priceChange1d:
++              contractNativeInformationsNative?.priceChange1d[ZERO_ADDRESS],
++            pricePercentChange1d:
++              contractNativeInformationsNative?.contractPercentChange1d[
++                ZERO_ADDRESS
++              ],
++            tokenAddress: ZERO_ADDRESS,
++            value:
++              contractNativeInformationsNative?.contractExchangeRates[
++                ZERO_ADDRESS
++              ],
++          },
++        };
++      }
++      return Object.entries(contractNativeInformations).reduce(
++        (obj, [tokenAddress, tokenPrice]) => {
++          obj.contractExchangeRates = {
++            ...obj.contractExchangeRates,
++            [tokenAddress.toLowerCase()]: tokenPrice?.value,
++          };
++          obj.contractPercentChange1d = {
++            ...obj.contractPercentChange1d,
++            [tokenAddress.toLowerCase()]: tokenPrice?.pricePercentChange1d,
++          };
++          obj.priceChange1d = {
++            ...obj.priceChange1d,
++            [tokenAddress.toLowerCase()]: tokenPrice?.priceChange1d,
++          };
++          return obj;
++        },
++        {
++          contractExchangeRates: {},
++          contractPercentChange1d: {},
++          priceChange1d: {},
+         }
+-        return Object.entries(contractExchangeRates).reduce((obj, [tokenAddress, tokenValue]) => {
+-            return Object.assign(Object.assign({}, obj), { [tokenAddress]: tokenValue
+-                    ? tokenValue * fallbackCurrencyToNativeCurrencyConversionRate
+-                    : undefined });
+-        }, {});
++      );
++    }),
++  (_TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency =
++    /**
++     * If the price API does not support a given native currency, then we need to
++     * convert it to a fallback currency and feed that currency into the price
++     * API, then convert the prices to our desired native currency.
++     *
++     * @param args - The arguments to this function.
++     * @param args.tokenAddresses - Addresses for tokens.
++     * @param args.nativeCurrency - The native currency in which to request
++     * prices.
++     * @returns A map of the token addresses (as checksums) to their prices in the
++     * native currency.
++     */
++    async function _TokenRatesController_fetchAndMapExchangeRatesForUnsupportedNativeCurrency({
++      tokenAddresses,
++      nativeCurrency,
++    }) {
++      const [
++        contractExchangeInformations,
++        fallbackCurrencyToNativeCurrencyConversionRate,
++      ] = await Promise.all([
++        __classPrivateFieldGet(
++          this,
++          _TokenRatesController_instances,
++          "m",
++          _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency
++        ).call(this, {
++          tokenAddresses,
++          chainId: this.config.chainId,
++          nativeCurrency: controller_utils_1.FALL_BACK_VS_CURRENCY,
++        }),
++        getCurrencyConversionRate({
++          from: controller_utils_1.FALL_BACK_VS_CURRENCY,
++          to: nativeCurrency,
++        }),
++      ]);
++      if (fallbackCurrencyToNativeCurrencyConversionRate === null) {
++        return {
++          contractExchangeRates: {},
++          contractPercentChange1d: {},
++          priceChange1d: {},
++        };
++      }
++      const updatedContractExchangeRates = Object.entries(
++        contractExchangeInformations.contractExchangeRates
++      ).reduce((obj, [tokenAddress, tokenValue]) => {
++        return {
++          ...obj,
++          [tokenAddress]: tokenValue
++            ? tokenValue * fallbackCurrencyToNativeCurrencyConversionRate
++            : undefined,
++        };
++      }, {});
++      // Update the original object
++      contractExchangeInformations.contractExchangeRates =
++        updatedContractExchangeRates;
++      return contractExchangeInformations;
+     });
+-};
+ exports.default = TokenRatesController;
+-//# sourceMappingURL=TokenRatesController.js.map
+\ No newline at end of file
+diff --git a/dist/token-prices-service/codefi-v2.d.ts b/dist/token-prices-service/codefi-v2.d.ts
+index 323286a4ba2c54e2dac0f1a7da08335b2ae77322..f7023e11b5f6e86555a6945044134ed95ccd62a1 100644
+--- a/dist/token-prices-service/codefi-v2.d.ts
++++ b/dist/token-prices-service/codefi-v2.d.ts
+@@ -1,89 +1,204 @@
+-import type { Hex } from '@metamask/utils';
+-import type { AbstractTokenPricesService, TokenPricesByTokenAddress } from './abstract-token-prices-service';
++import type { Hex } from "@metamask/utils";
++import type {
++  AbstractTokenPricesService,
++  TokenPricesByTokenAddress,
++} from "./abstract-token-prices-service";
+ /**
+  * The list of currencies that can be supplied as the `vsCurrency` parameter to
+  * the `/spot-prices` endpoint, in lowercase form.
+  */
+-export declare const SUPPORTED_CURRENCIES: readonly ["btc", "eth", "ltc", "bch", "bnb", "eos", "xrp", "xlm", "link", "dot", "yfi", "usd", "aed", "ars", "aud", "bdt", "bhd", "bmd", "brl", "cad", "chf", "clp", "cny", "czk", "dkk", "eur", "gbp", "hkd", "huf", "idr", "ils", "inr", "jpy", "krw", "kwd", "lkr", "mmk", "mxn", "myr", "ngn", "nok", "nzd", "php", "pkr", "pln", "rub", "sar", "sek", "sgd", "thb", "try", "twd", "uah", "vef", "vnd", "zar", "xdr", "xag", "xau", "bits", "sats"];
++export declare const SUPPORTED_CURRENCIES: readonly [
++  "btc",
++  "eth",
++  "ltc",
++  "bch",
++  "bnb",
++  "eos",
++  "xrp",
++  "xlm",
++  "link",
++  "dot",
++  "yfi",
++  "usd",
++  "aed",
++  "ars",
++  "aud",
++  "bdt",
++  "bhd",
++  "bmd",
++  "brl",
++  "cad",
++  "chf",
++  "clp",
++  "cny",
++  "czk",
++  "dkk",
++  "eur",
++  "gbp",
++  "hkd",
++  "huf",
++  "idr",
++  "ils",
++  "inr",
++  "jpy",
++  "krw",
++  "kwd",
++  "lkr",
++  "mmk",
++  "mxn",
++  "myr",
++  "ngn",
++  "nok",
++  "nzd",
++  "php",
++  "pkr",
++  "pln",
++  "rub",
++  "sar",
++  "sek",
++  "sgd",
++  "thb",
++  "try",
++  "twd",
++  "uah",
++  "vef",
++  "vnd",
++  "zar",
++  "xdr",
++  "xag",
++  "xau",
++  "bits",
++  "sats"
++];
+ /**
+  * A currency that can be supplied as the `vsCurrency` parameter to
+  * the `/spot-prices` endpoint. Covers both uppercase and lowercase versions.
+  */
+-declare type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number] | Uppercase<(typeof SUPPORTED_CURRENCIES)[number]>;
++type SupportedCurrency =
++  | (typeof SUPPORTED_CURRENCIES)[number]
++  | Uppercase<(typeof SUPPORTED_CURRENCIES)[number]>;
+ /**
+  * The list of chain IDs that can be supplied in the URL for the `/spot-prices`
+  * endpoint, but in hexadecimal form (for consistency with how we represent
+  * chain IDs in other places).
++ * @see Used by {@link CodefiTokenPricesServiceV2} to validate that a given chain ID is supported by V2 of the Codefi Price API.
+  */
+-export declare const SUPPORTED_CHAIN_IDS: readonly ["0x1", "0xa", "0x19", "0x38", "0x39", "0x42", "0x46", "0x52", "0x58", "0x64", "0x6a", "0x7a", "0x80", "0x89", "0xfa", "0x120", "0x141", "0x144", "0x169", "0x440", "0x504", "0x505", "0x2105", "0x150", "0x2710", "0xa4b1", "0xa4ec", "0xa516", "0xa86a", "0x518af", "0x4e454152", "0x63564c40", "0xe708"];
++export declare const SUPPORTED_CHAIN_IDS: readonly [
++  "0x1",
++  "0xa",
++  "0x19",
++  "0x38",
++  "0x39",
++  "0x42",
++  "0x46",
++  "0x52",
++  "0x58",
++  "0x64",
++  "0x6a",
++  "0x7a",
++  "0x80",
++  "0x89",
++  "0xfa",
++  "0x120",
++  "0x141",
++  "0x144",
++  "0x169",
++  "0x440",
++  "0x504",
++  "0x505",
++  "0x2105",
++  "0x150",
++  "0x2710",
++  "0xa4b1",
++  "0xa4ec",
++  "0xa516",
++  "0xa86a",
++  "0x518af",
++  "0x4e454152",
++  "0x63564c40",
++  "0xe708"
++];
+ /**
+  * A chain ID that can be supplied in the URL for the `/spot-prices` endpoint,
+  * but in hexadecimal form (for consistency with how we represent chain IDs in
+  * other places).
+  */
+-declare type SupportedChainId = (typeof SUPPORTED_CHAIN_IDS)[number];
++type SupportedChainId = (typeof SUPPORTED_CHAIN_IDS)[number];
+ /**
+  * This version of the token prices service uses V2 of the Codefi Price API to
+  * fetch token prices.
+  */
+-export declare class CodefiTokenPricesServiceV2 implements AbstractTokenPricesService<SupportedChainId, Hex, SupportedCurrency> {
+-    #private;
+-    /**
+-     * Construct a Codefi Token Price Service.
+-     *
+-     * @param options - Constructor options
+-     * @param options.degradedThreshold - The threshold between "normal" and "degrated" service,
+-     * in milliseconds.
+-     * @param options.retries - Number of retry attempts for each token price update.
+-     * @param options.maximumConsecutiveFailures - The maximum number of consecutive failures
+-     * allowed before breaking the circuit and pausing further updates.
+-     * @param options.onBreak - An event handler for when the circuit breaks, useful for capturing
+-     * metrics about network failures.
+-     * @param options.onDegraded - An event handler for when the circuit remains closed, but requests
+-     * are failing or resolving too slowly (i.e. resolving more slowly than the `degradedThreshold).
+-     * @param options.circuitBreakDuration - The amount of time to wait when the circuit breaks
+-     * from too many consecutive failures.
+-     */
+-    constructor({ degradedThreshold, retries, maximumConsecutiveFailures, onBreak, onDegraded, circuitBreakDuration, }?: {
+-        degradedThreshold?: number;
+-        retries?: number;
+-        maximumConsecutiveFailures?: number;
+-        onBreak?: () => void;
+-        onDegraded?: () => void;
+-        circuitBreakDuration?: number;
+-    });
+-    /**
+-     * Retrieves prices in the given currency for the tokens identified by the
+-     * given addresses which are expected to live on the given chain.
+-     *
+-     * @param args - The arguments to function.
+-     * @param args.chainId - An EIP-155 chain ID.
+-     * @param args.tokenAddresses - Addresses for tokens that live on the chain.
+-     * @param args.currency - The desired currency of the token prices.
+-     * @returns The prices for the requested tokens.
+-     */
+-    fetchTokenPrices({ chainId, tokenAddresses, currency, }: {
+-        chainId: SupportedChainId;
+-        tokenAddresses: Hex[];
+-        currency: SupportedCurrency;
+-    }): Promise<Partial<TokenPricesByTokenAddress<Hex, SupportedCurrency>>>;
+-    /**
+-     * Type guard for whether the API can return token prices for the given chain
+-     * ID.
+-     *
+-     * @param chainId - The chain ID to check.
+-     * @returns True if the API supports the chain ID, false otherwise.
+-     */
+-    validateChainIdSupported(chainId: unknown): chainId is SupportedChainId;
+-    /**
+-     * Type guard for whether the API can return token prices in the given
+-     * currency.
+-     *
+-     * @param currency - The currency to check. If a string, can be either
+-     * lowercase or uppercase.
+-     * @returns True if the API supports the currency, false otherwise.
+-     */
+-    validateCurrencySupported(currency: unknown): currency is SupportedCurrency;
++export declare class CodefiTokenPricesServiceV2
++  implements
++    AbstractTokenPricesService<SupportedChainId, Hex, SupportedCurrency>
++{
++  #private;
++  /**
++   * Construct a Codefi Token Price Service.
++   *
++   * @param options - Constructor options
++   * @param options.degradedThreshold - The threshold between "normal" and "degrated" service,
++   * in milliseconds.
++   * @param options.retries - Number of retry attempts for each token price update.
++   * @param options.maximumConsecutiveFailures - The maximum number of consecutive failures
++   * allowed before breaking the circuit and pausing further updates.
++   * @param options.onBreak - An event handler for when the circuit breaks, useful for capturing
++   * metrics about network failures.
++   * @param options.onDegraded - An event handler for when the circuit remains closed, but requests
++   * are failing or resolving too slowly (i.e. resolving more slowly than the `degradedThreshold).
++   * @param options.circuitBreakDuration - The amount of time to wait when the circuit breaks
++   * from too many consecutive failures.
++   */
++  constructor({
++    degradedThreshold,
++    retries,
++    maximumConsecutiveFailures,
++    onBreak,
++    onDegraded,
++    circuitBreakDuration,
++  }?: {
++    degradedThreshold?: number;
++    retries?: number;
++    maximumConsecutiveFailures?: number;
++    onBreak?: () => void;
++    onDegraded?: () => void;
++    circuitBreakDuration?: number;
++  });
++  /**
++   * Retrieves prices in the given currency for the tokens identified by the
++   * given addresses which are expected to live on the given chain.
++   *
++   * @param args - The arguments to function.
++   * @param args.chainId - An EIP-155 chain ID.
++   * @param args.tokenAddresses - Addresses for tokens that live on the chain.
++   * @param args.currency - The desired currency of the token prices.
++   * @returns The prices for the requested tokens.
++   */
++  fetchTokenPrices({
++    chainId,
++    tokenAddresses,
++    currency,
++  }: {
++    chainId: SupportedChainId;
++    tokenAddresses: Hex[];
++    currency: SupportedCurrency;
++  }): Promise<Partial<TokenPricesByTokenAddress<Hex, SupportedCurrency>>>;
++  /**
++   * Type guard for whether the API can return token prices for the given chain
++   * ID.
++   *
++   * @param chainId - The chain ID to check.
++   * @returns True if the API supports the chain ID, false otherwise.
++   */
++  validateChainIdSupported(chainId: unknown): chainId is SupportedChainId;
++  /**
++   * Type guard for whether the API can return token prices in the given
++   * currency.
++   *
++   * @param currency - The currency to check. If a string, can be either
++   * lowercase or uppercase.
++   * @returns True if the API supports the currency, false otherwise.
++   */
++  validateCurrencySupported(currency: unknown): currency is SupportedCurrency;
+ }
+ export {};
+-//# sourceMappingURL=codefi-v2.d.ts.map
+\ No newline at end of file
+diff --git a/dist/token-prices-service/codefi-v2.js b/dist/token-prices-service/codefi-v2.js
+index 4203923f591c318041027904e5130972580f6f73..3285af35a252a573a57366d274f5e4a77c03e83b 100644
+--- a/dist/token-prices-service/codefi-v2.js
++++ b/dist/token-prices-service/codefi-v2.js
+@@ -1,27 +1,54 @@
+ "use strict";
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+-    return new (P || (P = Promise))(function (resolve, reject) {
+-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+-    });
+-};
+-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
++var __classPrivateFieldSet =
++  (this && this.__classPrivateFieldSet) ||
++  function (receiver, state, value, kind, f) {
+     if (kind === "m") throw new TypeError("Private method is not writable");
+-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+-};
+-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+-};
++    if (kind === "a" && !f)
++      throw new TypeError("Private accessor was defined without a setter");
++    if (
++      typeof state === "function"
++        ? receiver !== state || !f
++        : !state.has(receiver)
++    )
++      throw new TypeError(
++        "Cannot write private member to an object whose class did not declare it"
++      );
++    return (
++      kind === "a"
++        ? f.call(receiver, value)
++        : f
++        ? (f.value = value)
++        : state.set(receiver, value),
++      value
++    );
++  };
++var __classPrivateFieldGet =
++  (this && this.__classPrivateFieldGet) ||
++  function (receiver, state, kind, f) {
++    if (kind === "a" && !f)
++      throw new TypeError("Private accessor was defined without a getter");
++    if (
++      typeof state === "function"
++        ? receiver !== state || !f
++        : !state.has(receiver)
++    )
++      throw new TypeError(
++        "Cannot read private member from an object whose class did not declare it"
++      );
++    return kind === "m"
++      ? f
++      : kind === "a"
++      ? f.call(receiver)
++      : f
++      ? f.value
++      : state.get(receiver);
++  };
+ var _CodefiTokenPricesServiceV2_tokenPricePolicy;
+ Object.defineProperty(exports, "__esModule", { value: true });
+-exports.CodefiTokenPricesServiceV2 = exports.SUPPORTED_CHAIN_IDS = exports.SUPPORTED_CURRENCIES = void 0;
++exports.CodefiTokenPricesServiceV2 =
++  exports.SUPPORTED_CHAIN_IDS =
++  exports.SUPPORTED_CURRENCIES =
++    void 0;
+ const controller_utils_1 = require("@metamask/controller-utils");
+ const utils_1 = require("@metamask/utils");
+ const cockatiel_1 = require("cockatiel");
+@@ -30,325 +57,367 @@ const cockatiel_1 = require("cockatiel");
+  * the `/spot-prices` endpoint, in lowercase form.
+  */
+ exports.SUPPORTED_CURRENCIES = [
+-    // Bitcoin
+-    'btc',
+-    // Ether
+-    'eth',
+-    // Litecoin
+-    'ltc',
+-    // Bitcoin Cash
+-    'bch',
+-    // Binance Coin
+-    'bnb',
+-    // EOS
+-    'eos',
+-    // XRP
+-    'xrp',
+-    // Lumens
+-    'xlm',
+-    // Chainlink
+-    'link',
+-    // Polkadot
+-    'dot',
+-    // Yearn.finance
+-    'yfi',
+-    // US Dollar
+-    'usd',
+-    // United Arab Emirates Dirham
+-    'aed',
+-    // Argentine Peso
+-    'ars',
+-    // Australian Dollar
+-    'aud',
+-    // Bangladeshi Taka
+-    'bdt',
+-    // Bahraini Dinar
+-    'bhd',
+-    // Bermudian Dollar
+-    'bmd',
+-    // Brazil Real
+-    'brl',
+-    // Canadian Dollar
+-    'cad',
+-    // Swiss Franc
+-    'chf',
+-    // Chilean Peso
+-    'clp',
+-    // Chinese Yuan
+-    'cny',
+-    // Czech Koruna
+-    'czk',
+-    // Danish Krone
+-    'dkk',
+-    // Euro
+-    'eur',
+-    // British Pound Sterling
+-    'gbp',
+-    // Hong Kong Dollar
+-    'hkd',
+-    // Hungarian Forint
+-    'huf',
+-    // Indonesian Rupiah
+-    'idr',
+-    // Israeli New Shekel
+-    'ils',
+-    // Indian Rupee
+-    'inr',
+-    // Japanese Yen
+-    'jpy',
+-    // South Korean Won
+-    'krw',
+-    // Kuwaiti Dinar
+-    'kwd',
+-    // Sri Lankan Rupee
+-    'lkr',
+-    // Burmese Kyat
+-    'mmk',
+-    // Mexican Peso
+-    'mxn',
+-    // Malaysian Ringgit
+-    'myr',
+-    // Nigerian Naira
+-    'ngn',
+-    // Norwegian Krone
+-    'nok',
+-    // New Zealand Dollar
+-    'nzd',
+-    // Philippine Peso
+-    'php',
+-    // Pakistani Rupee
+-    'pkr',
+-    // Polish Zloty
+-    'pln',
+-    // Russian Ruble
+-    'rub',
+-    // Saudi Riyal
+-    'sar',
+-    // Swedish Krona
+-    'sek',
+-    // Singapore Dollar
+-    'sgd',
+-    // Thai Baht
+-    'thb',
+-    // Turkish Lira
+-    'try',
+-    // New Taiwan Dollar
+-    'twd',
+-    // Ukrainian hryvnia
+-    'uah',
+-    // Venezuelan bolívar fuerte
+-    'vef',
+-    // Vietnamese đồng
+-    'vnd',
+-    // South African Rand
+-    'zar',
+-    // IMF Special Drawing Rights
+-    'xdr',
+-    // Silver - Troy Ounce
+-    'xag',
+-    // Gold - Troy Ounce
+-    'xau',
+-    // Bits
+-    'bits',
+-    // Satoshi
+-    'sats',
++  // Bitcoin
++  "btc",
++  // Ether
++  "eth",
++  // Litecoin
++  "ltc",
++  // Bitcoin Cash
++  "bch",
++  // Binance Coin
++  "bnb",
++  // EOS
++  "eos",
++  // XRP
++  "xrp",
++  // Lumens
++  "xlm",
++  // Chainlink
++  "link",
++  // Polkadot
++  "dot",
++  // Yearn.finance
++  "yfi",
++  // US Dollar
++  "usd",
++  // United Arab Emirates Dirham
++  "aed",
++  // Argentine Peso
++  "ars",
++  // Australian Dollar
++  "aud",
++  // Bangladeshi Taka
++  "bdt",
++  // Bahraini Dinar
++  "bhd",
++  // Bermudian Dollar
++  "bmd",
++  // Brazil Real
++  "brl",
++  // Canadian Dollar
++  "cad",
++  // Swiss Franc
++  "chf",
++  // Chilean Peso
++  "clp",
++  // Chinese Yuan
++  "cny",
++  // Czech Koruna
++  "czk",
++  // Danish Krone
++  "dkk",
++  // Euro
++  "eur",
++  // British Pound Sterling
++  "gbp",
++  // Hong Kong Dollar
++  "hkd",
++  // Hungarian Forint
++  "huf",
++  // Indonesian Rupiah
++  "idr",
++  // Israeli New Shekel
++  "ils",
++  // Indian Rupee
++  "inr",
++  // Japanese Yen
++  "jpy",
++  // South Korean Won
++  "krw",
++  // Kuwaiti Dinar
++  "kwd",
++  // Sri Lankan Rupee
++  "lkr",
++  // Burmese Kyat
++  "mmk",
++  // Mexican Peso
++  "mxn",
++  // Malaysian Ringgit
++  "myr",
++  // Nigerian Naira
++  "ngn",
++  // Norwegian Krone
++  "nok",
++  // New Zealand Dollar
++  "nzd",
++  // Philippine Peso
++  "php",
++  // Pakistani Rupee
++  "pkr",
++  // Polish Zloty
++  "pln",
++  // Russian Ruble
++  "rub",
++  // Saudi Riyal
++  "sar",
++  // Swedish Krona
++  "sek",
++  // Singapore Dollar
++  "sgd",
++  // Thai Baht
++  "thb",
++  // Turkish Lira
++  "try",
++  // New Taiwan Dollar
++  "twd",
++  // Ukrainian hryvnia
++  "uah",
++  // Venezuelan bolívar fuerte
++  "vef",
++  // Vietnamese đồng
++  "vnd",
++  // South African Rand
++  "zar",
++  // IMF Special Drawing Rights
++  "xdr",
++  // Silver - Troy Ounce
++  "xag",
++  // Gold - Troy Ounce
++  "xau",
++  // Bits
++  "bits",
++  // Satoshi
++  "sats",
+ ];
+ /**
+  * The list of chain IDs that can be supplied in the URL for the `/spot-prices`
+  * endpoint, but in hexadecimal form (for consistency with how we represent
+  * chain IDs in other places).
++ * @see Used by {@link CodefiTokenPricesServiceV2} to validate that a given chain ID is supported by V2 of the Codefi Price API.
+  */
+ exports.SUPPORTED_CHAIN_IDS = [
+-    // Ethereum Mainnet
+-    '0x1',
+-    // OP Mainnet
+-    '0xa',
+-    // Cronos Mainnet
+-    '0x19',
+-    // BNB Smart Chain Mainnet
+-    '0x38',
+-    // Syscoin Mainnet
+-    '0x39',
+-    // OKXChain Mainnet
+-    '0x42',
+-    // Hoo Smart Chain
+-    '0x46',
+-    // Meter Mainnet
+-    '0x52',
+-    // TomoChain
+-    '0x58',
+-    // Gnosis
+-    '0x64',
+-    // Velas EVM Mainnet
+-    '0x6a',
+-    // Fuse Mainnet
+-    '0x7a',
+-    // Huobi ECO Chain Mainnet
+-    '0x80',
+-    // Polygon Mainnet
+-    '0x89',
+-    // Fantom Opera
+-    '0xfa',
+-    // Boba Network
+-    '0x120',
+-    // KCC Mainnet
+-    '0x141',
+-    // zkSync Era Mainnet
+-    '0x144',
+-    // Theta Mainnet
+-    '0x169',
+-    // Metis Andromeda Mainnet
+-    '0x440',
+-    // Moonbeam
+-    '0x504',
+-    // Moonriver
+-    '0x505',
+-    // Base
+-    '0x2105',
+-    // Shiden
+-    '0x150',
+-    // Smart Bitcoin Cash
+-    '0x2710',
+-    // Arbitrum One
+-    '0xa4b1',
+-    // Celo Mainnet
+-    '0xa4ec',
+-    // Oasis Emerald
+-    '0xa516',
+-    // Avalanche C-Chain
+-    '0xa86a',
+-    // Polis Mainnet
+-    '0x518af',
+-    // Aurora Mainnet
+-    '0x4e454152',
+-    // Harmony Mainnet Shard 0
+-    '0x63564c40',
+-    // Linea Mainnet
+-    '0xe708',
++  // Ethereum Mainnet
++  "0x1",
++  // OP Mainnet
++  "0xa",
++  // Cronos Mainnet
++  "0x19",
++  // BNB Smart Chain Mainnet
++  "0x38",
++  // Syscoin Mainnet
++  "0x39",
++  // OKXChain Mainnet
++  "0x42",
++  // Hoo Smart Chain
++  "0x46",
++  // Meter Mainnet
++  "0x52",
++  // TomoChain
++  "0x58",
++  // Gnosis
++  "0x64",
++  // Velas EVM Mainnet
++  "0x6a",
++  // Fuse Mainnet
++  "0x7a",
++  // Huobi ECO Chain Mainnet
++  "0x80",
++  // Polygon Mainnet
++  "0x89",
++  // Fantom Opera
++  "0xfa",
++  // Boba Network
++  "0x120",
++  // KCC Mainnet
++  "0x141",
++  // zkSync Era Mainnet
++  "0x144",
++  // Theta Mainnet
++  "0x169",
++  // Metis Andromeda Mainnet
++  "0x440",
++  // Moonbeam
++  "0x504",
++  // Moonriver
++  "0x505",
++  // Base
++  "0x2105",
++  // Shiden
++  "0x150",
++  // Smart Bitcoin Cash
++  "0x2710",
++  // Arbitrum One
++  "0xa4b1",
++  // Celo Mainnet
++  "0xa4ec",
++  // Oasis Emerald
++  "0xa516",
++  // Avalanche C-Chain
++  "0xa86a",
++  // Polis Mainnet
++  "0x518af",
++  // Aurora Mainnet
++  "0x4e454152",
++  // Harmony Mainnet Shard 0
++  "0x63564c40",
++  // Linea Mainnet
++  "0xe708",
+ ];
+ /**
+  * All requests to V2 of the Price API start with this.
+  */
+-const BASE_URL = 'https://price-api.metafi.codefi.network/v2';
++const BASE_URL = "https://price-api.metafi.codefi.network/v2";
+ const DEFAULT_TOKEN_PRICE_RETRIES = 3;
+ // Each update attempt will result (1 + retries) calls if the server is down
+-const DEFAULT_TOKEN_PRICE_MAX_CONSECUTIVE_FAILURES = (1 + DEFAULT_TOKEN_PRICE_RETRIES) * 3;
++const DEFAULT_TOKEN_PRICE_MAX_CONSECUTIVE_FAILURES =
++  (1 + DEFAULT_TOKEN_PRICE_RETRIES) * 3;
+ const DEFAULT_DEGRADED_THRESHOLD = 5000;
+ /**
+  * This version of the token prices service uses V2 of the Codefi Price API to
+  * fetch token prices.
+  */
+ class CodefiTokenPricesServiceV2 {
+-    /**
+-     * Construct a Codefi Token Price Service.
+-     *
+-     * @param options - Constructor options
+-     * @param options.degradedThreshold - The threshold between "normal" and "degrated" service,
+-     * in milliseconds.
+-     * @param options.retries - Number of retry attempts for each token price update.
+-     * @param options.maximumConsecutiveFailures - The maximum number of consecutive failures
+-     * allowed before breaking the circuit and pausing further updates.
+-     * @param options.onBreak - An event handler for when the circuit breaks, useful for capturing
+-     * metrics about network failures.
+-     * @param options.onDegraded - An event handler for when the circuit remains closed, but requests
+-     * are failing or resolving too slowly (i.e. resolving more slowly than the `degradedThreshold).
+-     * @param options.circuitBreakDuration - The amount of time to wait when the circuit breaks
+-     * from too many consecutive failures.
+-     */
+-    constructor({ degradedThreshold = DEFAULT_DEGRADED_THRESHOLD, retries = DEFAULT_TOKEN_PRICE_RETRIES, maximumConsecutiveFailures = DEFAULT_TOKEN_PRICE_MAX_CONSECUTIVE_FAILURES, onBreak, onDegraded, circuitBreakDuration = 30 * 60 * 1000, } = {}) {
+-        _CodefiTokenPricesServiceV2_tokenPricePolicy.set(this, void 0);
+-        // Construct a policy that will retry each update, and halt further updates
+-        // for a certain period after too many consecutive failures.
+-        const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, {
+-            maxAttempts: retries,
+-            backoff: new cockatiel_1.ExponentialBackoff(),
+-        });
+-        const circuitBreakerPolicy = (0, cockatiel_1.circuitBreaker)(cockatiel_1.handleAll, {
+-            halfOpenAfter: circuitBreakDuration,
+-            breaker: new cockatiel_1.ConsecutiveBreaker(maximumConsecutiveFailures),
+-        });
+-        if (onBreak) {
+-            circuitBreakerPolicy.onBreak(onBreak);
++  /**
++   * Construct a Codefi Token Price Service.
++   *
++   * @param options - Constructor options
++   * @param options.degradedThreshold - The threshold between "normal" and "degrated" service,
++   * in milliseconds.
++   * @param options.retries - Number of retry attempts for each token price update.
++   * @param options.maximumConsecutiveFailures - The maximum number of consecutive failures
++   * allowed before breaking the circuit and pausing further updates.
++   * @param options.onBreak - An event handler for when the circuit breaks, useful for capturing
++   * metrics about network failures.
++   * @param options.onDegraded - An event handler for when the circuit remains closed, but requests
++   * are failing or resolving too slowly (i.e. resolving more slowly than the `degradedThreshold).
++   * @param options.circuitBreakDuration - The amount of time to wait when the circuit breaks
++   * from too many consecutive failures.
++   */
++  constructor({
++    degradedThreshold = DEFAULT_DEGRADED_THRESHOLD,
++    retries = DEFAULT_TOKEN_PRICE_RETRIES,
++    maximumConsecutiveFailures = DEFAULT_TOKEN_PRICE_MAX_CONSECUTIVE_FAILURES,
++    onBreak,
++    onDegraded,
++    circuitBreakDuration = 30 * 60 * 1000,
++  } = {}) {
++    _CodefiTokenPricesServiceV2_tokenPricePolicy.set(this, void 0);
++    // Construct a policy that will retry each update, and halt further updates
++    // for a certain period after too many consecutive failures.
++    const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, {
++      maxAttempts: retries,
++      backoff: new cockatiel_1.ExponentialBackoff(),
++    });
++    const circuitBreakerPolicy = (0, cockatiel_1.circuitBreaker)(
++      cockatiel_1.handleAll,
++      {
++        halfOpenAfter: circuitBreakDuration,
++        breaker: new cockatiel_1.ConsecutiveBreaker(maximumConsecutiveFailures),
++      }
++    );
++    if (onBreak) {
++      circuitBreakerPolicy.onBreak(onBreak);
++    }
++    if (onDegraded) {
++      retryPolicy.onGiveUp(() => {
++        if (circuitBreakerPolicy.state === cockatiel_1.CircuitState.Closed) {
++          onDegraded();
+         }
+-        if (onDegraded) {
+-            retryPolicy.onGiveUp(() => {
+-                if (circuitBreakerPolicy.state === cockatiel_1.CircuitState.Closed) {
+-                    onDegraded();
+-                }
+-            });
+-            retryPolicy.onSuccess(({ duration }) => {
+-                if (circuitBreakerPolicy.state === cockatiel_1.CircuitState.Closed &&
+-                    duration > degradedThreshold) {
+-                    onDegraded();
+-                }
+-            });
++      });
++      retryPolicy.onSuccess(({ duration }) => {
++        if (
++          circuitBreakerPolicy.state === cockatiel_1.CircuitState.Closed &&
++          duration > degradedThreshold
++        ) {
++          onDegraded();
+         }
+-        __classPrivateFieldSet(this, _CodefiTokenPricesServiceV2_tokenPricePolicy, (0, cockatiel_1.wrap)(retryPolicy, circuitBreakerPolicy), "f");
+-    }
+-    /**
+-     * Retrieves prices in the given currency for the tokens identified by the
+-     * given addresses which are expected to live on the given chain.
+-     *
+-     * @param args - The arguments to function.
+-     * @param args.chainId - An EIP-155 chain ID.
+-     * @param args.tokenAddresses - Addresses for tokens that live on the chain.
+-     * @param args.currency - The desired currency of the token prices.
+-     * @returns The prices for the requested tokens.
+-     */
+-    fetchTokenPrices({ chainId, tokenAddresses, currency, }) {
+-        return __awaiter(this, void 0, void 0, function* () {
+-            const chainIdAsNumber = (0, utils_1.hexToNumber)(chainId);
+-            const url = new URL(`${BASE_URL}/chains/${chainIdAsNumber}/spot-prices`);
+-            url.searchParams.append('tokenAddresses', tokenAddresses.join(','));
+-            url.searchParams.append('vsCurrency', currency);
+-            const pricesByCurrencyByTokenAddress = yield __classPrivateFieldGet(this, _CodefiTokenPricesServiceV2_tokenPricePolicy, "f").execute(() => (0, controller_utils_1.handleFetch)(url, { headers: { 'Cache-Control': 'no-cache' } }));
+-            return tokenAddresses.reduce((obj, tokenAddress) => {
+-                var _a;
+-                // The Price API lowercases both currency and token addresses, so we have
+-                // to keep track of them and make sure we return the original versions.
+-                const lowercasedTokenAddress = tokenAddress.toLowerCase();
+-                const lowercasedCurrency = currency.toLowerCase();
+-                const price = (_a = pricesByCurrencyByTokenAddress[lowercasedTokenAddress]) === null || _a === void 0 ? void 0 : _a[lowercasedCurrency];
+-                if (!price) {
+-                    // console error instead of throwing to not interrupt the fetching of other tokens in case just one fails
+-                    console.error(`Could not find price for "${tokenAddress}" in "${currency}"`);
+-                }
+-                const tokenPrice = {
+-                    tokenAddress,
+-                    value: price,
+-                    currency,
+-                };
+-                return Object.assign(Object.assign({}, obj), (tokenPrice.value !== undefined
+-                    ? { [tokenAddress]: tokenPrice }
+-                    : {}));
+-            }, {});
+-        });
+-    }
+-    /**
+-     * Type guard for whether the API can return token prices for the given chain
+-     * ID.
+-     *
+-     * @param chainId - The chain ID to check.
+-     * @returns True if the API supports the chain ID, false otherwise.
+-     */
+-    validateChainIdSupported(chainId) {
+-        const supportedChainIds = exports.SUPPORTED_CHAIN_IDS;
+-        return typeof chainId === 'string' && supportedChainIds.includes(chainId);
+-    }
+-    /**
+-     * Type guard for whether the API can return token prices in the given
+-     * currency.
+-     *
+-     * @param currency - The currency to check. If a string, can be either
+-     * lowercase or uppercase.
+-     * @returns True if the API supports the currency, false otherwise.
+-     */
+-    validateCurrencySupported(currency) {
+-        const supportedCurrencies = exports.SUPPORTED_CURRENCIES;
+-        return (typeof currency === 'string' &&
+-            supportedCurrencies.includes(currency.toLowerCase()));
++      });
+     }
++    __classPrivateFieldSet(
++      this,
++      _CodefiTokenPricesServiceV2_tokenPricePolicy,
++      (0, cockatiel_1.wrap)(retryPolicy, circuitBreakerPolicy),
++      "f"
++    );
++  }
++  /**
++   * Retrieves prices in the given currency for the tokens identified by the
++   * given addresses which are expected to live on the given chain.
++   *
++   * @param args - The arguments to function.
++   * @param args.chainId - An EIP-155 chain ID.
++   * @param args.tokenAddresses - Addresses for tokens that live on the chain.
++   * @param args.currency - The desired currency of the token prices.
++   * @returns The prices for the requested tokens.
++   */
++  async fetchTokenPrices({ chainId, tokenAddresses, currency }) {
++    const chainIdAsNumber = (0, utils_1.hexToNumber)(chainId);
++    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
++    const url = new URL(`${BASE_URL}/chains/${chainIdAsNumber}/spot-prices`);
++    url.searchParams.append(
++      "tokenAddresses",
++      [ZERO_ADDRESS, ...tokenAddresses].join(",")
++    );
++    url.searchParams.append("vsCurrency", currency);
++    url.searchParams.append("includeMarketData", "true");
++    const pricesByCurrencyByTokenAddress = await __classPrivateFieldGet(
++      this,
++      _CodefiTokenPricesServiceV2_tokenPricePolicy,
++      "f"
++    ).execute(() =>
++      (0, controller_utils_1.handleFetch)(url, {
++        headers: { "Cache-Control": "no-cache" },
++      })
++    );
++    return [ZERO_ADDRESS, ...tokenAddresses].reduce((obj, tokenAddress) => {
++      // The Price API lowercases both currency and token addresses, so we have
++      // to keep track of them and make sure we return the original versions.
++      const lowercasedTokenAddress = tokenAddress.toLowerCase();
++      const price =
++        pricesByCurrencyByTokenAddress[lowercasedTokenAddress]?.price;
++      const pricePercentChange1d =
++        pricesByCurrencyByTokenAddress[lowercasedTokenAddress]
++          ?.pricePercentChange1d;
++      const priceChange1d =
++        pricesByCurrencyByTokenAddress[lowercasedTokenAddress]?.priceChange1d;
++      if (!price) {
++        // console error instead of throwing to not interrupt the fetching of other tokens in case just one fails
++        console.error(
++          `Could not find price for "${tokenAddress}" in "${currency}"`
++        );
++      }
++      const tokenPrice = {
++        tokenAddress,
++        value: price,
++        currency,
++        pricePercentChange1d,
++        priceChange1d,
++      };
++      return {
++        ...obj,
++        ...(tokenPrice.value !== undefined
++          ? { [tokenAddress]: tokenPrice }
++          : {}),
++      };
++    }, {});
++  }
++  /**
++   * Type guard for whether the API can return token prices for the given chain
++   * ID.
++   *
++   * @param chainId - The chain ID to check.
++   * @returns True if the API supports the chain ID, false otherwise.
++   */
++  validateChainIdSupported(chainId) {
++    const supportedChainIds = exports.SUPPORTED_CHAIN_IDS;
++    return typeof chainId === "string" && supportedChainIds.includes(chainId);
++  }
++  /**
++   * Type guard for whether the API can return token prices in the given
++   * currency.
++   *
++   * @param currency - The currency to check. If a string, can be either
++   * lowercase or uppercase.
++   * @returns True if the API supports the currency, false otherwise.
++   */
++  validateCurrencySupported(currency) {
++    const supportedCurrencies = exports.SUPPORTED_CURRENCIES;
++    return (
++      typeof currency === "string" &&
++      supportedCurrencies.includes(currency.toLowerCase())
++    );
++  }
+ }
+ exports.CodefiTokenPricesServiceV2 = CodefiTokenPricesServiceV2;
+ _CodefiTokenPricesServiceV2_tokenPricePolicy = new WeakMap();
+-//# sourceMappingURL=codefi-v2.js.map
+\ No newline at end of file
