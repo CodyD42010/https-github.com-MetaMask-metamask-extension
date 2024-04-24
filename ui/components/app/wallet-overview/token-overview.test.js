@@ -6,24 +6,9 @@ import { EthAccountType, EthMethod } from '@metamask/keyring-api';
 import { CHAIN_IDS } from '../../../../shared/constants/network';
 import { renderWithProvider } from '../../../../test/jest/rendering';
 import { KeyringType } from '../../../../shared/constants/keyring';
+import { defaultBuyableChains } from '../../../ducks/ramps/constants';
 import TokenOverview from './token-overview';
 
-// Mock BUYABLE_CHAINS_MAP
-jest.mock('../../../../shared/constants/network', () => ({
-  ...jest.requireActual('../../../../shared/constants/network'),
-  BUYABLE_CHAINS_MAP: {
-    // MAINNET
-    '0x1': {
-      nativeCurrency: 'ETH',
-      network: 'ethereum',
-    },
-    // POLYGON
-    '0x89': {
-      nativeCurrency: 'MATIC',
-      network: 'polygon',
-    },
-  },
-}));
 let openTabSpy;
 
 describe('TokenOverview', () => {
@@ -72,6 +57,9 @@ describe('TokenOverview', () => {
         },
         url: 'https://metamask-institutional.io',
       },
+    },
+    ramps: {
+      buyableChains: defaultBuyableChains,
     },
   };
 
@@ -128,6 +116,7 @@ describe('TokenOverview', () => {
 
     it('should always show the Buy button regardless of chain Id', () => {
       const mockedStoreWithUnbuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: { type: 'test', chainId: CHAIN_IDS.PALM },
@@ -161,9 +150,10 @@ describe('TokenOverview', () => {
 
     it('should have the Buy token button disabled if chain id is not part of supported buyable chains', () => {
       const mockedStoreWithUnbuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
-          providerConfig: { type: 'test', chainId: CHAIN_IDS.FANTOM },
+          providerConfig: { type: 'test', chainId: CHAIN_IDS.GOERLI },
         },
       };
       const mockedStore = configureMockStore([thunk])(
@@ -181,6 +171,7 @@ describe('TokenOverview', () => {
 
     it('should have the Buy token button enabled if chain id is part of supported buyable chains', () => {
       const mockedStoreWithBuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: { type: 'test', chainId: CHAIN_IDS.POLYGON },
@@ -206,6 +197,7 @@ describe('TokenOverview', () => {
       };
 
       const mockedStoreWithBuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: { type: 'test', chainId: CHAIN_IDS.POLYGON },
@@ -226,6 +218,7 @@ describe('TokenOverview', () => {
 
     it('should open the buy crypto URL for a buyable chain ID', async () => {
       const mockedStoreWithBuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: { type: 'test', chainId: CHAIN_IDS.POLYGON },
@@ -264,6 +257,7 @@ describe('TokenOverview', () => {
       };
 
       const mockedStoreWithBridgeableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: { type: 'test', chainId: CHAIN_IDS.POLYGON },
@@ -302,6 +296,7 @@ describe('TokenOverview', () => {
       };
 
       const mockedStoreWithBridgeableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: { type: 'test', chainId: CHAIN_IDS.FANTOM },

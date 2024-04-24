@@ -12,24 +12,8 @@ import {
 import { renderWithProvider } from '../../../../test/jest/rendering';
 import { KeyringType } from '../../../../shared/constants/keyring';
 import { useIsOriginalNativeTokenSymbol } from '../../../hooks/useIsOriginalNativeTokenSymbol';
+import { defaultBuyableChains } from '../../../ducks/ramps/constants';
 import EthOverview from './eth-overview';
-
-// Mock BUYABLE_CHAINS_MAP
-jest.mock('../../../../shared/constants/network', () => ({
-  ...jest.requireActual('../../../../shared/constants/network'),
-  BUYABLE_CHAINS_MAP: {
-    // MAINNET
-    '0x1': {
-      nativeCurrency: 'ETH',
-      network: 'ethereum',
-    },
-    // POLYGON
-    '0x89': {
-      nativeCurrency: 'MATIC',
-      network: 'polygon',
-    },
-  },
-}));
 
 jest.mock('../../../hooks/useIsOriginalNativeTokenSymbol', () => {
   return {
@@ -129,6 +113,9 @@ describe('EthOverview', () => {
       ],
       contractExchangeRates: {},
     },
+    ramps: {
+      buyableChains: defaultBuyableChains,
+    },
   };
 
   const store = configureMockStore([thunk])(mockStore);
@@ -172,6 +159,7 @@ describe('EthOverview', () => {
 
     it('should show the cached primary balance', async () => {
       const mockedStoreWithCachedBalance = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           accounts: {
@@ -258,6 +246,7 @@ describe('EthOverview', () => {
 
     it('should open the MMI PD Swaps URI when clicking on Swap button with a Custody account', async () => {
       const mockedStoreWithCustodyKeyring = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           mmiConfiguration: {
@@ -366,6 +355,7 @@ describe('EthOverview', () => {
 
     it('should have the Buy native token button disabled if chain id is not part of supported buyable chains', () => {
       const mockedStoreWithUnbuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: {
@@ -390,6 +380,7 @@ describe('EthOverview', () => {
 
     it('should have the Buy native token enabled if chain id is part of supported buyable chains', () => {
       const mockedStoreWithUnbuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: {
@@ -423,6 +414,7 @@ describe('EthOverview', () => {
 
     it('should open the Buy native token URI when clicking on Buy button for a buyable chain ID', async () => {
       const mockedStoreWithBuyableChainId = {
+        ...mockStore,
         metamask: {
           ...mockStore.metamask,
           providerConfig: {

@@ -74,7 +74,6 @@
     "showAccountBanner": true,
     "trezorModel": null,
     "hadAdvancedGasFeesSetPriorToMigration92_3": false,
-    "hasDismissedOpenSeaToBlockaidBanner": false,
     "nftsDropdownState": {},
     "termsOfUseLastAgreed": "number",
     "qrHardware": {},
@@ -102,6 +101,7 @@
     "dismissSeedBackUpReminder": true,
     "disabledRpcMethodPreferences": { "eth_sign": false },
     "useMultiAccountBalanceChecker": true,
+    "hasDismissedOpenSeaToBlockaidBanner": false,
     "useSafeChainsListValidation": true,
     "useTokenDetection": false,
     "useNftDetection": false,
@@ -228,6 +228,7 @@
     "storageMetadata": {},
     "versionFileETag": "string"
   },
+  "ramps": "object",
   "send": "object",
   "swaps": "object",
   "unconnectedAccount": { "state": "CLOSED" }
