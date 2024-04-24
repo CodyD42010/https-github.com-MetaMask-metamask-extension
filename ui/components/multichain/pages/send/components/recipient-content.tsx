@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   BannerAlert,
@@ -19,6 +19,7 @@ import { Display } from '../../../../../helpers/constants/design-system';
 import { useI18nContext } from '../../../../../hooks/useI18nContext';
 import { AssetPickerAmount } from '../../..';
 import { decimalToHex } from '../../../../../../shared/modules/conversion.utils';
+import { getIsSwapsChain } from '../../../../../selectors';
 import { SendHexData, SendPageRow, QuoteCard } from '.';
 
 export const SendPageRecipientContent = ({
@@ -26,7 +27,7 @@ export const SendPageRecipientContent = ({
   onAssetChange,
 }: {
   requireContractAddressAcknowledgement: boolean;
-  onAssetChange: (isReceived: boolean) => (newAsset: Asset) => void;
+  onAssetChange: (newAsset: Asset, isReceived: boolean) => void;
 }) => {
   const t = useI18nContext();
 
@@ -46,9 +47,10 @@ export const SendPageRecipientContent = ({
     isSwapQuoteLoading,
   } = useSelector(getCurrentDraftTransaction);
 
-  const isSendingToken = [AssetType.token, AssetType.native].includes(
-    sendAsset.type,
-  );
+  const isSwapsChain = useSelector(getIsSwapsChain);
+  const isSwapAllowed =
+    isSwapsChain &&
+    [AssetType.token, AssetType.native].includes(sendAsset.type);
 
   const bestQuote = useSelector(getBestQuote);
 
@@ -71,6 +73,9 @@ export const SendPageRecipientContent = ({
   //          - resolve all TODOs
   //          - handle approval gas
   //          - implement hester's comment: https://consensys.slack.com/archives/C068SFX90PN/p1712696346996319
+  //          - investigate overflow logic
+  //          - Preserve dest token when returning to send page from tx page
+  //          - Ensure max button works with swaps (update on refresh? buffer?)
   // TODO: 2. add analytics + e2e tests
   //       - use transaction lifecycle events once
   // TODO: 3. final design and technical review + revisions
@@ -103,9 +108,12 @@ export const SendPageRecipientContent = ({
       ) : null}
       <SendPageRow>
         <AssetPickerAmount
-          asset={isSendingToken ? receiveAsset : sendAsset}
-          sendingAsset={isSendingToken ? sendAsset : undefined}
-          onAssetChange={onAssetChange(isSendingToken)}
+          asset={isSwapAllowed ? receiveAsset : sendAsset}
+          sendingAsset={isSwapAllowed ? sendAsset : undefined}
+          onAssetChange={useCallback(
+            (newAsset) => onAssetChange(newAsset, isSwapAllowed),
+            [onAssetChange, isSwapAllowed],
+          )}
           isAmountLoading={isLoadingInitialQuotes}
           amount={amount}
         />

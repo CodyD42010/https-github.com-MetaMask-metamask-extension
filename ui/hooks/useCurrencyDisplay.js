@@ -25,6 +25,7 @@ export const DEFAULT_PRECISION_DECIMALS = 6;
  * @property {number} [numberOfDecimals] - Number of significant decimals to display
  * @property {string} [denomination] - Denomination (wei, gwei) to convert to for display
  * @property {string} [currency] - Currency type to convert to. Will override nativeCurrency
+ * @property {boolean} [hideLabel] – hide the currency label
  */
 
 /**

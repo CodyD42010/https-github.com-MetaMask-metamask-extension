@@ -70,7 +70,7 @@ export const AssetPickerAmount = ({
     }
   }, [selectedAccount]);
 
-  let borderColor = BorderColor.borderDefault;
+  let borderColor = BorderColor.borderMuted;
 
   if (isDisabled) {
     // if disabled, do not show source-side border colors
@@ -95,7 +95,6 @@ export const AssetPickerAmount = ({
         borderColor={borderColor}
         borderStyle={BorderStyle.solid}
         borderWidth={1}
-        marginTop={1}
         marginBottom={1}
         padding={1}
         // apply extra padding if there isn't an input component to apply it
