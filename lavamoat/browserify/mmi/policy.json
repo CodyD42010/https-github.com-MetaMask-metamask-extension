@@ -507,10 +507,35 @@
     },
     "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2": {
       "packages": {
+        "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream": true,
         "browserify>process": true,
         "browserify>util": true,
-        "readable-stream": true,
         "watchify>xtend": true
+      }
+    },
+    "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream": {
+      "packages": {
+        "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream>isarray": true,
+        "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream>safe-buffer": true,
+        "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream>string_decoder": true,
+        "browserify>browser-resolve": true,
+        "browserify>process": true,
+        "browserify>readable-stream>core-util-is": true,
+        "browserify>readable-stream>process-nextick-args": true,
+        "browserify>timers-browserify": true,
+        "pumpify>inherits": true,
+        "readable-stream>util-deprecate": true,
+        "webpack>events": true
+      }
+    },
+    "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream>safe-buffer": {
+      "packages": {
+        "browserify>buffer": true
+      }
+    },
+    "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream>string_decoder": {
+      "packages": {
+        "@keystonehq/metamask-airgapped-keyring>@metamask/obs-store>through2>readable-stream>safe-buffer": true
       }
     },
     "@keystonehq/metamask-airgapped-keyring>rlp": {
@@ -712,8 +737,56 @@
     "@metamask-institutional/custody-controller": {
       "packages": {
         "@ethereumjs/tx>@ethereumjs/util": true,
-        "@metamask-institutional/custody-keyring": true,
-        "@metamask/obs-store": true
+        "@metamask-institutional/custody-controller>@metamask/obs-store": true,
+        "@metamask-institutional/custody-keyring": true
+      }
+    },
+    "@metamask-institutional/custody-controller>@metamask/obs-store": {
+      "packages": {
+        "@metamask-institutional/custody-controller>@metamask/obs-store>@metamask/safe-event-emitter": true,
+        "@metamask-institutional/custody-controller>@metamask/obs-store>through2": true,
+        "stream-browserify": true
+      }
+    },
+    "@metamask-institutional/custody-controller>@metamask/obs-store>@metamask/safe-event-emitter": {
+      "globals": {
+        "setTimeout": true
+      },
+      "packages": {
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/custody-controller>@metamask/obs-store>through2": {
+      "packages": {
+        "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream": true,
+        "browserify>process": true,
+        "browserify>util": true,
+        "watchify>xtend": true
+      }
+    },
+    "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream": {
+      "packages": {
+        "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream>isarray": true,
+        "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream>safe-buffer": true,
+        "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream>string_decoder": true,
+        "browserify>browser-resolve": true,
+        "browserify>process": true,
+        "browserify>readable-stream>core-util-is": true,
+        "browserify>readable-stream>process-nextick-args": true,
+        "browserify>timers-browserify": true,
+        "pumpify>inherits": true,
+        "readable-stream>util-deprecate": true,
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream>safe-buffer": {
+      "packages": {
+        "browserify>buffer": true
+      }
+    },
+    "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream>string_decoder": {
+      "packages": {
+        "@metamask-institutional/custody-controller>@metamask/obs-store>through2>readable-stream>safe-buffer": true
       }
     },
     "@metamask-institutional/custody-keyring": {
@@ -725,9 +798,9 @@
       "packages": {
         "@ethereumjs/tx>@ethereumjs/util": true,
         "@metamask-institutional/custody-keyring>@metamask-institutional/configuration-client": true,
+        "@metamask-institutional/custody-keyring>@metamask/obs-store": true,
         "@metamask-institutional/sdk": true,
         "@metamask-institutional/sdk>@metamask-institutional/types": true,
-        "@metamask/obs-store": true,
         "browserify>crypto-browserify": true,
         "gulp-sass>lodash.clonedeep": true,
         "webpack>events": true
@@ -737,6 +810,54 @@
       "globals": {
         "console.log": true,
         "fetch": true
+      }
+    },
+    "@metamask-institutional/custody-keyring>@metamask/obs-store": {
+      "packages": {
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>@metamask/safe-event-emitter": true,
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>through2": true,
+        "stream-browserify": true
+      }
+    },
+    "@metamask-institutional/custody-keyring>@metamask/obs-store>@metamask/safe-event-emitter": {
+      "globals": {
+        "setTimeout": true
+      },
+      "packages": {
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/custody-keyring>@metamask/obs-store>through2": {
+      "packages": {
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream": true,
+        "browserify>process": true,
+        "browserify>util": true,
+        "watchify>xtend": true
+      }
+    },
+    "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream": {
+      "packages": {
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream>isarray": true,
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream>safe-buffer": true,
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream>string_decoder": true,
+        "browserify>browser-resolve": true,
+        "browserify>process": true,
+        "browserify>readable-stream>core-util-is": true,
+        "browserify>readable-stream>process-nextick-args": true,
+        "browserify>timers-browserify": true,
+        "pumpify>inherits": true,
+        "readable-stream>util-deprecate": true,
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream>safe-buffer": {
+      "packages": {
+        "browserify>buffer": true
+      }
+    },
+    "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream>string_decoder": {
+      "packages": {
+        "@metamask-institutional/custody-keyring>@metamask/obs-store>through2>readable-stream>safe-buffer": true
       }
     },
     "@metamask-institutional/extension": {
@@ -753,7 +874,55 @@
     "@metamask-institutional/institutional-features": {
       "packages": {
         "@metamask-institutional/custody-keyring": true,
-        "@metamask/obs-store": true
+        "@metamask-institutional/institutional-features>@metamask/obs-store": true
+      }
+    },
+    "@metamask-institutional/institutional-features>@metamask/obs-store": {
+      "packages": {
+        "@metamask-institutional/institutional-features>@metamask/obs-store>@metamask/safe-event-emitter": true,
+        "@metamask-institutional/institutional-features>@metamask/obs-store>through2": true,
+        "stream-browserify": true
+      }
+    },
+    "@metamask-institutional/institutional-features>@metamask/obs-store>@metamask/safe-event-emitter": {
+      "globals": {
+        "setTimeout": true
+      },
+      "packages": {
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/institutional-features>@metamask/obs-store>through2": {
+      "packages": {
+        "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream": true,
+        "browserify>process": true,
+        "browserify>util": true,
+        "watchify>xtend": true
+      }
+    },
+    "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream": {
+      "packages": {
+        "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream>isarray": true,
+        "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream>safe-buffer": true,
+        "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream>string_decoder": true,
+        "browserify>browser-resolve": true,
+        "browserify>process": true,
+        "browserify>readable-stream>core-util-is": true,
+        "browserify>readable-stream>process-nextick-args": true,
+        "browserify>timers-browserify": true,
+        "pumpify>inherits": true,
+        "readable-stream>util-deprecate": true,
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream>safe-buffer": {
+      "packages": {
+        "browserify>buffer": true
+      }
+    },
+    "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream>string_decoder": {
+      "packages": {
+        "@metamask-institutional/institutional-features>@metamask/obs-store>through2>readable-stream>safe-buffer": true
       }
     },
     "@metamask-institutional/portfolio-dashboard": {
@@ -832,7 +1001,7 @@
       "packages": {
         "@metamask-institutional/sdk": true,
         "@metamask-institutional/transaction-update>@metamask-institutional/websocket-client": true,
-        "@metamask/obs-store": true,
+        "@metamask-institutional/transaction-update>@metamask/obs-store": true,
         "ethereumjs-util": true,
         "webpack>events": true
       }
@@ -846,6 +1015,54 @@
       },
       "packages": {
         "webpack>events": true
+      }
+    },
+    "@metamask-institutional/transaction-update>@metamask/obs-store": {
+      "packages": {
+        "@metamask-institutional/transaction-update>@metamask/obs-store>@metamask/safe-event-emitter": true,
+        "@metamask-institutional/transaction-update>@metamask/obs-store>through2": true,
+        "stream-browserify": true
+      }
+    },
+    "@metamask-institutional/transaction-update>@metamask/obs-store>@metamask/safe-event-emitter": {
+      "globals": {
+        "setTimeout": true
+      },
+      "packages": {
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/transaction-update>@metamask/obs-store>through2": {
+      "packages": {
+        "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream": true,
+        "browserify>process": true,
+        "browserify>util": true,
+        "watchify>xtend": true
+      }
+    },
+    "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream": {
+      "packages": {
+        "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream>isarray": true,
+        "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream>safe-buffer": true,
+        "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream>string_decoder": true,
+        "browserify>browser-resolve": true,
+        "browserify>process": true,
+        "browserify>readable-stream>core-util-is": true,
+        "browserify>readable-stream>process-nextick-args": true,
+        "browserify>timers-browserify": true,
+        "pumpify>inherits": true,
+        "readable-stream>util-deprecate": true,
+        "webpack>events": true
+      }
+    },
+    "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream>safe-buffer": {
+      "packages": {
+        "browserify>buffer": true
+      }
+    },
+    "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream>string_decoder": {
+      "packages": {
+        "@metamask-institutional/transaction-update>@metamask/obs-store>through2>readable-stream>safe-buffer": true
       }
     },
     "@metamask/abi-utils": {
@@ -1162,28 +1379,11 @@
       },
       "packages": {
         "@metamask/browser-passworder": true,
-        "@metamask/eth-keyring-controller>@metamask/obs-store": true,
         "@metamask/eth-sig-util": true,
         "@metamask/keyring-controller>@metamask/eth-hd-keyring": true,
         "@metamask/keyring-controller>@metamask/eth-simple-keyring": true,
+        "@metamask/obs-store": true,
         "@metamask/utils": true,
-        "webpack>events": true
-      }
-    },
-    "@metamask/eth-keyring-controller>@metamask/obs-store": {
-      "packages": {
-        "@metamask/eth-keyring-controller>@metamask/obs-store>readable-stream": true,
-        "@metamask/safe-event-emitter": true
-      }
-    },
-    "@metamask/eth-keyring-controller>@metamask/obs-store>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
         "webpack>events": true
       }
     },
@@ -1862,27 +2062,24 @@
         "crypto.getRandomValues": true
       }
     },
-    "@metamask/obs-store": {
-      "packages": {
-        "@metamask/obs-store>@metamask/safe-event-emitter": true,
-        "@metamask/obs-store>through2": true,
-        "stream-browserify": true
-      }
-    },
-    "@metamask/obs-store>@metamask/safe-event-emitter": {
+    "@metamask/object-multiplex": {
       "globals": {
-        "setTimeout": true
+        "console.warn": true
       },
       "packages": {
-        "webpack>events": true
+        "@metamask/object-multiplex>once": true,
+        "readable-stream": true
       }
     },
-    "@metamask/obs-store>through2": {
+    "@metamask/object-multiplex>once": {
       "packages": {
-        "browserify>process": true,
-        "browserify>util": true,
-        "readable-stream": true,
-        "watchify>xtend": true
+        "@metamask/object-multiplex>once>wrappy": true
+      }
+    },
+    "@metamask/obs-store": {
+      "packages": {
+        "@metamask/safe-event-emitter": true,
+        "readable-stream": true
       }
     },
     "@metamask/permission-controller": {
@@ -1972,19 +2169,8 @@
         "removeEventListener": true
       },
       "packages": {
-        "@metamask/post-message-stream>readable-stream": true,
-        "@metamask/utils": true
-      }
-    },
-    "@metamask/post-message-stream>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
+        "@metamask/utils": true,
+        "readable-stream": true
       }
     },
     "@metamask/ppom-validator": {
@@ -2071,26 +2257,6 @@
         "@metamask/providers>@metamask/rpc-errors": true,
         "@metamask/safe-event-emitter": true,
         "@metamask/utils": true
-      }
-    },
-    "@metamask/providers>@metamask/object-multiplex": {
-      "globals": {
-        "console.warn": true
-      },
-      "packages": {
-        "@metamask/providers>@metamask/object-multiplex>readable-stream": true,
-        "pump>once": true
-      }
-    },
-    "@metamask/providers>@metamask/object-multiplex>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
       }
     },
     "@metamask/providers>@metamask/rpc-errors": {
@@ -2548,9 +2714,9 @@
         "setTimeout": true
       },
       "packages": {
+        "@metamask/object-multiplex": true,
         "@metamask/permission-controller": true,
         "@metamask/post-message-stream": true,
-        "@metamask/providers>@metamask/object-multiplex": true,
         "@metamask/providers>@metamask/rpc-errors": true,
         "@metamask/snaps-controllers>@metamask/base-controller": true,
         "@metamask/snaps-controllers>@metamask/json-rpc-engine": true,
@@ -2559,7 +2725,6 @@
         "@metamask/snaps-controllers>concat-stream": true,
         "@metamask/snaps-controllers>get-npm-tarball-url": true,
         "@metamask/snaps-controllers>nanoid": true,
-        "@metamask/snaps-controllers>readable-stream": true,
         "@metamask/snaps-controllers>readable-web-to-node-stream": true,
         "@metamask/snaps-controllers>tar-stream": true,
         "@metamask/snaps-rpc-methods": true,
@@ -2567,7 +2732,8 @@
         "@metamask/snaps-utils": true,
         "@metamask/snaps-utils>@metamask/snaps-registry": true,
         "@metamask/utils": true,
-        "browserify>browserify-zlib": true
+        "browserify>browserify-zlib": true,
+        "readable-stream": true
       }
     },
     "@metamask/snaps-controllers-flask>nanoid": {
@@ -2597,15 +2763,15 @@
       },
       "packages": {
         "@metamask/safe-event-emitter": true,
-        "@metamask/snaps-controllers>readable-stream": true
+        "readable-stream": true
       }
     },
     "@metamask/snaps-controllers>concat-stream": {
       "packages": {
-        "@metamask/snaps-controllers>readable-stream": true,
         "browserify>buffer": true,
         "browserify>concat-stream>typedarray": true,
         "pumpify>inherits": true,
+        "readable-stream": true,
         "terser>source-map-support>buffer-from": true
       }
     },
@@ -2614,31 +2780,9 @@
         "crypto.getRandomValues": true
       }
     },
-    "@metamask/snaps-controllers>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
-      }
-    },
     "@metamask/snaps-controllers>readable-web-to-node-stream": {
       "packages": {
-        "@metamask/snaps-controllers>readable-web-to-node-stream>readable-stream": true
-      }
-    },
-    "@metamask/snaps-controllers>readable-web-to-node-stream>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
+        "readable-stream": true
       }
     },
     "@metamask/snaps-controllers>tar-stream": {
@@ -3512,6 +3656,16 @@
         "define": true
       }
     },
+    "browserify>readable-stream>core-util-is": {
+      "packages": {
+        "browserify>insert-module-globals>is-buffer": true
+      }
+    },
+    "browserify>readable-stream>process-nextick-args": {
+      "packages": {
+        "browserify>process": true
+      }
+    },
     "browserify>stream-http": {
       "globals": {
         "AbortController": true,
@@ -3530,21 +3684,10 @@
         "browserify>buffer": true,
         "browserify>process": true,
         "browserify>stream-http>builtin-status-codes": true,
-        "browserify>stream-http>readable-stream": true,
         "browserify>url": true,
         "pumpify>inherits": true,
+        "readable-stream": true,
         "watchify>xtend": true
-      }
-    },
-    "browserify>stream-http>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
       }
     },
     "browserify>string_decoder": {
@@ -3721,12 +3864,6 @@
     "dependency-tree>precinct>detective-postcss>postcss>nanoid": {
       "globals": {
         "crypto.getRandomValues": true
-      }
-    },
-    "end-of-stream": {
-      "packages": {
-        "browserify>process": true,
-        "pump>once": true
       }
     },
     "eslint-plugin-react>array-includes>is-string": {
@@ -4031,20 +4168,9 @@
     },
     "ethereumjs-util>create-hash>md5.js>hash-base": {
       "packages": {
-        "ethereumjs-util>create-hash>md5.js>hash-base>readable-stream": true,
         "koa>content-disposition>safe-buffer": true,
-        "pumpify>inherits": true
-      }
-    },
-    "ethereumjs-util>create-hash>md5.js>hash-base>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
         "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
+        "readable-stream": true
       }
     },
     "ethereumjs-util>create-hash>ripemd160": {
@@ -4166,18 +4292,7 @@
     "ganache>keccak": {
       "packages": {
         "browserify>buffer": true,
-        "ganache>keccak>readable-stream": true
-      }
-    },
-    "ganache>keccak>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
+        "readable-stream": true
       }
     },
     "ganache>secp256k1": {
@@ -4214,18 +4329,7 @@
       },
       "packages": {
         "@metamask/safe-event-emitter": true,
-        "json-rpc-middleware-stream>readable-stream": true
-      }
-    },
-    "json-rpc-middleware-stream>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
+        "readable-stream": true
       }
     },
     "koa>content-disposition>safe-buffer": {
@@ -4331,16 +4435,6 @@
         "fetch": true
       }
     },
-    "obj-multiplex": {
-      "globals": {
-        "console.warn": true
-      },
-      "packages": {
-        "end-of-stream": true,
-        "pump>once": true,
-        "readable-stream": true
-      }
-    },
     "promise-to-callback": {
       "packages": {
         "promise-to-callback>is-fn": true,
@@ -4367,19 +4461,6 @@
     "prop-types>react-is": {
       "globals": {
         "console": true
-      }
-    },
-    "pump": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>process": true,
-        "end-of-stream": true,
-        "pump>once": true
-      }
-    },
-    "pump>once": {
-      "packages": {
-        "pump>once>wrappy": true
       }
     },
     "qrcode-generator": {
@@ -4893,36 +4974,12 @@
     "readable-stream": {
       "packages": {
         "browserify>browser-resolve": true,
+        "browserify>buffer": true,
         "browserify>process": true,
-        "browserify>timers-browserify": true,
+        "browserify>string_decoder": true,
         "pumpify>inherits": true,
-        "readable-stream>core-util-is": true,
-        "readable-stream>isarray": true,
-        "readable-stream>process-nextick-args": true,
-        "readable-stream>safe-buffer": true,
-        "readable-stream>string_decoder": true,
         "readable-stream>util-deprecate": true,
         "webpack>events": true
-      }
-    },
-    "readable-stream>core-util-is": {
-      "packages": {
-        "browserify>insert-module-globals>is-buffer": true
-      }
-    },
-    "readable-stream>process-nextick-args": {
-      "packages": {
-        "browserify>process": true
-      }
-    },
-    "readable-stream>safe-buffer": {
-      "packages": {
-        "browserify>buffer": true
-      }
-    },
-    "readable-stream>string_decoder": {
-      "packages": {
-        "readable-stream>safe-buffer": true
       }
     },
     "readable-stream>util-deprecate": {
@@ -4962,18 +5019,7 @@
     "stream-browserify": {
       "packages": {
         "pumpify>inherits": true,
-        "stream-browserify>readable-stream": true,
-        "webpack>events": true
-      }
-    },
-    "stream-browserify>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
+        "readable-stream": true,
         "webpack>events": true
       }
     },
@@ -5137,19 +5183,8 @@
       },
       "packages": {
         "browserify>util": true,
-        "web3-stream-provider>readable-stream": true,
+        "readable-stream": true,
         "web3-stream-provider>uuid": true
-      }
-    },
-    "web3-stream-provider>readable-stream": {
-      "packages": {
-        "browserify>browser-resolve": true,
-        "browserify>buffer": true,
-        "browserify>process": true,
-        "browserify>string_decoder": true,
-        "pumpify>inherits": true,
-        "readable-stream>util-deprecate": true,
-        "webpack>events": true
       }
     },
     "web3-stream-provider>uuid": {
