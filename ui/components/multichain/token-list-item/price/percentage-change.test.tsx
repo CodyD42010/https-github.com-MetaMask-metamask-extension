@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { PercentageChange } from '.';
 import { getIntlLocale } from '../../../../ducks/locale/locale';
 import { getCurrentCurrency } from '../../../../selectors';
+import { PercentageChange } from './percentage-change';
 
 jest.mock('react-redux', () => ({
   useSelector: jest.fn((selector) => selector()),
@@ -39,7 +39,7 @@ describe('PercentageChange Component', () => {
     mockGetCurrentCurrency.mockReturnValue('USD');
 
     render(<PercentageChange value={5.123} />);
-    const valueElement = screen.getByText(/\+5.12%/i);
+    const valueElement = screen.getByText('+5.12%');
     expect(valueElement).toBeInTheDocument();
   });
 
@@ -48,7 +48,7 @@ describe('PercentageChange Component', () => {
     mockGetCurrentCurrency.mockReturnValue('USD');
 
     render(<PercentageChange value={-2.345} />);
-    const valueElement = screen.getByText(/-2.35%/i);
+    const valueElement = screen.getByText('-2.35%');
     expect(valueElement).toBeInTheDocument();
   });
 
@@ -57,7 +57,7 @@ describe('PercentageChange Component', () => {
     mockGetCurrentCurrency.mockReturnValue('USD');
 
     render(<PercentageChange value={0} />);
-    const valueElement = screen.getByText(/\+0.00%/i);
+    const valueElement = screen.getByText('+0.00%');
     expect(valueElement).toBeInTheDocument();
   });
 
@@ -101,7 +101,7 @@ describe('PercentageChange Component', () => {
     mockGetCurrentCurrency.mockReturnValue('USD');
 
     render(<PercentageChange value={0} />);
-    const valueElement = screen.getByText(/\+0.00%/i);
+    const valueElement = screen.getByText('+0.00%');
     expect(valueElement).toBeInTheDocument();
   });
 

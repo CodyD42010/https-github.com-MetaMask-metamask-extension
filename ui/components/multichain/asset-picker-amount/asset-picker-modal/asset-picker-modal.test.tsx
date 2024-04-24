@@ -3,10 +3,18 @@ import configureStore from 'redux-mock-store';
 import { Asset } from '../../../../ducks/send';
 import mockState from '../../../../../test/data/mock-send-state.json';
 import { renderWithProvider } from '../../../../../test/lib/render-helpers';
+import { getIntlLocale } from '../../../../ducks/locale/locale';
 import { AssetPickerModal } from './asset-picker-modal';
+
+jest.mock('../../../../ducks/locale/locale', () => ({
+  getIntlLocale: jest.fn(),
+}));
+
+const mockGetIntlLocale = getIntlLocale as unknown as jest.Mock;
 
 describe('AssetPickerModal', () => {
   const store = configureStore()(mockState);
+  mockGetIntlLocale.mockReturnValue('en-US');
 
   const props = {
     isOpen: true,

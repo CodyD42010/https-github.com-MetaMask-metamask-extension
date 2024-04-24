@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
+import { zeroAddress } from 'ethereumjs-util';
 import {
   useHistory,
   ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
@@ -104,8 +105,6 @@ const EthOverview = ({ className, showAddress }) => {
 
   const contractPercentChange1d = tokenPercentChange1d?.[chainId] ?? '';
   const contractPriceChange1d = tokenPriceChange1d?.[chainId] ?? '';
-
-  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
   const account = useSelector(getSelectedInternalAccount);
   const isSwapsChain = useSelector(getIsSwapsChain);
@@ -258,8 +257,8 @@ const EthOverview = ({ className, showAddress }) => {
               />
             )}
             <PercentageChange
-              value={contractPercentChange1d[ZERO_ADDRESS]}
-              valueChange={contractPriceChange1d[ZERO_ADDRESS]}
+              value={contractPercentChange1d[zeroAddress()]}
+              valueChange={contractPriceChange1d[zeroAddress()]}
               includeNumber
             />
           </div>

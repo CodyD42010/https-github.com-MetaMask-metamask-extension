@@ -19,6 +19,8 @@
     "networkConfigurations": "object",
     "addressBook": "object",
     "contractExchangeRates": "object",
+    "contractPercentChange1d": "object",
+    "priceChange1d": "object",
     "confirmationExchangeRates": {},
     "pendingTokens": "object",
     "customNonceValue": "",

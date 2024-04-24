@@ -500,17 +500,7 @@ export const getTokenExchangeRates = (state) =>
 export const getTokenPercentChange1d = (state) =>
   state.metamask.contractPercentChange1d;
 
-export const getTokenPriceChange1d = (state) => {
-  console.log(
-    'priceChange1d *********** ---------------',
-    state.metamask.priceChange1d,
-  );
-  console.log(
-    'contractPercentChange1d *********** ---------------',
-    state.metamask.contractPercentChange1d,
-  );
-  return state.metamask.priceChange1d;
-};
+export const getTokenPriceChange1d = (state) => state.metamask.priceChange1d;
 
 export function getAddressBook(state) {
   const chainId = getCurrentChainId(state);

@@ -1,17 +1,16 @@
 import React from 'react';
-import { Text } from '../../../component-library';
+import { useSelector } from 'react-redux';
+import { Text, Box } from '../../../component-library';
 import {
   Display,
   FontWeight,
   TextColor,
   TextVariant,
 } from '../../../../helpers/constants/design-system';
-import { Box } from '../../../component-library';
-import { useSelector } from 'react-redux';
 import { getCurrentCurrency } from '../../../../selectors';
 import { getIntlLocale } from '../../../../ducks/locale/locale';
 
-const renderPercentage = (value, color) => {
+const renderPercentage = (value: string, color: TextColor) => {
   return (
     <Box display={Display.Flex}>
       <Text
@@ -27,7 +26,11 @@ const renderPercentage = (value, color) => {
   );
 };
 
-const renderPercentageWithNumber = (value, formattedValuePrice, color) => {
+const renderPercentageWithNumber = (
+  value: string,
+  formattedValuePrice: string,
+  color: TextColor,
+) => {
   return (
     <Box display={Display.Flex}>
       <Text
@@ -52,37 +55,46 @@ const renderPercentageWithNumber = (value, formattedValuePrice, color) => {
     </Box>
   );
 };
-const isNotNullOrUndefinedOrNaN = (value) => {
-  return value !== null && value !== undefined && !Number.isNaN(value);
-};
 
 export const PercentageChange = ({
   value,
-  valueChange = null,
+  valueChange,
   includeNumber = false,
+}: {
+  value: number | null | undefined;
+  valueChange?: number | null | undefined;
+  includeNumber?: boolean;
 }) => {
   const fiatCurrency = useSelector(getCurrentCurrency);
   const locale = useSelector(getIntlLocale);
 
-  const color = isNotNullOrUndefinedOrNaN(value)
-    ? value >= 0
-      ? TextColor.successDefault
-      : TextColor.errorDefault
-    : TextColor.textDefault;
+  let color = TextColor.textDefault;
 
-  const formattedValue = isNotNullOrUndefinedOrNaN(value)
-    ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
-    : '';
+  if (value !== null && value !== undefined && !Number.isNaN(value)) {
+    if (value >= 0) {
+      color = TextColor.successDefault;
+    } else {
+      color = TextColor.errorDefault;
+    }
+  }
 
-  const formattedValuePrice = isNotNullOrUndefinedOrNaN(valueChange)
-    ? `${valueChange >= 0 ? '+' : ''}(${Intl.NumberFormat(locale, {
-        notation: 'compact',
-        compactDisplay: 'short',
-        style: 'currency',
-        currency: fiatCurrency,
-        maximumFractionDigits: 2,
-      }).format(valueChange)})  `
-    : '';
+  const formattedValue =
+    value !== null && value !== undefined && !Number.isNaN(value)
+      ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
+      : '';
+
+  const formattedValuePrice =
+    valueChange !== null &&
+    valueChange !== undefined &&
+    !Number.isNaN(valueChange)
+      ? `${valueChange >= 0 ? '+' : ''}(${Intl.NumberFormat(locale, {
+          notation: 'compact',
+          compactDisplay: 'short',
+          style: 'currency',
+          currency: fiatCurrency,
+          maximumFractionDigits: 2,
+        }).format(valueChange)}) `
+      : '';
 
   return includeNumber
     ? renderPercentageWithNumber(formattedValue, formattedValuePrice, color)

@@ -8,6 +8,7 @@ import {
   CURRENCY_SYMBOLS,
   NETWORK_TYPES,
 } from '../../../../shared/constants/network';
+import { getIntlLocale } from '../../../ducks/locale/locale';
 import { TokenListItem } from '.';
 
 const state = {
@@ -28,10 +29,17 @@ const state = {
 
 let openTabSpy;
 
+jest.mock('../../../ducks/locale/locale', () => ({
+  getIntlLocale: jest.fn(),
+}));
+
+const mockGetIntlLocale = getIntlLocale;
+
 describe('TokenListItem', () => {
   beforeAll(() => {
     global.platform = { openTab: jest.fn() };
     openTabSpy = jest.spyOn(global.platform, 'openTab');
+    mockGetIntlLocale.mockReturnValue('en-US');
   });
   const props = {
     onClick: jest.fn(),
