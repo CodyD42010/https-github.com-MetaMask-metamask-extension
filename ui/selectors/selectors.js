@@ -497,10 +497,15 @@ export function getTargetAccount(state, targetAddress) {
 export const getTokenExchangeRates = (state) =>
   state.metamask.contractExchangeRates;
 
-export const getTokenPercentChange1d = (state) =>
-  state.metamask.contractPercentChange1d;
+export const getTokenPercentChange1d = (state) => {
+  const chainId = getCurrentChainId(state);
+  return state.metamask.oneDayPriceChange?.[chainId]?.contractPercentChange1d;
+};
 
-export const getTokenPriceChange1d = (state) => state.metamask.priceChange1d;
+export const getTokenPriceChange1d = (state) => {
+  const chainId = getCurrentChainId(state);
+  return state.metamask.oneDayPriceChange?.[chainId]?.priceChange1d;
+};
 
 export function getAddressBook(state) {
   const chainId = getCurrentChainId(state);

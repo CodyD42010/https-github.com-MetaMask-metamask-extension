@@ -1,5 +1,5 @@
 diff --git a/dist/TokenRatesController.d.ts b/dist/TokenRatesController.d.ts
-index 8f35b5b871fd9cf3c7aac8cf8c07d4461acec2bc..789fe41eb200cf439b485666286e6ab020b9af4c 100644
+index 8f35b5b871fd9cf3c7aac8cf8c07d4461acec2bc..55ace8fe62eb802205a0ea171dcd92005209eedb 100644
 --- a/dist/TokenRatesController.d.ts
 +++ b/dist/TokenRatesController.d.ts
 @@ -1,10 +1,14 @@
@@ -92,7 +92,7 @@ index 8f35b5b871fd9cf3c7aac8cf8c07d4461acec2bc..789fe41eb200cf439b485666286e6ab0
  /**
   * @type TokenRatesState
   *
-@@ -62,80 +71,111 @@ export interface ContractExchangeRates {
+@@ -62,80 +71,116 @@ export interface ContractExchangeRates {
   * @property contractExchangeRatesByChainId - Hash of token contract addresses to exchange rates keyed by chain ID and native currency (ticker)
   */
  export interface TokenRatesState extends BaseState {
@@ -103,8 +103,13 @@ index 8f35b5b871fd9cf3c7aac8cf8c07d4461acec2bc..789fe41eb200cf439b485666286e6ab0
 +    Hex,
 +    Record<string, ContractExchangeRates>
 +  >;
-+  contractPercentChange1d: Record<Hex, ContractExchangeRates>;
-+  priceChange1d: Record<Hex, ContractExchangeRates>;
++  oneDayPriceChange: Record<
++    Hex,
++    {
++      priceChange1d: ContractExchangeRates;
++      contractPercentChange1d: ContractExchangeRates;
++    }
++  >;
  }
  /**
   * Controller that passively polls on a set interval for token-to-fiat exchange rates
@@ -276,7 +281,7 @@ index 8f35b5b871fd9cf3c7aac8cf8c07d4461acec2bc..789fe41eb200cf439b485666286e6ab0
 -//# sourceMappingURL=TokenRatesController.d.ts.map
 \ No newline at end of file
 diff --git a/dist/TokenRatesController.js b/dist/TokenRatesController.js
-index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa122e5e8d 100644
+index 5f9b93f176a7d5168e51b188037b534950ff9de9..4dbd4e07d1c893b4da8ba5ff1cc4fea71565a11f 100644
 --- a/dist/TokenRatesController.js
 +++ b/dist/TokenRatesController.js
 @@ -1,25 +1,58 @@
@@ -369,7 +374,7 @@ index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa
  })(PollState || (PollState = {}));
  /**
   * Uses the CryptoCompare API to fetch the exchange rate between one currency
-@@ -44,286 +77,602 @@ var PollState;
+@@ -44,286 +77,594 @@ var PollState;
   * @returns The exchange rate between `fromCurrency` to `toCurrency` if one
   * exists, or null if one does not.
   */
@@ -512,8 +517,7 @@ index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa
 +    this.defaultState = {
 +      contractExchangeRates: {},
 +      contractExchangeRatesByChainId: {},
-+      contractPercentChange1d: {},
-+      priceChange1d: {},
++      oneDayPriceChange: {},
 +    };
 +    this.initialize();
 +    this.setIntervalLength(interval);
@@ -731,14 +735,14 @@ index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa
 +      });
 +      const newContractExchangeRates =
 +        contractInformations.contractExchangeRates;
-+      const newContractPercentChange1d = {
++      const newOneDayPriceChange = {
 +        [chainId]: {
-+          ...(contractInformations?.contractPercentChange1d ?? {}),
-+        },
-+      };
-+      const newPriceChange1d = {
-+        [chainId]: {
-+          ...(contractInformations?.priceChange1d ?? {}),
++          contractPercentChange1d: {
++            ...(contractInformations?.contractPercentChange1d ?? {}),
++          },
++          priceChange1d: {
++            ...(contractInformations?.priceChange1d ?? {}),
++          },
 +        },
 +      };
 +      const existingContractExchangeRates = this.state.contractExchangeRates;
@@ -762,8 +766,7 @@ index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa
 +      this.update({
 +        contractExchangeRates: updatedContractExchangeRates,
 +        contractExchangeRatesByChainId: updatedContractExchangeRatesForChainId,
-+        contractPercentChange1d: newContractPercentChange1d,
-+        priceChange1d: newPriceChange1d,
++        oneDayPriceChange: newOneDayPriceChange,
 +      });
 +      updateSucceeded();
 +    } catch (error) {
@@ -1080,13 +1083,12 @@ index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa
 +        const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 +        const contractNativeInformationsNative = await __classPrivateFieldGet(
 +          this,
-+          _TokenRatesController_instances,
-+          "m",
-+          _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency
-+        ).call(this, {
++          _TokenRatesController_tokenPricesService,
++          "f"
++        ).fetchTokenPrices({
 +          tokenAddresses: [ZERO_ADDRESS],
 +          chainId: this.config.chainId,
-+          nativeCurrency: controller_utils_1.FALL_BACK_VS_CURRENCY,
++          currency: nativeCurrency,
          });
 -    });
 -}, _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency = function _TokenRatesController_fetchAndMapExchangeRatesForSupportedNativeCurrency({ tokenAddresses, chainId, nativeCurrency, }) {
@@ -1127,16 +1129,11 @@ index 5f9b93f176a7d5168e51b188037b534950ff9de9..84a74b085a147459381be12596064eaa
 +          [ZERO_ADDRESS]: {
 +            currency: nativeCurrency,
 +            priceChange1d:
-+              contractNativeInformationsNative?.priceChange1d[ZERO_ADDRESS],
++              contractNativeInformationsNative[ZERO_ADDRESS]?.priceChange1d,
 +            pricePercentChange1d:
-+              contractNativeInformationsNative?.contractPercentChange1d[
-+                ZERO_ADDRESS
-+              ],
++              contractNativeInformationsNative[ZERO_ADDRESS]?.priceChange1d,
 +            tokenAddress: ZERO_ADDRESS,
-+            value:
-+              contractNativeInformationsNative?.contractExchangeRates[
-+                ZERO_ADDRESS
-+              ],
++            value: contractNativeInformationsNative[ZERO_ADDRESS]?.value,
 +          },
 +        };
 +      }

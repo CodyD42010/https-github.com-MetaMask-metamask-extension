@@ -92,11 +92,10 @@ export const TokenListItem = ({
   const history = useHistory();
 
   const tokenPercentChange1d = useSelector(getTokenPercentChange1d);
-  const contractPercentChange1d = tokenPercentChange1d?.[chainId] ?? '';
 
   const tokenAddress = address ? address.toLowerCase() : null;
 
-  const tokenPercentageChange = contractPercentChange1d[tokenAddress];
+  const tokenPercentageChange = tokenPercentChange1d?.[tokenAddress];
   const tokenTitle =
     title === CURRENCY_SYMBOLS.ETH && isOriginalTokenSymbol
       ? t('networkNameEthereum')
@@ -261,7 +260,7 @@ export const TokenListItem = ({
               <PercentageChange
                 value={
                   isNativeCurrency
-                    ? contractPercentChange1d[zeroAddress()]
+                    ? tokenPercentChange1d?.[zeroAddress()]
                     : tokenPercentageChange
                 }
               />

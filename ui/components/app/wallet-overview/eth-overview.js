@@ -35,14 +35,14 @@ import {
   getPreferences,
   getSelectedInternalAccount,
   getSelectedAccountCachedBalance,
+  getTokenPercentChange1d,
+  getTokenPriceChange1d,
   ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
   getSwapsDefaultToken,
   getCurrentKeyring,
   getIsBridgeChain,
   getIsBuyableChain,
   getMetaMetricsId,
-  getTokenPercentChange1d,
-  getTokenPriceChange1d,
   ///: END:ONLY_INCLUDE_IF
 } from '../../../selectors';
 ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
@@ -102,9 +102,6 @@ const EthOverview = ({ className, showAddress }) => {
 
   const tokenPercentChange1d = useSelector(getTokenPercentChange1d);
   const tokenPriceChange1d = useSelector(getTokenPriceChange1d);
-
-  const contractPercentChange1d = tokenPercentChange1d?.[chainId] ?? '';
-  const contractPriceChange1d = tokenPriceChange1d?.[chainId] ?? '';
 
   const account = useSelector(getSelectedInternalAccount);
   const isSwapsChain = useSelector(getIsSwapsChain);
@@ -257,8 +254,8 @@ const EthOverview = ({ className, showAddress }) => {
               />
             )}
             <PercentageChange
-              value={contractPercentChange1d[zeroAddress()]}
-              valueChange={contractPriceChange1d[zeroAddress()]}
+              value={tokenPercentChange1d?.[zeroAddress()]}
+              valueChange={tokenPriceChange1d?.[zeroAddress()]}
               includeNumber
             />
           </div>
