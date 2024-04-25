@@ -24,8 +24,10 @@ import {
   wrap,
   ///: END:ONLY_INCLUDE_IF
 } from 'lodash';
-import { keyringBuilderFactory } from '@metamask/eth-keyring-controller';
-import { KeyringController } from '@metamask/keyring-controller';
+import {
+  KeyringController,
+  keyringBuilderFactory,
+} from '@metamask/keyring-controller';
 import createFilterMiddleware from '@metamask/eth-json-rpc-filters';
 import createSubscriptionManager from '@metamask/eth-json-rpc-filters/subscriptionManager';
 import {
@@ -1075,35 +1077,6 @@ export default class MetamaskController extends EventEmitter {
       state: initState.KeyringController,
       encryptor: opts.encryptor || encryptorFactory(600_000),
       messenger: keyringControllerMessenger,
-      removeIdentity: this.preferencesController.removeAddress.bind(
-        this.preferencesController,
-      ),
-      setAccountLabel: (address, label) => {
-        const accountToBeNamed =
-          this.accountsController.getAccountByAddress(address);
-        if (accountToBeNamed === undefined) {
-          throw new Error(`No account found for address: ${address}`);
-        }
-        this.accountsController.setAccountName(accountToBeNamed.id, label);
-
-        this.preferencesController.setAccountLabel(address, label);
-      },
-      setSelectedAddress: (address) => {
-        const accountToBeSet =
-          this.accountsController.getAccountByAddress(address);
-        if (accountToBeSet === undefined) {
-          throw new Error(`No account found for address: ${address}`);
-        }
-
-        this.accountsController.setSelectedAccount(accountToBeSet.id);
-        this.preferencesController.setSelectedAddress(address);
-      },
-      syncIdentities: (identities) => {
-        this.preferencesController.syncAddresses(identities);
-      },
-      updateIdentities: this.preferencesController.setAddresses.bind(
-        this.preferencesController,
-      ),
     });
 
     this.controllerMessenger.subscribe('KeyringController:unlock', () =>
@@ -3720,15 +3693,7 @@ export default class MetamaskController extends EventEmitter {
   async createNewVaultAndKeychain(password) {
     const releaseLock = await this.createVaultMutex.acquire();
     try {
-      const vault = await this.keyringController.createNewVaultAndKeychain(
-        password,
-      );
-
-      const accounts = await this.keyringController.getAccounts();
-      this.preferencesController.setAddresses(accounts);
-      this.selectFirstAccount();
-
-      return vault;
+      return await this.keyringController.createNewVaultAndKeychain(password);
     } finally {
       releaseLock();
     }
@@ -3745,9 +3710,6 @@ export default class MetamaskController extends EventEmitter {
     const releaseLock = await this.createVaultMutex.acquire();
     try {
       const seedPhraseAsBuffer = Buffer.from(encodedSeedPhrase);
-
-      // clear known identities
-      this.preferencesController.setAddresses([]);
 
       // clear permissions
       this.permissionController.clearState();
@@ -3814,8 +3776,6 @@ export default class MetamaskController extends EventEmitter {
       // Optimistically called to not block MetaMask login due to
       // Ledger Keyring GitHub downtime
       this.setLedgerTransportPreference();
-
-      this.selectFirstAccount();
 
       return vault;
     } finally {
@@ -3976,18 +3936,6 @@ export default class MetamaskController extends EventEmitter {
    * @property {string} address - The account's ethereum address, in lower case.
    * receiving funds from our automatic Ropsten faucet.
    */
-
-  /**
-   * Sets the first account in the state to the selected address
-   */
-  selectFirstAccount() {
-    const { identities } = this.preferencesController.store.getState();
-    const [address] = Object.keys(identities);
-    this.preferencesController.setSelectedAddress(address);
-
-    const [account] = this.accountsController.listAccounts();
-    this.accountsController.setSelectedAccount(account.id);
-  }
 
   /**
    * Gets the mnemonic of the user's primary keyring.
@@ -4214,7 +4162,6 @@ export default class MetamaskController extends EventEmitter {
       keyring,
     );
     const newAccounts = await this.keyringController.getAccounts();
-    this.preferencesController.setAddresses(newAccounts);
     newAccounts.forEach((address) => {
       if (!oldAccounts.includes(address)) {
         const label = this.getAccountLabel(
@@ -5359,7 +5306,6 @@ export default class MetamaskController extends EventEmitter {
     }
 
     // Ensure preferences + identities controller know about all addresses
-    this.preferencesController.syncAddresses(addresses);
     this.accountTracker.syncWithAddresses(addresses);
   }
 
