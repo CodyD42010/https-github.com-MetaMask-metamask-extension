@@ -5297,7 +5297,6 @@ export default class MetamaskController extends EventEmitter {
       return;
     }
 
-    // Ensure preferences + identities controller know about all addresses
     this.accountTracker.syncWithAddresses(addresses);
   }
 
