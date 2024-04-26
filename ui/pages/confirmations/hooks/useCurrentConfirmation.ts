@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import { ApprovalType } from '@metamask/controller-utils';
 import { Json } from '@metamask/utils';
+import { ConfirmationRedesignTypes } from '../utils/confirm';
 
 import {
   getRedesignedConfirmationsEnabled,
@@ -39,7 +40,9 @@ const useCurrentConfirmation = () => {
     ) {
       return;
     }
+
     let pendingConfirmation: Approval | undefined;
+
     if (paramsTransactionId) {
       if (paramsTransactionId === currentConfirmation?.id) {
         return;
@@ -48,6 +51,7 @@ const useCurrentConfirmation = () => {
         ({ id: confirmId }) => confirmId === paramsTransactionId,
       );
     }
+
     if (!pendingConfirmation) {
       if (!latestPendingConfirmation) {
         setCurrentConfirmation(undefined);
@@ -55,6 +59,7 @@ const useCurrentConfirmation = () => {
       }
       pendingConfirmation = latestPendingConfirmation;
     }
+
     if (pendingConfirmation.id !== currentConfirmation?.id) {
       const unconfirmedTransaction =
         unconfirmedTransactions[pendingConfirmation.id];
@@ -62,13 +67,16 @@ const useCurrentConfirmation = () => {
         setCurrentConfirmation(undefined);
         return;
       }
+
       if (
-        pendingConfirmation.type !== ApprovalType.PersonalSign &&
-        pendingConfirmation.type !== ApprovalType.EthSignTypedData
+        !ConfirmationRedesignTypes.find(
+          (type) => type === pendingConfirmation?.type,
+        )
       ) {
         setCurrentConfirmation(undefined);
         return;
       }
+
       if (pendingConfirmation.type === ApprovalType.PersonalSign) {
         const { siwe } = unconfirmedTransaction.msgParams;
         if (siwe?.isSIWEMessage) {

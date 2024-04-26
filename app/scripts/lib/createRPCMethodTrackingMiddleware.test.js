@@ -2,6 +2,7 @@ import { errorCodes } from 'eth-rpc-errors';
 import { detectSIWE } from '@metamask/controller-utils';
 import { MESSAGE_TYPE } from '../../../shared/constants/app';
 import {
+  MetaMetricsEventCategory,
   MetaMetricsEventName,
   MetaMetricsEventUiCustomization,
 } from '../../../shared/constants/metametrics';
@@ -34,12 +35,25 @@ const appStateController = {
   },
 };
 
+const mockedPreferences = jest.mocked({
+  redesignedConfirmations: true,
+});
+
+const preferencesController = {
+  store: {
+    getState: () => ({
+      preferences: mockedPreferences,
+    }),
+  },
+};
+
 const createHandler = (opts) =>
   createRPCMethodTrackingMiddleware({
     trackEvent,
     getMetricsState,
     rateLimitTimeout: 1000,
     rateLimitSamplePercent: 0.1,
+    preferencesController,
     globalRateLimitTimeout: 0,
     globalRateLimitMaxAmount: 0,
     appStateController,
@@ -156,7 +170,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
       await handler(req, res, next);
       expect(trackEvent).toHaveBeenCalledTimes(1);
       expect(trackEvent.mock.calls[0][0]).toMatchObject({
-        category: 'inpage_provider',
+        category: MetaMetricsEventCategory.InpageProvider,
         event: MetaMetricsEventName.SignatureRequested,
         properties: {
           signature_type: MESSAGE_TYPE.ETH_SIGN,
@@ -197,7 +211,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
        *
        */
       expect(trackEvent.mock.calls[0][0]).toStrictEqual({
-        category: 'inpage_provider',
+        category: MetaMetricsEventCategory.InpageProvider,
         event: MetaMetricsEventName.SignatureRequested,
         properties: {
           signature_type: MESSAGE_TYPE.ETH_SIGN,
@@ -225,7 +239,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
       await executeMiddlewareStack();
       expect(trackEvent).toHaveBeenCalledTimes(2);
       expect(trackEvent.mock.calls[1][0]).toMatchObject({
-        category: 'inpage_provider',
+        category: MetaMetricsEventCategory.InpageProvider,
         event: MetaMetricsEventName.SignatureApproved,
         properties: {
           signature_type: MESSAGE_TYPE.ETH_SIGN_TYPED_DATA_V4,
@@ -249,7 +263,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
       await executeMiddlewareStack();
       expect(trackEvent).toHaveBeenCalledTimes(2);
       expect(trackEvent.mock.calls[1][0]).toMatchObject({
-        category: 'inpage_provider',
+        category: MetaMetricsEventCategory.InpageProvider,
         event: MetaMetricsEventName.SignatureRejected,
         properties: {
           signature_type: MESSAGE_TYPE.PERSONAL_SIGN,
@@ -271,7 +285,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
       await executeMiddlewareStack();
       expect(trackEvent).toHaveBeenCalledTimes(2);
       expect(trackEvent.mock.calls[1][0]).toMatchObject({
-        category: 'inpage_provider',
+        category: MetaMetricsEventCategory.InpageProvider,
         event: MetaMetricsEventName.PermissionsApproved,
         properties: { method: MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS },
         referrer: { url: 'some.dapp' },
@@ -416,6 +430,77 @@ describe('createRPCMethodTrackingMiddleware', () => {
       });
     });
 
+    it('should track Confirmation Redesign through ui_customizations prop if enabled', async () => {
+      const originalEnvConfirmationRedesign =
+        process.env.ENABLE_CONFIRMATION_REDESIGN;
+      process.env.ENABLE_CONFIRMATION_REDESIGN = true;
+
+      const req = {
+        method: MESSAGE_TYPE.PERSONAL_SIGN,
+        origin: 'some.dapp',
+      };
+      const res = {
+        error: null,
+      };
+      const { next, executeMiddlewareStack } = getNext();
+      const handler = createHandler();
+
+      await handler(req, res, next);
+      await executeMiddlewareStack();
+
+      expect(trackEvent).toHaveBeenCalledTimes(2);
+
+      expect(trackEvent.mock.calls[1][0]).toMatchObject({
+        category: MetaMetricsEventCategory.InpageProvider,
+        event: MetaMetricsEventName.SignatureApproved,
+        properties: {
+          signature_type: MESSAGE_TYPE.PERSONAL_SIGN,
+          ui_customizations: [
+            MetaMetricsEventUiCustomization.RedesignedConfirmation,
+          ],
+        },
+        referrer: { url: 'some.dapp' },
+      });
+
+      process.env.ENABLE_CONFIRMATION_REDESIGN =
+        originalEnvConfirmationRedesign;
+    });
+
+    it('should not track Confirmation Redesign through ui_customizations prop if not enabled', async () => {
+      mockedPreferences.redesignedConfirmations = false;
+
+      const originalEnvConfirmationRedesign =
+        process.env.ENABLE_CONFIRMATION_REDESIGN;
+      process.env.ENABLE_CONFIRMATION_REDESIGN = true;
+
+      const req = {
+        method: MESSAGE_TYPE.PERSONAL_SIGN,
+        origin: 'some.dapp',
+      };
+      const res = {
+        error: null,
+      };
+      const { next, executeMiddlewareStack } = getNext();
+      const handler = createHandler();
+
+      await handler(req, res, next);
+      await executeMiddlewareStack();
+
+      expect(trackEvent).toHaveBeenCalledTimes(2);
+
+      expect(trackEvent.mock.calls[1][0]).toMatchObject({
+        category: MetaMetricsEventCategory.InpageProvider,
+        event: MetaMetricsEventName.SignatureApproved,
+        properties: {
+          signature_type: MESSAGE_TYPE.PERSONAL_SIGN,
+        },
+        referrer: { url: 'some.dapp' },
+      });
+
+      process.env.ENABLE_CONFIRMATION_REDESIGN =
+        originalEnvConfirmationRedesign;
+    });
+
     it('should track Sign-in With Ethereum (SIWE) message if detected', async () => {
       const req = {
         method: MESSAGE_TYPE.PERSONAL_SIGN,
@@ -437,7 +522,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
       expect(trackEvent).toHaveBeenCalledTimes(2);
 
       expect(trackEvent.mock.calls[1][0]).toMatchObject({
-        category: 'inpage_provider',
+        category: MetaMetricsEventCategory.InpageProvider,
         event: MetaMetricsEventName.SignatureApproved,
         properties: {
           signature_type: MESSAGE_TYPE.PERSONAL_SIGN,
@@ -466,7 +551,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
         expect(trackEvent).toHaveBeenCalledTimes(2);
 
         expect(trackEvent.mock.calls[1][0]).toMatchObject({
-          category: 'inpage_provider',
+          category: MetaMetricsEventCategory.InpageProvider,
           event: MetaMetricsEventName.SignatureFailed,
           properties: {
             signature_type: MESSAGE_TYPE.ETH_SIGN,
@@ -493,7 +578,7 @@ describe('createRPCMethodTrackingMiddleware', () => {
 
         expect(trackEvent).toHaveBeenCalledTimes(1);
         expect(trackEvent.mock.calls[0][0]).toMatchObject({
-          category: 'inpage_provider',
+          category: MetaMetricsEventCategory.InpageProvider,
           event: MetaMetricsEventName.SignatureRequested,
           properties: {
             signature_type: MESSAGE_TYPE.ETH_SIGN,
