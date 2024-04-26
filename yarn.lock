@@ -4184,7 +4184,7 @@ __metadata:
 
 "@metamask/assets-controllers@patch:@metamask/assets-controllers@patch%3A@metamask/assets-controllers@patch%253A@metamask/assets-controllers@patch%25253A@metamask/assets-controllers@npm%2525253A26.0.0%252523~/.yarn/patches/@metamask-assets-controllers-npm-26.0.0-17c0e9432c.patch%25253A%25253Aversion=26.0.0&hash=cf1d54%2523~/.yarn/patches/@metamask-assets-controllers-patch-0f46262fea.patch%253A%253Aversion=26.0.0&hash=5c145e%23~/.yarn/patches/@metamask-assets-controllers-patch-7616cc1669.patch%3A%3Aversion=26.0.0&hash=fd4d03#~/.yarn/patches/@metamask-assets-controllers-patch-55c0923b82.patch":
   version: 26.0.0
-  resolution: "@metamask/assets-controllers@patch:@metamask/assets-controllers@patch%3A@metamask/assets-controllers@patch%253A@metamask/assets-controllers@patch%25253A@metamask/assets-controllers@npm%2525253A26.0.0%252523~/.yarn/patches/@metamask-assets-controllers-npm-26.0.0-17c0e9432c.patch%25253A%25253Aversion=26.0.0&hash=cf1d54%2523~/.yarn/patches/@metamask-assets-controllers-patch-0f46262fea.patch%253A%253Aversion=26.0.0&hash=5c145e%23~/.yarn/patches/@metamask-assets-controllers-patch-7616cc1669.patch%3A%3Aversion=26.0.0&hash=fd4d03#~/.yarn/patches/@metamask-assets-controllers-patch-55c0923b82.patch::version=26.0.0&hash=57158a"
+  resolution: "@metamask/assets-controllers@patch:@metamask/assets-controllers@patch%3A@metamask/assets-controllers@patch%253A@metamask/assets-controllers@patch%25253A@metamask/assets-controllers@npm%2525253A26.0.0%252523~/.yarn/patches/@metamask-assets-controllers-npm-26.0.0-17c0e9432c.patch%25253A%25253Aversion=26.0.0&hash=cf1d54%2523~/.yarn/patches/@metamask-assets-controllers-patch-0f46262fea.patch%253A%253Aversion=26.0.0&hash=5c145e%23~/.yarn/patches/@metamask-assets-controllers-patch-7616cc1669.patch%3A%3Aversion=26.0.0&hash=fd4d03#~/.yarn/patches/@metamask-assets-controllers-patch-55c0923b82.patch::version=26.0.0&hash=1f22f9"
   dependencies:
     "@ethereumjs/util": "npm:^8.1.0"
     "@ethersproject/address": "npm:^5.7.0"
@@ -4220,7 +4220,7 @@ __metadata:
     "@metamask/keyring-controller": ^13.0.0
     "@metamask/network-controller": ^17.2.0
     "@metamask/preferences-controller": ^8.0.0
-  checksum: ff6ba80d451ee883cf0940ec7cefe76624eaeb348b6245818c609ff8914fa72740e37d47ccd3cdff10a69d68b63c2c07e2d5bd1cf05cdc2a0ea297a5f5acb11e
+  checksum: 5e7d5dbc38b00efd5e18fb56f593b62476357f8f411f21f753523310b9b114739d01000b4ad83cb70f038d6f477b6a071b47ca69445b7100d1d3caa04e52bcdc
   languageName: node
   linkType: hard
 

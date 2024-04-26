@@ -1503,7 +1503,7 @@ index 323286a4ba2c54e2dac0f1a7da08335b2ae77322..f7023e11b5f6e86555a6945044134ed9
 -//# sourceMappingURL=codefi-v2.d.ts.map
 \ No newline at end of file
 diff --git a/dist/token-prices-service/codefi-v2.js b/dist/token-prices-service/codefi-v2.js
-index 4203923f591c318041027904e5130972580f6f73..3285af35a252a573a57366d274f5e4a77c03e83b 100644
+index 4203923f591c318041027904e5130972580f6f73..c7603691607f4894ce6bfec7080ca353bee47b39 100644
 --- a/dist/token-prices-service/codefi-v2.js
 +++ b/dist/token-prices-service/codefi-v2.js
 @@ -1,27 +1,54 @@
@@ -1581,7 +1581,7 @@ index 4203923f591c318041027904e5130972580f6f73..3285af35a252a573a57366d274f5e4a7
  const controller_utils_1 = require("@metamask/controller-utils");
  const utils_1 = require("@metamask/utils");
  const cockatiel_1 = require("cockatiel");
-@@ -30,325 +57,367 @@ const cockatiel_1 = require("cockatiel");
+@@ -30,325 +57,361 @@ const cockatiel_1 = require("cockatiel");
   * the `/spot-prices` endpoint, in lowercase form.
   */
  exports.SUPPORTED_CURRENCIES = [
@@ -2195,12 +2195,6 @@ index 4203923f591c318041027904e5130972580f6f73..3285af35a252a573a57366d274f5e4a7
 +          ?.pricePercentChange1d;
 +      const priceChange1d =
 +        pricesByCurrencyByTokenAddress[lowercasedTokenAddress]?.priceChange1d;
-+      if (!price) {
-+        // console error instead of throwing to not interrupt the fetching of other tokens in case just one fails
-+        console.error(
-+          `Could not find price for "${tokenAddress}" in "${currency}"`
-+        );
-+      }
 +      const tokenPrice = {
 +        tokenAddress,
 +        value: price,
