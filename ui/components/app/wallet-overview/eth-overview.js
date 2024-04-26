@@ -58,6 +58,7 @@ import {
 import Spinner from '../../ui/spinner';
 import { startNewDraftTransaction } from '../../../ducks/send';
 import { AssetType } from '../../../../shared/constants/transaction';
+import { hexToDecimal } from '../../../../shared/modules/conversion.utils';
 import { Icon, IconName } from '../../component-library';
 import { IconColor } from '../../../helpers/constants/design-system';
 ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
@@ -272,7 +273,7 @@ const EthOverview = ({ className, showAddress }) => {
                   properties: {
                     location: 'Home',
                     text: 'Buy',
-                    chain_id: chainId,
+                    chain_id: hexToDecimal(chainId),
                     token_symbol: defaultSwapsToken,
                   },
                 });
@@ -309,7 +310,7 @@ const EthOverview = ({ className, showAddress }) => {
                   token_symbol: 'ETH',
                   location: 'Home',
                   text: 'Send',
-                  chain_id: chainId,
+                  chain_id: hexToDecimal(chainId),
                 },
               });
               dispatch(
@@ -347,7 +348,7 @@ const EthOverview = ({ className, showAddress }) => {
                     token_symbol: 'ETH',
                     location: MetaMetricsSwapsEventSource.MainView,
                     text: 'Swap',
-                    chain_id: chainId,
+                    chain_id: hexToDecimal(chainId),
                   },
                 });
                 dispatch(setSwapsFromToken(defaultSwapsToken));
@@ -393,7 +394,7 @@ const EthOverview = ({ className, showAddress }) => {
                     properties: {
                       location: 'Home',
                       text: 'Bridge',
-                      chain_id: chainId,
+                      chain_id: hexToDecimal(chainId),
                       token_symbol: 'ETH',
                     },
                   });
@@ -430,7 +431,7 @@ const EthOverview = ({ className, showAddress }) => {
                   properties: {
                     location: 'Home',
                     text: 'Portfolio',
-                    chain_id: chainId,
+                    chain_id: hexToDecimal(chainId),
                     token_symbol: 'ETH',
                   },
                 });

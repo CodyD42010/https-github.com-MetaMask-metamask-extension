@@ -47,6 +47,7 @@ import {
   MetaMetricsSwapsEventSource,
 } from '../../../../shared/constants/metametrics';
 import { AssetType } from '../../../../shared/constants/transaction';
+import { hexToDecimal } from '../../../../shared/modules/conversion.utils';
 
 import { Icon, IconName } from '../../component-library';
 import { IconColor } from '../../../helpers/constants/design-system';
@@ -160,7 +161,7 @@ const TokenOverview = ({ className, token }) => {
                   properties: {
                     location: 'Token Overview',
                     text: 'Buy',
-                    chain_id: chainId,
+                    chain_id: hexToDecimal(chainId),
                     token_symbol: token.symbol,
                   },
                 });
@@ -223,7 +224,7 @@ const TokenOverview = ({ className, token }) => {
                   token_symbol: token.symbol,
                   location: MetaMetricsSwapsEventSource.TokenView,
                   text: 'Send',
-                  chain_id: chainId,
+                  chain_id: hexToDecimal(chainId),
                 },
               });
               try {
@@ -274,7 +275,7 @@ const TokenOverview = ({ className, token }) => {
                     token_symbol: token.symbol,
                     location: MetaMetricsSwapsEventSource.TokenView,
                     text: 'Swap',
-                    chain_id: chainId,
+                    chain_id: hexToDecimal(chainId),
                   },
                 });
                 dispatch(
@@ -327,7 +328,7 @@ const TokenOverview = ({ className, token }) => {
                       location: 'Token Overview',
                       text: 'Bridge',
                       url: portfolioUrl,
-                      chain_id: chainId,
+                      chain_id: hexToDecimal(chainId),
                       token_symbol: token.symbol,
                     },
                   });

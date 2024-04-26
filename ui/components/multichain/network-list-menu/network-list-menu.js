@@ -65,6 +65,7 @@ import {
   getCompletedOnboarding,
   getIsUnlocked,
 } from '../../../ducks/metamask/metamask';
+import { hexToDecimal } from '../../../../shared/modules/conversion.utils';
 
 export const NetworkListMenu = ({ onClose }) => {
   const t = useI18nContext();
@@ -203,9 +204,9 @@ export const NetworkListMenu = ({ onClose }) => {
               category: MetaMetricsEventCategory.Network,
               properties: {
                 location: 'Network Menu',
-                chain_id: currentChainId,
-                from_network: currentChainId,
-                to_network: network.chainId,
+                chain_id: hexToDecimal(currentChainId),
+                from_network: hexToDecimal(currentChainId),
+                to_network: hexToDecimal(network.chainId),
               },
             });
           }}
@@ -380,9 +381,12 @@ export const NetworkListMenu = ({ onClose }) => {
                                         MetaMetricsEventCategory.Network,
                                       properties: {
                                         location: 'Network Menu',
-                                        chain_id: currentChainId,
-                                        from_network: currentChainId,
-                                        to_network: network.chainId,
+                                        chain_id: hexToDecimal(currentChainId),
+                                        from_network:
+                                          hexToDecimal(currentChainId),
+                                        to_network: hexToDecimal(
+                                          network.chainId,
+                                        ),
                                       },
                                     });
                                   }}

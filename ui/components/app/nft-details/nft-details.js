@@ -52,7 +52,10 @@ import {
 } from '../../../../shared/constants/transaction';
 import { ButtonIcon, IconName, Text } from '../../component-library';
 import Tooltip from '../../ui/tooltip';
-import { decWEIToDecETH } from '../../../../shared/modules/conversion.utils';
+import {
+  decWEIToDecETH,
+  hexToDecimal,
+} from '../../../../shared/modules/conversion.utils';
 import { NftItem } from '../../multichain/nft-item';
 import {
   MetaMetricsEventName,
@@ -131,7 +134,7 @@ export default function NftDetails({ nft }) {
           tokenId: tokenId.toString(),
           asset_type: AssetType.NFT,
           token_standard: standard,
-          chain_id: currentNetwork,
+          chain_id: hexToDecimal(currentNetwork),
           isSuccessful: isSuccessfulEvent,
         },
       });
