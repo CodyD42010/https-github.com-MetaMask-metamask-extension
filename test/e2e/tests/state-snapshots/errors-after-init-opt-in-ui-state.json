@@ -20,6 +20,7 @@
     "addressBook": "object",
     "contractExchangeRates": "object",
     "confirmationExchangeRates": {},
+    "oneDayPriceChange": "object",
     "pendingTokens": "object",
     "customNonceValue": "",
     "useBlockie": false,

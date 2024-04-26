@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
+import { zeroAddress } from 'ethereumjs-util';
 import {
   useHistory,
   ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
@@ -34,6 +35,8 @@ import {
   getPreferences,
   getSelectedInternalAccount,
   getSelectedAccountCachedBalance,
+  getTokenPercentChange1d,
+  getTokenPriceChange1d,
   ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
   getSwapsDefaultToken,
   getCurrentKeyring,
@@ -67,6 +70,7 @@ import { getPortfolioUrl } from '../../../helpers/utils/portfolio';
 import { useIsOriginalNativeTokenSymbol } from '../../../hooks/useIsOriginalNativeTokenSymbol';
 import { getProviderConfig } from '../../../ducks/metamask/metamask';
 import { showPrimaryCurrency } from '../../../../shared/modules/currency-display.utils';
+import { PercentageChange } from '../../multichain/token-list-item/price';
 import WalletOverview from './wallet-overview';
 
 const EthOverview = ({ className, showAddress }) => {
@@ -95,6 +99,9 @@ const EthOverview = ({ className, showAddress }) => {
     type,
     rpcUrl,
   );
+
+  const tokenPercentChange1d = useSelector(getTokenPercentChange1d);
+  const tokenPriceChange1d = useSelector(getTokenPriceChange1d);
 
   const account = useSelector(getSelectedInternalAccount);
   const isSwapsChain = useSelector(getIsSwapsChain);
@@ -246,6 +253,11 @@ const EthOverview = ({ className, showAddress }) => {
                 hideTitle
               />
             )}
+            <PercentageChange
+              value={tokenPercentChange1d?.[zeroAddress()]}
+              valueChange={tokenPriceChange1d?.[zeroAddress()]}
+              includeNumber
+            />
           </div>
         </Tooltip>
       }

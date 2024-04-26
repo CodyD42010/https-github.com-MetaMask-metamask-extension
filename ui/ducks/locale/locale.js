@@ -32,10 +32,9 @@ export const getCurrentLocale = (state) => state.localeMessages.currentLocale;
  *
  * @returns {Intl.UnicodeBCP47LocaleIdentifier} the user's selected locale.
  */
-export const getIntlLocale = createSelector(
-  getCurrentLocale,
-  (locale) => Intl.getCanonicalLocales(locale.replace(/_/gu, '-'))[0],
-);
+export const getIntlLocale = createSelector(getCurrentLocale, (locale) => {
+  return Intl.getCanonicalLocales(locale.replace(/_/gu, '-'))[0];
+});
 
 export const getCurrentLocaleMessages = (state) => state.localeMessages.current;
 

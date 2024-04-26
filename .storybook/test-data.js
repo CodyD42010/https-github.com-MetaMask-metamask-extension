@@ -474,6 +474,12 @@ const state = {
     contractExchangeRates: {
       '0xaD6D458402F60fD3Bd25163575031ACDce07538D': 0,
     },
+    contractPercentChange1d: {
+      '0xaD6D458402F60fD3Bd25163575031ACDce07538D': 0.004,
+    },
+    priceChange1d: {
+      '0xaD6D458402F60fD3Bd25163575031ACDce07538D': 0.00004,
+    },
     tokens: [
       {
         address: '0xaD6D458402F60fD3Bd25163575031ACDce07538A',
@@ -1773,6 +1779,9 @@ const state = {
       average: 2,
     },
     basicEstimateIsLoading: false,
+  },
+  localeMessages: {
+    currentLocale: 'en',
   },
 };
 

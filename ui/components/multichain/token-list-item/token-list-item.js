@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import classnames from 'classnames';
+import { zeroAddress } from 'ethereumjs-util';
 import {
   AlignItems,
   BackgroundColor,
@@ -41,6 +42,7 @@ import {
   getNativeCurrencyImage,
   getPreferences,
   getTestNetworkBackgroundColor,
+  getTokenPercentChange1d,
 } from '../../../selectors';
 import Tooltip from '../../ui/tooltip';
 import { useI18nContext } from '../../../hooks/useI18nContext';
@@ -57,6 +59,7 @@ import { ENVIRONMENT_TYPE_FULLSCREEN } from '../../../../shared/constants/app';
 import { getEnvironmentType } from '../../../../app/scripts/lib/util';
 import { getProviderConfig } from '../../../ducks/metamask/metamask';
 import { getPortfolioUrl } from '../../../helpers/utils/portfolio';
+import { PercentageChange } from './price/percentage-change';
 
 export const TokenListItem = ({
   className,
@@ -69,6 +72,7 @@ export const TokenListItem = ({
   isOriginalTokenSymbol,
   isNativeCurrency = false,
   isStakeable = false,
+  address = null,
 }) => {
   const t = useI18nContext();
   const primaryTokenImage = useSelector(getNativeCurrencyImage);
@@ -87,6 +91,11 @@ export const TokenListItem = ({
   const isFullScreen = environmentType === ENVIRONMENT_TYPE_FULLSCREEN;
   const history = useHistory();
 
+  const tokenPercentChange1d = useSelector(getTokenPercentChange1d);
+
+  const tokenAddress = address ? address.toLowerCase() : null;
+
+  const tokenPercentageChange = tokenPercentChange1d?.[tokenAddress];
   const tokenTitle =
     title === CURRENCY_SYMBOLS.ETH && isOriginalTokenSymbol
       ? t('networkNameEthereum')
@@ -224,10 +233,10 @@ export const TokenListItem = ({
                   >
                     {isStakeable ? (
                       <>
-                        {tokenSymbol} {stakeableTitle}
+                        {tokenTitle} {stakeableTitle}
                       </>
                     ) : (
-                      tokenSymbol
+                      tokenTitle
                     )}
                   </Text>
                 </Tooltip>
@@ -240,22 +249,21 @@ export const TokenListItem = ({
                 >
                   {isStakeable ? (
                     <Box display={Display.InlineBlock}>
-                      {tokenSymbol} {stakeableTitle}
+                      {tokenTitle} {stakeableTitle}
                     </Box>
                   ) : (
-                    tokenSymbol
+                    tokenTitle
                   )}
                 </Text>
               )}
-              <Text
-                fontWeight={FontWeight.Medium}
-                variant={TextVariant.bodyMd}
-                color={TextColor.textAlternative}
-                data-testid="multichain-token-list-item-token-name" //
-                ellipsis
-              >
-                {tokenTitle}
-              </Text>
+
+              <PercentageChange
+                value={
+                  isNativeCurrency
+                    ? tokenPercentChange1d?.[zeroAddress()]
+                    : tokenPercentageChange
+                }
+              />
             </Box>
 
             {showScamWarning ? (
@@ -413,4 +421,8 @@ TokenListItem.propTypes = {
    * isStakeable represents if this item is stakeable
    */
   isStakeable: PropTypes.bool,
+  /**
+   * address represents the token address
+   */
+  address: PropTypes.string,
 };
