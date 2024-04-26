@@ -274,6 +274,19 @@ function saveTimestamp() {
  */
 async function initialize() {
   try {
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1457040
+    // Temporary workaround for chromium bug that breaks the content
+    // script <=> background connection for prerendered pages.
+    // eslint-disable-next-line no-undef
+    chrome?.privacy.network.networkPredictionEnabled.set({
+      value: false,
+      scope: 'regular',
+    });
+  } catch (err) {
+    console.error('failed to disable browser preloading', err);
+  }
+
+  try {
     const initData = await loadStateFromPersistence();
     const initState = initData.data;
     const initLangCode = await getFirstPreferredLangCode();
