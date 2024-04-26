@@ -6,6 +6,7 @@ import {
 } from '../../../shared/constants/network';
 import { LedgerTransportTypes } from '../../../shared/constants/hardware-wallets';
 import { ThemeType } from '../../../shared/constants/preferences';
+import { setServiceWorkerKeepAlivePreference } from '../../../ui/store/actions';
 
 const mainNetworks = {
   [CHAIN_IDS.MAINNET]: true,
@@ -113,6 +114,7 @@ export default class PreferencesController {
       ///: END:ONLY_INCLUDE_IF
       useExternalNameSources: true,
       useTransactionSimulations: true,
+      enableMV3TimestampSave: true,
       ...opts.initState,
     };
 
@@ -673,6 +675,10 @@ export default class PreferencesController {
     const previousValue = this.store.getState().incomingTransactionsPreferences;
     const updatedValue = { ...previousValue, [chainId]: value };
     this.store.updateState({ incomingTransactionsPreferences: updatedValue });
+  }
+
+  setServiceWorkerKeepAlivePreference(value) {
+    this.store.updateState({ enableMV3TimestampSave: value });
   }
 
   getRpcMethodPreferences() {
