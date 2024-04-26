@@ -4839,6 +4839,9 @@ export default class MetamaskController extends EventEmitter {
         log.error(err);
       }
     });
+
+    // Used to show wallet liveliness to the provider
+    this._notifyChainChange();
   }
 
   ///: BEGIN:ONLY_INCLUDE_IF(snaps)
