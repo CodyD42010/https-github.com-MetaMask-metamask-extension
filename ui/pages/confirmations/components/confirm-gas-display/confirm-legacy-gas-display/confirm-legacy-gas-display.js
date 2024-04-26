@@ -18,7 +18,6 @@ import UserPreferencedCurrencyDisplay from '../../../../../components/app/user-p
 import InfoTooltip from '../../../../../components/ui/info-tooltip';
 import LoadingHeartBeat from '../../../../../components/ui/loading-heartbeat';
 import {
-  FONT_STYLE,
   TextVariant,
   TextColor,
 } from '../../../../../helpers/constants/design-system';
@@ -179,8 +178,7 @@ const ConfirmLegacyGasDisplay = ({ 'data-testid': dataTestId } = {}) => {
           {dappSuggestedGasFees && (
             <Text
               variant={TextVariant.bodySm}
-              fontStyle={FONT_STYLE.ITALIC}
-              color={TextColor.textAlternative}
+              color={TextColor.textMuted}
               as="h6"
             >
               {t('transactionDetailDappGasMoreInfo')}

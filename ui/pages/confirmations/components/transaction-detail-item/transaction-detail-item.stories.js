@@ -52,7 +52,6 @@ DefaultStory.args = {
   detailText: '16565.30',
   detailTotal: '0.0089 ETH',
   subTitle: 'Likely in < 30 seconds',
-  boldHeadings: true,
   flexWidthValues: false,
   subText: (
     <span>

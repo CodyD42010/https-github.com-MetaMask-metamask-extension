@@ -4,7 +4,6 @@ import classnames from 'classnames';
 
 import {
   Color,
-  FontWeight,
   AlignItems,
   TextAlign,
   TextVariant,
@@ -13,15 +12,15 @@ import {
 } from '../../../../helpers/constants/design-system';
 import { Text } from '../../../../components/component-library';
 
+// todo: can we remove detailTitleColor? Verify design after changes
 export default function TransactionDetailItem({
   'data-testid': dataTestId,
   detailTitle = '',
   detailText,
-  detailTitleColor = Color.textDefault,
+  detailTitleColor = Color.textAlternative,
   detailTotal = '',
   subTitle = '',
   subText = '',
-  boldHeadings = true,
   flexWidthValues = false,
 }) {
   return (
@@ -30,10 +29,10 @@ export default function TransactionDetailItem({
         <Text
           as="h6"
           color={detailTitleColor}
-          fontWeight={boldHeadings ? FontWeight.Bold : FontWeight.Normal}
           display={Display.Flex}
           flexWrap={FlexWrap.NoWrap}
           alignItems={AlignItems.center}
+          variant={TextVariant.bodyMdMedium}
         >
           {detailTitle}
         </Text>
@@ -51,9 +50,9 @@ export default function TransactionDetailItem({
           <Text
             as="h6"
             color={Color.textDefault}
-            fontWeight={boldHeadings ? FontWeight.Bold : FontWeight.Normal}
             marginLeft={1}
             textAlign={TextAlign.Right}
+            variant={TextVariant.bodyMd}
           >
             {detailTotal}
           </Text>
@@ -104,7 +103,7 @@ TransactionDetailItem.propTypes = {
    */
   detailText: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   /**
-   * Total amount to show. Wrapped in Typography component. Will be bold if boldHeadings is true
+   * Total amount to show. Wrapped in Typography component.
    */
   detailTotal: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   /**
@@ -115,10 +114,6 @@ TransactionDetailItem.propTypes = {
    * Text to show under detailTotal. Wrapped in Typography component.
    */
   subText: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  /**
-   * Whether detailTotal is bold or not. Defaults to true
-   */
-  boldHeadings: PropTypes.bool,
   /**
    * Changes width to auto for transaction-detail-item__detail-values
    */
