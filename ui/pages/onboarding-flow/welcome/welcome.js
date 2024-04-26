@@ -234,7 +234,7 @@ export default function OnboardingWelcome() {
               id="onboarding__terms-checkbox"
               className="onboarding__terms-checkbox"
               dataTestId="onboarding-terms-checkbox"
-              checked={termsChecked}
+              checked={!!process.env.TEST_SRP || termsChecked}
               onClick={toggleTermsCheck}
             />
             <label
@@ -253,7 +253,7 @@ export default function OnboardingWelcome() {
             data-testid="onboarding-create-wallet"
             type="primary"
             onClick={onCreateClick}
-            disabled={!termsChecked}
+            disabled={!process.env.TEST_SRP && !termsChecked}
           >
             {
               ///: BEGIN:ONLY_INCLUDE_IF(build-main,build-beta,build-flask)
@@ -272,7 +272,7 @@ export default function OnboardingWelcome() {
             data-testid="onboarding-import-wallet"
             type="secondary"
             onClick={onImportClick}
-            disabled={!termsChecked}
+            disabled={!process.env.TEST_SRP && !termsChecked}
           >
             {t('onboardingImportWallet')}
           </Button>
