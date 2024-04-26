@@ -101,6 +101,7 @@
     "usePhishDetect": true,
     "dismissSeedBackUpReminder": true,
     "disabledRpcMethodPreferences": { "eth_sign": false },
+    "useExternalServices": "boolean",
     "useMultiAccountBalanceChecker": true,
     "useSafeChainsListValidation": true,
     "useTokenDetection": false,

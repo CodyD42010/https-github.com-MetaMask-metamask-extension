@@ -3060,6 +3060,7 @@ export default class MetamaskController extends EventEmitter {
           throw new Error(`No account found for address: ${address}`);
         }
       },
+      toggleExternalServices: this.toggleExternalServices.bind(this),
       addToken: tokensController.addToken.bind(tokensController),
       updateTokenType: tokensController.updateTokenType.bind(tokensController),
       setFeatureFlag: preferencesController.setFeatureFlag.bind(
@@ -5627,6 +5628,17 @@ export default class MetamaskController extends EventEmitter {
       }),
       provider: this.provider,
     };
+  }
+
+  toggleExternalServices(useExternal) {
+    this.preferencesController.toggleExternalServices(useExternal);
+    if (useExternal) {
+      this.tokenDetectionController.enable();
+      // this.gasFeeController.enable(); // uncomment & merge once gas fee controller changes are in
+    } else {
+      this.tokenDetectionController.disable();
+      // this.gasFeeController.disable(); // uncomment & merge once gas fee controller changes are in
+    }
   }
 
   //=============================================================================
